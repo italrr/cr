@@ -93,7 +93,7 @@ struct _Scheduler {
     void end(){
         // stop everything and clean up
         pthread_mutex_lock(&poolMutex);
-        CR::log("[JOB] stopping all jobs(%i)...\n", pool.size());
+        CR::log("[JOB] Stopping all jobs(%i)...\n", pool.size());
         for(auto &it : pool){
             it.second.handle->status = CR::JobStatus::Stopped;
         }
@@ -106,7 +106,7 @@ struct _Scheduler {
         pthread_mutex_unlock(&poolMutex);
         pthread_mutex_destroy(&genIdMutex); 
         pthread_mutex_destroy(&poolMutex);
-        CR::log("[JOB] done\n");
+        CR::log("[JOB] Done\n");
     }
 
     std::shared_ptr<CR::Job> spawn(std::function<void(CR::Job &ctx)> funct, const CR::JobSpec &spec){
@@ -126,7 +126,7 @@ struct _Scheduler {
         if(spec.threaded){
             int rc  = pthread_create(&pool[id].thread, NULL, thread_job, (void*)&pool[id]);
             if (rc){
-                CR::log("[JOB] attention: failed to spawn thread id '%i'. return code: '%i'\n", id, rc);
+                CR::log("[JOB] Attention: failed to spawn thread id '%i'. return code: '%i'\n", id, rc);
                 handle->status = CR::JobStatus::Stopped;
             }            
         }
@@ -153,7 +153,7 @@ struct _Scheduler {
         if(spec.threaded){
             int rc  = pthread_create(&pool[id].thread, NULL, thread_job, (void*)&pool[id]);
             if (rc){
-                CR::log("[JOB] attention: failed to spawn thread id '%i'. return code: '%i'\n", id, rc);
+                CR::log("[JOB] Attention: failed to spawn thread id '%i'. return code: '%i'\n", id, rc);
                 handle->status = CR::JobStatus::Stopped;
             }            
         }
@@ -254,12 +254,12 @@ struct _Scheduler {
             handle->status = CR::JobStatus::Waiting;
             handle->spec.payload = it->second.handle->spec.payload; // inherit payload from lead
         }else{
-            CR::log("[JOB] failed to hook job to non-existing job id %i. starting it right away instead...\n", lead);
+            CR::log("[JOB] Failed to hook job to non-existing job id %i. starting it right away instead...\n", lead);
         }
         if(spec.threaded){
             int rc  = pthread_create(&jref.thread, NULL, thread_job, (void*)&pool[id]);
             if (rc){
-                CR::log("[JOB] attention: failed to spawn thread id '%i'. return code: '%i'\n", id, rc);
+                CR::log("[JOB] Attention: failed to spawn thread id '%i'. return code: '%i'\n", id, rc);
                 handle->status = CR::JobStatus::Stopped;
             }            
         }
