@@ -95,6 +95,7 @@
                 Any
             };
             std::string dirSep();
+            std::string fixPath(const std::string &path);
             bool exists(const std::string &path);
             std::string format(const std::string &filename);
             std::string filename(const std::string &path);
@@ -117,6 +118,7 @@
             std::string str(int32 n);
             std::string str(uint64 n);
             std::string str(int64 n);       
+            std::string replaceAll(std::string subject, const std::string &search, const std::string &replace);
             
             template<typename T>
             std::string str(const CR::Mat<4, 4, T> &mat){

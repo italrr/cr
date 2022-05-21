@@ -4,7 +4,7 @@
 
 int main(int argc, char* argv[]){
     
-    CR::Gfx::loadSettings(CR::Core::loadParams(argc, argv), "data"+CR::File::dirSep()+"settings.json");
+    CR::Gfx::loadSettings(CR::Core::loadParams(argc, argv), "data/cfg/settings.json");
 
     CR::Gfx::init();
 

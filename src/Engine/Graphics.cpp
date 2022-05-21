@@ -14,15 +14,25 @@
 
 static GLFWwindow *window = NULL;
 static bool running = true;
+static CR::Indexing::Indexer indexer;
+static CR::Resource::ResourceManager rscmng;
 static std::shared_ptr<CR::Gfx::Settings> settings = std::shared_ptr<CR::Gfx::Settings>(new CR::Gfx::Settings());
 
-// since input comes from the window itself
 void __CR_init_input(GLFWwindow *window);
 void __CR_end_input();
 
 void __CR_init_job();
 void __CR_end_job();
 void __CR_update_job();
+
+CR::Indexing::Indexer *CR::getIndexer(){
+    return &indexer;
+}
+
+CR::Resource::ResourceManager *CR::getResourceMngr(){
+    return &rscmng;
+}
+
 
 void CR::Gfx::Settings::setParams(const std::vector<std::string> &params){
     for(int i = 0; i < params.size(); ++i){
@@ -43,15 +53,18 @@ void CR::Gfx::Settings::setParams(const std::vector<std::string> &params){
 
 void CR::Gfx::Settings::readSettings(const std::string &path){
     Jzon::Parser parser;
-    auto obj = parser.parseFile(path);
+    
+    auto fpath = CR::File::fixPath(path);
 
-    if(!CR::File::exists(path)){
-        CR::log("Failed to parse %s: Doesn't exist\n", path.c_str());
+    auto obj = parser.parseFile(fpath);
+
+    if(!CR::File::exists(fpath)){
+        CR::log("Failed to parse %s: Doesn't exist\n", fpath.c_str());
         return;
     }
 
     if(!obj.isValid()){
-        CR::log("Failed to parse %s: It's invalid\n", path.c_str());
+        CR::log("Failed to parse %s: It's invalid\n", fpath.c_str());
         return;
     }
 
@@ -73,11 +86,11 @@ static void ctrlC(int s){
 
 bool CR::Gfx::init(){
 
-    std::string wst = settings->fullscreen ? "fullscreen" : "windowed";
+    std::string wst = settings->fullscreen ? "Fullscreen" : "Windowed";
     auto platformName = Core::SupportedPlatform::name(Core::PLATFORM).c_str();
     auto archName = Core::SupportedArchitecture::name(Core::ARCH).c_str();
     
-    CR::log("[GFX] CAVERN RUSH | res %dx%d | OS: %s | ARCH: %s | Window Mode: %s \n", settings->width, settings->height, platformName, archName, wst.c_str());
+    CR::log("[GFX] CAVERN RUSH | res: %dx%d | OS: %s | ARCH: %s | Mode: %s \n", settings->width, settings->height, platformName, archName, wst.c_str());
 
 
     if (!glfwInit()){
@@ -116,9 +129,7 @@ bool CR::Gfx::init(){
 
     __CR_init_input(window);
     __CR_init_job();
-    // glfwWindowHint(GLFW_RESIZABLE, sett.resizeable ? GL_TRUE : GL_FALSE);
-
-
+    indexer.scan("data"+CR::File::dirSep());
 
     return true;
 }
@@ -142,15 +153,15 @@ void CR::Gfx::render(){
 void CR::Gfx::end(){
     running = false;
     CR::log("Exiting...\n");
-    __CR_end_input();
-    __CR_end_job();
     glfwDestroyWindow(window);
     glfwTerminate();
 }
 
 void CR::Gfx::onEnd(){
-    CR::log("Bye!\n");
     running = false;
+    __CR_end_input();
+    __CR_end_job();    
+    CR::log("Bye!\n");
 }
 
 bool CR::Gfx::isRunning(){

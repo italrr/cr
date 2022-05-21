@@ -14,6 +14,8 @@ set (cr_src
     src/Engine/Result.cpp
     src/Engine/Tools.cpp
     src/Engine/Input.cpp
+    src/Engine/Indexer.cpp
+    src/Engine/Resource.cpp
     src/Engine/3rdparty/glad.c
     src/Engine/3rdparty/Jzon.cpp
     src/Engine/3rdparty/MD5.cpp

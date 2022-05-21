@@ -92,6 +92,14 @@ namespace CR {
 			return Core::PLATFORM == Core::SupportedPlatform::LINUX ? "/" : "\\";
 		}
 
+        std::string fixPath(const std::string &path){
+            auto result = path;
+            if(Core::PLATFORM == Core::SupportedPlatform::WINDOWS){
+                return CR::String::replaceAll(path, "/", "\\");                
+            }
+            return path;
+        }
+
 		bool exists(const std::string &path){
 			struct stat tt;
 			stat(path.c_str(), &tt);
@@ -139,8 +147,8 @@ namespace CR {
 				stat(fpath.c_str(), &ft);
 				/* Directory */
 				if (S_ISDIR(ft.st_mode)) {
-					if (type == ListType::Directory || anyf){
-						output.push_back(fpath);
+					if (type == ListType::Directory){
+						output.push_back(CR::File::fixPath(fpath));
 					}
 					if (recursively){
 						File::list(fpath, format, type, recursively, output);
@@ -161,7 +169,7 @@ namespace CR {
 						}
 					}
 					if (add){
-						output.push_back(fpath);
+						output.push_back(CR::File::fixPath(fpath));
 					}					
 				}
 			}
@@ -267,6 +275,15 @@ std::string CR::String::str(int64 n){
 	return std::to_string(n);
 }
 
+
+std::string CR::String::replaceAll(std::string subject, const std::string& search, const std::string& replace){
+    size_t pos = 0;
+    while ((pos = subject.find(search, pos)) != std::string::npos) {
+         subject.replace(pos, search.length(), replace);
+         pos += replace.length();
+    }
+    return subject;
+}
 
 
 /* 

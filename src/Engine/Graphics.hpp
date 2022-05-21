@@ -2,8 +2,13 @@
     #define CR_GRAPHICS_HPP
 
     #include "Types.hpp"
+    #include "Indexer.hpp"
+    #include "Resource.hpp"
 
     namespace CR {
+
+        CR::Indexing::Indexer *getIndexer();
+        CR::Resource::ResourceManager *getResourceMngr();
 
         namespace Gfx {
 
