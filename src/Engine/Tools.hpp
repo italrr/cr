@@ -27,10 +27,47 @@
                         case SupportedPlatform::LINUX:
                             return "LINUX";
                         default:
-                            return "UNSUPPORTED";
+                            return "UNKNOWN";
                     }
                 }
             }
+
+
+            namespace SupportedArchitecture {
+                enum SupportedArchitecture : int {
+                    X86,
+                    X86_64,
+                    ARM,
+                    ARM64,
+                    UNKNOWN
+                };
+                static std::string name(int plat){
+                    switch(plat){
+                        case SupportedArchitecture::X86: 
+                            return "X86";
+                        case SupportedArchitecture::X86_64: 
+                            return "X86_64";
+                        case SupportedArchitecture::ARM: 
+                            return "ARM";
+                        case SupportedArchitecture::ARM64: 
+                            return "ARM64";                                                                                    
+                        default:
+                            return "UNKNOWN";
+                    }
+                }
+            }
+
+            #if defined(__i386__) || defined(__i686__)
+                const static int ARCH = SupportedArchitecture::X86;
+            #elif defined(__x86_64__) || defined(__amd64__)
+                const static int ARCH = SupportedArchitecture::X86_64;
+            #elif defined(__arm__)
+                const static int ARCH = SupportedArchitecture::ARM;
+            #elif defined(__aarch64__)
+                const static int ARCH = SupportedArchitecture::ARM64;
+            #else
+                const static int ARCH = SupportedArchitecture::UNKNOWN;
+            #endif
 
             #ifdef _WIN32
                 const static int PLATFORM = SupportedPlatform::WINDOWS;
@@ -81,50 +118,50 @@
             std::string str(uint64 n);
             std::string str(int64 n);       
             
-            // template<typename T>
-            // std::string str(const CR::Mat<4, 4, T> &mat){
-            //     std::string out;
-            //     for(int x = 0; x < 4; ++x){
-            //         for(int y = 0; y < 4; ++y){
-            //             int i = x + y * 4;
-            //             out += str(static_cast<T>(mat.mat[i]))+" ";
-            //         }    
-            //     }
-            //     return out;
-            // } 
+            template<typename T>
+            std::string str(const CR::Mat<4, 4, T> &mat){
+                std::string out;
+                for(int x = 0; x < 4; ++x){
+                    for(int y = 0; y < 4; ++y){
+                        int i = x + y * 4;
+                        out += str(static_cast<T>(mat.mat[i]))+" ";
+                    }    
+                }
+                return out;
+            } 
 
-            // template<typename T>
-            // std::string str(const CR::Mat<3, 3, T> &mat){
-            //     std::string out;
-            //     for(int x = 0; x < 3; ++x){
-            //         for(int y = 0; y < 3; ++y){
-            //             int i = x + y * 3;
-            //             out += str(static_cast<T>(mat.mat[i]));
-            //             if(x == 2){
-            //                out += "\n"; 
-            //             }else
-            //             if(x < 8){
-            //                 out += ",\t";
-            //             }
-            //         }    
-            //     }
-            //     return out;
-            // }    
+            template<typename T>
+            std::string str(const CR::Mat<3, 3, T> &mat){
+                std::string out;
+                for(int x = 0; x < 3; ++x){
+                    for(int y = 0; y < 3; ++y){
+                        int i = x + y * 3;
+                        out += str(static_cast<T>(mat.mat[i]));
+                        if(x == 2){
+                           out += "\n"; 
+                        }else
+                        if(x < 8){
+                            out += ",\t";
+                        }
+                    }    
+                }
+                return out;
+            }    
 
             template<typename T>
             std::string str(const CR::Vec2<T> &vec){
                 return "(" + str(static_cast<T>(vec.x)) + ", " + str(static_cast<T>(vec.y)) + ")";
             }     
 
-            // template<typename T>
-            // std::string str(const CR::Vec3<T> &vec){
-            //     return "(" + str(static_cast<T>(vec.x)) + ", " + str(static_cast<T>(vec.y)) + ", " + str(static_cast<T>(vec.z)) + ")";
-            // }      
+            template<typename T>
+            std::string str(const CR::Vec3<T> &vec){
+                return "(" + str(static_cast<T>(vec.x)) + ", " + str(static_cast<T>(vec.y)) + ", " + str(static_cast<T>(vec.z)) + ")";
+            }      
 
-            // template<typename T>
-            // std::string str(const CR::Vec4<T> &vec){
-            //     return "(" + str(static_cast<T>(vec.x)) + ", " + str(static_cast<T>(vec.y)) + ", " + str(static_cast<T>(vec.z)) + ", " + str(static_cast<T>(vec.w)) + ")";
-            // }                                   
+            template<typename T>
+            std::string str(const CR::Vec4<T> &vec){
+                return "(" + str(static_cast<T>(vec.x)) + ", " + str(static_cast<T>(vec.y)) + ", " + str(static_cast<T>(vec.z)) + ", " + str(static_cast<T>(vec.w)) + ")";
+            }                                   
 
         }
 
@@ -141,52 +178,52 @@
             float atan(float y, float x);
             float rads(float deg);
             float degs(float rads);
-            // CR::Mat<4, 4, float> scale(const CR::Vec3<float> &dir);
-            // CR::Mat<4, 4, float> perspective(float fovy, float aspRatio, float nearPlane, float farPlane);
-            // CR::Mat<4, 4, float> orthogonal(float left, float right, float bottom, float top);
-            // CR::Mat<4, 4, float> lookAt(const CR::Vec3<float> &to, const CR::Vec3<float> &dir, const Vec3<float> &up);  
+            CR::Mat<4, 4, float> scale(const CR::Vec3<float> &dir);
+            CR::Mat<4, 4, float> perspective(float fovy, float aspRatio, float nearPlane, float farPlane);
+            CR::Mat<4, 4, float> orthogonal(float left, float right, float bottom, float top);
+            CR::Mat<4, 4, float> lookAt(const CR::Vec3<float> &to, const CR::Vec3<float> &dir, const Vec3<float> &up);  
 
 
-            // template<typename T>
-            // CR::Vec4<T> slerp(CR::Vec4<T> pStart, CR::Vec4<T> pEnd, T pFactor){
-            //     // Taken from assimp source code
-            //     // calc cosine theta
-            //     T cosom = pStart.x * pEnd.x + pStart.y * pEnd.y + pStart.z * pEnd.z + pStart.w * pEnd.w;
+            template<typename T>
+            CR::Vec4<T> slerp(CR::Vec4<T> pStart, CR::Vec4<T> pEnd, T pFactor){
+                // Taken from assimp source code
+                // calc cosine theta
+                T cosom = pStart.x * pEnd.x + pStart.y * pEnd.y + pStart.z * pEnd.z + pStart.w * pEnd.w;
 
-            //     // adjust signs (if necessary)
-            //     CR::Vec4<T> end = pEnd;
-            //     if(cosom < static_cast<T>(0.0)){
-            //         cosom = -cosom;
-            //         end.x = -end.x;   // Reverse all signs
-            //         end.y = -end.y;
-            //         end.z = -end.z;
-            //         end.w = -end.w;
-            //     }
+                // adjust signs (if necessary)
+                CR::Vec4<T> end = pEnd;
+                if(cosom < static_cast<T>(0.0)){
+                    cosom = -cosom;
+                    end.x = -end.x;   // Reverse all signs
+                    end.y = -end.y;
+                    end.z = -end.z;
+                    end.w = -end.w;
+                }
 
-            //     // Calculate coefficients
-            //     T sclp, sclq;
-            //     if((static_cast<T>(1.0) - cosom) > static_cast<T>(0.0001)){ // 0.0001 -> some epsillon{
-            //         // Standard case (slerp)
-            //         T omega, sinom;
-            //         omega = acos(cosom); // extract theta from dot product's cos theta
-            //         sinom = sin( omega);
-            //         sclp  = sin( (static_cast<T>(1.0) - pFactor) * omega) / sinom;
-            //         sclq  = sin( pFactor * omega) / sinom;
-            //     }else{
-            //         // Very close, do linear interp (because it's faster)
-            //         sclp = static_cast<T>(1.0) - pFactor;
-            //         sclq = pFactor;
-            //     }
+                // Calculate coefficients
+                T sclp, sclq;
+                if((static_cast<T>(1.0) - cosom) > static_cast<T>(0.0001)){ // 0.0001 -> some epsillon{
+                    // Standard case (slerp)
+                    T omega, sinom;
+                    omega = acos(cosom); // extract theta from dot product's cos theta
+                    sinom = sin( omega);
+                    sclp  = sin( (static_cast<T>(1.0) - pFactor) * omega) / sinom;
+                    sclq  = sin( pFactor * omega) / sinom;
+                }else{
+                    // Very close, do linear interp (because it's faster)
+                    sclp = static_cast<T>(1.0) - pFactor;
+                    sclq = pFactor;
+                }
 
-            //     CR::Vec4<T> out;
+                CR::Vec4<T> out;
 
-            //     out.x = sclp * pStart.x + sclq * end.x;
-            //     out.y = sclp * pStart.y + sclq * end.y;
-            //     out.z = sclp * pStart.z + sclq * end.z;
-            //     out.w = sclp * pStart.w + sclq * end.w; 
+                out.x = sclp * pStart.x + sclq * end.x;
+                out.y = sclp * pStart.y + sclq * end.y;
+                out.z = sclp * pStart.z + sclq * end.z;
+                out.w = sclp * pStart.w + sclq * end.w; 
 
-            //     return out;               
-            // }
+                return out;               
+            }
         }
 
         static const size_t CR_SMALLPACKET_SIZE = 64;

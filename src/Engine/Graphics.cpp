@@ -67,15 +67,17 @@ void CR::Gfx::loadSettings(const std::vector<std::string> &params, const std::st
 }
 
 static void ctrlC(int s){
-    CR::log("caught ctrl-c\n");
+    CR::log("Caught Ctrl+C: Requested exit\n");
 	CR::Gfx::end();
 }
 
 bool CR::Gfx::init(){
 
     std::string wst = settings->fullscreen ? "fullscreen" : "windowed";
+    auto platformName = Core::SupportedPlatform::name(Core::PLATFORM).c_str();
+    auto archName = Core::SupportedArchitecture::name(Core::ARCH).c_str();
     
-    CR::log("[GFX] init | res %dx%d | %s | %s \n", settings->width, settings->height, Core::SupportedPlatform::name(Core::PLATFORM).c_str(), wst.c_str());
+    CR::log("[GFX] CAVERN RUSH | res %dx%d | OS: %s | ARCH: %s | Window Mode: %s \n", settings->width, settings->height, platformName, archName, wst.c_str());
 
 
     if (!glfwInit()){
@@ -91,7 +93,7 @@ bool CR::Gfx::init(){
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 
-    window = glfwCreateWindow(settings->width, settings->height, "CAVERN RUSH", NULL, NULL);
+    window = glfwCreateWindow(settings->width, settings->height, "C A V E R N   R U S H", NULL, NULL);
 
     if(!window){
         CR::log("[GFX] Failed to open window\n");

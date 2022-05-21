@@ -309,47 +309,47 @@ namespace CR {
 			return rads * (180.0f/PI);	
 		}
 
-		// Mat<4, 4, float> perspective(float fovy, float aspect, float zNear, float zFar){
-		// 	float const tanHalfFovy = CR::Math::tan(fovy / 2.0f);
-		// 	CR::Mat<4, 4, float> out(0.0f);
-		// 	out.mat[0] = 1.0f / (aspect * tanHalfFovy);
-		// 	out.mat[5] = 1.0f / (tanHalfFovy);
-		// 	out.mat[10] = - (zFar + zNear) / (zFar - zNear);
-		// 	out.mat[11] = - 1.0f;
-		// 	out.mat[14] = - (2.0f * zFar * zNear) / (zFar - zNear);
-		// 	return out;
-		// }
-		// Mat<4, 4, float> orthogonal(float left, float right, float bottom, float top){
-		// 	auto out = MAT4Identity;
-		// 	out.mat[0] = 2 / (right - left);
-		// 	out.mat[5] = 2 / (top - bottom);
-		// 	out.mat[10] = -1;
-		// 	out.mat[12] = - (right + left) / (right - left);
-		// 	out.mat[13] = - (top + bottom) / (top - bottom);
-		// 	return out;
-		// }
-		// Mat<4, 4, float> lookAt(const CR::Vec3<float> &pos, const CR::Vec3<float> &dir, const Vec3<float> &up){
-		// 	CR::Vec3<float> const f((dir - pos).normalize());
-		// 	CR::Vec3<float> const s(up.cross(f).normalize());
-		// 	CR::Vec3<float> const u(f.cross(s));
-		// 	CR::Mat<4, 4, float> out = MAT4Identity;
-		// 	out.mat[0] = s.x;
-		// 	out.mat[4] = s.y;
-		// 	out.mat[8] = s.z;
+		Mat<4, 4, float> perspective(float fovy, float aspect, float zNear, float zFar){
+			float const tanHalfFovy = CR::Math::tan(fovy / 2.0f);
+			CR::Mat<4, 4, float> out(0.0f);
+			out.mat[0] = 1.0f / (aspect * tanHalfFovy);
+			out.mat[5] = 1.0f / (tanHalfFovy);
+			out.mat[10] = - (zFar + zNear) / (zFar - zNear);
+			out.mat[11] = - 1.0f;
+			out.mat[14] = - (2.0f * zFar * zNear) / (zFar - zNear);
+			return out;
+		}
+		Mat<4, 4, float> orthogonal(float left, float right, float bottom, float top){
+			auto out = MAT4Identity;
+			out.mat[0] = 2 / (right - left);
+			out.mat[5] = 2 / (top - bottom);
+			out.mat[10] = -1;
+			out.mat[12] = - (right + left) / (right - left);
+			out.mat[13] = - (top + bottom) / (top - bottom);
+			return out;
+		}
+		Mat<4, 4, float> lookAt(const CR::Vec3<float> &pos, const CR::Vec3<float> &dir, const Vec3<float> &up){
+			CR::Vec3<float> const f((dir - pos).normalize());
+			CR::Vec3<float> const s(up.cross(f).normalize());
+			CR::Vec3<float> const u(f.cross(s));
+			CR::Mat<4, 4, float> out = MAT4Identity;
+			out.mat[0] = s.x;
+			out.mat[4] = s.y;
+			out.mat[8] = s.z;
 
-		// 	out.mat[1] = u.x;
-		// 	out.mat[5] = u.y;
-		// 	out.mat[9] = u.z;
+			out.mat[1] = u.x;
+			out.mat[5] = u.y;
+			out.mat[9] = u.z;
 
-		// 	out.mat[2] = -f.x;
-		// 	out.mat[6] = -f.y;
-		// 	out.mat[10] = -f.z;
+			out.mat[2] = -f.x;
+			out.mat[6] = -f.y;
+			out.mat[10] = -f.z;
 			
-		// 	out.mat[12] = -s.dot(pos);
-		// 	out.mat[13] = -u.dot(pos);
-		// 	out.mat[14] = f.dot(pos);
-		// 	return out;
-		// }
+			out.mat[12] = -s.dot(pos);
+			out.mat[13] = -u.dot(pos);
+			out.mat[14] = f.dot(pos);
+			return out;
+		}
 	}
 }
 
