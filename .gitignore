@@ -2,5 +2,6 @@ CMakeFiles/*
 cmake_install.cmake
 CMakeCache.txt
 cr.exe
+.vscode/*
 libcr_bin.a
 Makefile

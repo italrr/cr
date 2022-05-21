@@ -9,8 +9,14 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/builds/cmake)
 # src
 set (cr_src
     src/Engine/Graphics.cpp
+    src/Engine/Log.cpp
+    src/Engine/Job.cpp
+    src/Engine/Result.cpp
+    src/Engine/Tools.cpp
+    src/Engine/Input.cpp
     src/Engine/3rdparty/glad.c
     src/Engine/3rdparty/Jzon.cpp
+    src/Engine/3rdparty/MD5.cpp
 )
 
 add_library(cr_bin ${cr_src})
