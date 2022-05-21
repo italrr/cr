@@ -1,0 +1,26 @@
+@font-face { font-family: NK57; src: url('/static/font/nk57-monospace-cd-bk.ttf'); } 
+
+body,html {
+    margin: 0px;
+    padding: 0px;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+canvas {
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+}
+
+
+.div-main-body {
+    width:100%;
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    margin:0;
+    padding:0;
+}
