@@ -563,6 +563,22 @@
 			std::string str();
 			std::string hex();
 		};
+
+        namespace Colors {
+
+            static CR::Color Black(0.0f, 0.0f, 0.0f, 1.0f);
+            static CR::Color White(1.0f, 1.0f, 1.0f, 1.0f);
+            
+            static CR::Color Red(1.0f, 0.0f, 0.0f, 1.0f);
+            static CR::Color Green(0.0f, 1.0f, 0.0f, 1.0f);
+            static CR::Color Blue(0.0f, 0.0f, 1.0f, 1.0f);
+
+            static CR::Color Purple(1.0f, 0.0f, 1.0f, 1.0f);
+            static CR::Color Cyan(0.0f, 1.0f, 1.0f, 1.0f);
+            static CR::Color Yellow(1.0f, 1.0f, 0.0f, 1.0f);
+
+        }
+
     }
 
 

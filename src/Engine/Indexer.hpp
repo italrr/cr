@@ -24,7 +24,7 @@
             };
 
             static const std::vector<std::string> INDEX_STRUCTURE = {
-                "texture", "font", "model", "shader"
+                "texture/", "font/", "model/", "shader/", "cfg/"
             };
 
             struct Indexer {

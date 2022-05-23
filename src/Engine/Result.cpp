@@ -16,7 +16,7 @@ CR::Result::Result(){
     this->val = ResultType::noop;
     this->msg = "";
     this->job = std::shared_ptr<CR::Job>(NULL);
-    this->payload = std::make_shared<CR::SmallPacket>(SmallPacket());
+    this->payload = std::make_shared<CR::SmallPacket>(CR::SmallPacket());
     this->done = false;
 }
 

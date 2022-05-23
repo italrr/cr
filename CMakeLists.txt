@@ -13,6 +13,7 @@ set (cr_src
     src/Engine/Job.cpp
     src/Engine/Result.cpp
     src/Engine/Tools.cpp
+    src/Engine/Types.cpp
     src/Engine/Input.cpp
     src/Engine/Indexer.cpp
     src/Engine/Resource.cpp

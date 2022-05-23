@@ -17,6 +17,12 @@ static bool running = true;
 static CR::Indexing::Indexer indexer;
 static CR::Resource::ResourceManager rscmng;
 static std::shared_ptr<CR::Gfx::Settings> settings = std::shared_ptr<CR::Gfx::Settings>(new CR::Gfx::Settings());
+static double lastDeltaCheck = 0;
+static double currentDelta = 0;
+
+double CR::getDelta(){
+    return currentDelta;
+}
 
 void __CR_init_input(GLFWwindow *window);
 void __CR_end_input();
@@ -53,18 +59,18 @@ void CR::Gfx::Settings::setParams(const std::vector<std::string> &params){
 
 void CR::Gfx::Settings::readSettings(const std::string &path){
     Jzon::Parser parser;
-    
+
     auto fpath = CR::File::fixPath(path);
 
     auto obj = parser.parseFile(fpath);
 
     if(!CR::File::exists(fpath)){
-        CR::log("Failed to parse %s: Doesn't exist\n", fpath.c_str());
+        CR::log("readSettings: Failed to parse %s: Doesn't exist\n", fpath.c_str());
         return;
     }
 
     if(!obj.isValid()){
-        CR::log("Failed to parse %s: It's invalid\n", fpath.c_str());
+        CR::log("readSettings: Failed to parse %s: It's invalid\n", fpath.c_str());
         return;
     }
 
@@ -129,7 +135,7 @@ bool CR::Gfx::init(){
 
     __CR_init_input(window);
     __CR_init_job();
-    indexer.scan("data"+CR::File::dirSep());
+    indexer.scan("data/");
 
     return true;
 }
@@ -145,6 +151,15 @@ void CR::Gfx::render(){
     }
 
     // RENDER
+    auto currentTime = glfwGetTime();
+    currentDelta = (currentTime - lastDeltaCheck) * 1000;
+    lastDeltaCheck = currentTime;
+
+
+
+
+
+    glfwSwapBuffers(static_cast<GLFWwindow*>(window));
 
     __CR_update_job();
     glfwPollEvents();
@@ -166,4 +181,102 @@ void CR::Gfx::onEnd(){
 
 bool CR::Gfx::isRunning(){
     return running;
+}
+
+
+int CR::Gfx::generateTexture2D(unsigned char *data, int w, int h, int format){
+    unsigned int texture;
+    glGenTextures(1, &texture);  
+    glBindTexture(GL_TEXTURE_2D, texture);  
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    GLenum glformat;
+    switch(format){
+        case ImageFormat::RED: {
+            glformat = GL_RED;
+        } break;
+        case ImageFormat::GREEN: {
+            glformat = GL_GREEN;
+        } break;        
+        case ImageFormat::BLUE: {
+            glformat = GL_BLUE;
+        } break;        
+        case ImageFormat::RGB: {
+            glformat = GL_RGB;
+        } break;
+        case ImageFormat::RGBA: {
+            glformat = GL_RGBA;
+        } break;                
+    }
+    glTexImage2D(GL_TEXTURE_2D, 0, glformat, w, h, 0, glformat, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    // TODO: check OpenGL errors
+    return texture;
+}
+
+int CR::Gfx::compileShader(const std::string &vert, const std::string &frag){
+    int shaderId;
+    std::string str;
+    const char *fragSrc = frag.c_str();
+    const char *vertSrc = vert.c_str();
+    // create shaders
+    GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
+    GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+    GLint gResult = GL_FALSE;
+    int logLength = 1024 * 5;
+    char *buffer = new char[logLength];
+    memset(buffer, 0, logLength);
+    // compile vertex
+    glShaderSource(vertShader, 1, &vertSrc, NULL);
+    glCompileShader(vertShader);
+    glGetShaderiv(vertShader, GL_COMPILE_STATUS, &gResult);
+    glGetShaderiv(vertShader, GL_INFO_LOG_LENGTH, &logLength);
+    memset(buffer, 0, logLength);
+    glGetShaderInfoLog(vertShader, logLength, NULL, buffer);
+    str = std::string(buffer);
+    if(str.length() > 0) {
+        CR::log("Shader compilation error at vert: \n\n%s\n\n", str.c_str());
+        return 0;
+    }
+    str = "";
+    // compile frag
+    glShaderSource(fragShader, 1, &fragSrc, NULL);
+    glCompileShader(fragShader);
+    glGetShaderiv(fragShader, GL_COMPILE_STATUS, &gResult);
+    glGetShaderiv(fragShader, GL_INFO_LOG_LENGTH, &logLength);
+    memset(buffer, 0, logLength);
+    glGetShaderInfoLog(fragShader, logLength, NULL, buffer);
+    str = std::string(buffer);
+    if(str.length() > 0) {
+        CR::log("Shader compilation error at frag: \n\n%s\n\n", str.c_str());
+        return 0;
+    }
+    str = "";
+    // put together
+    shaderId = glCreateProgram();
+    glAttachShader(shaderId, vertShader);
+    glAttachShader(shaderId, fragShader);
+    glLinkProgram(shaderId);
+    // check status
+    glGetProgramiv(shaderId, GL_LINK_STATUS, &gResult);
+    glGetProgramiv(shaderId, GL_INFO_LOG_LENGTH, &logLength);
+    memset(buffer, 0, logLength);
+    glGetProgramInfoLog(shaderId, logLength, NULL, buffer);
+    str = std::string(buffer);
+    if(str.length() > 0) {
+        CR::log("Shader compilation error at LINK: \n\n%s\n\n", str.c_str());
+        return 0;
+    }
+    str = "";
+    // clean
+    glDeleteShader(vertShader);
+    glDeleteShader(fragShader);
+    delete buffer;
+    return shaderId;
+}
+
+void CR::Gfx::deleteShader(int id){
+    glDeleteProgram(id);
 }

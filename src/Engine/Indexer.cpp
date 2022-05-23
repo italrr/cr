@@ -16,7 +16,7 @@ std::shared_ptr<CR::Result> CR::Indexing::Indexer::scan(const std::string &root)
             CR::File::list(path, "", CR::File::ListType::File, true, files);
             for(int j = 0; j < files.size(); ++j){
                 auto res = std::make_shared<CR::Indexing::Index>(CR::Indexing::Index());
-                CR::log("%s\n", files[j].c_str());
+                // CR::log("%s\n", files[j].c_str());
                 res->read(files[j]);
                 toAdd.push_back(res);
                 // this->resources[res->hash] = res;
@@ -142,7 +142,7 @@ void CR::Indexing::Index::autotag(){
     if(!CR::File::exists(path)){
         return;
     }
-    auto format = CR::File::format(path);
+    auto format = CR::String::toLower(CR::File::format(path));
     if(format == "png" || format == "jpg" || format == "jpeg" || format == "bmp"){
         tags.push_back("image");
     }
@@ -151,10 +151,7 @@ void CR::Indexing::Index::autotag(){
     }
     if(format == "json"){
         tags.push_back("json");
-    }
-    if(format == "json"){
-        tags.push_back("json");
-    }    
+    } 
     if(format == "glsl"){
         tags.push_back("shader");
     }       

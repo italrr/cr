@@ -10,6 +10,8 @@
         CR::Indexing::Indexer *getIndexer();
         CR::Resource::ResourceManager *getResourceMngr();
 
+        double getDelta();
+
         namespace Gfx {
 
             namespace ImageFormat {
@@ -68,10 +70,26 @@
                 };
             }
 
+            namespace RenderLayer {
+                enum RenderLayer {
+                    ZERO = 0,
+                    GAME,
+                    MIDDLE,
+                    UI,
+                    POST_1,
+                    POST_2,
+                    POST_2
+                };
+            }
+
             struct RenderLayer {
                 int type;
                 int order;
                 std::string tag;
+                std::vector<std::shared_ptr<RenderObject>> objects;
+                void begin();
+                void end();
+                void flush();
             };
 
             struct Settings {
@@ -84,11 +102,21 @@
             };
 
             void loadSettings(const std::vector<std::string> &params, const std::string &path);
+            
+            int addRenderLayer(int type, const std::string &tag, int order);
+
+            void setRenderLayer(int id);
+
+
             bool init();
             void end();
             void onEnd();
             void render();
             bool isRunning();
+
+            int generateTexture2D(unsigned char *data, int w, int h, int format);
+            int compileShader(const std::string &vert, const std::string &frag);
+            void deleteShader(int id);
 
         }
         
