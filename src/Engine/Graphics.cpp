@@ -20,26 +20,13 @@ static std::shared_ptr<CR::Gfx::Settings> settings = std::shared_ptr<CR::Gfx::Se
 static double lastDeltaCheck = 0;
 static double currentDelta = 0;
 
-struct FrameBufferObject {
-    GLint fbId;
-    GLint textureId;
-    int width;
-    int height;
-    FrameBufferObject(GLint fbId, GLint textureId, int width, int height){
-        this->fbId = fbId;
-        this->textureId = textureId;
-        this->width = width;
-        this->height = height;
-    }
-};
-
 static std::vector<int> textureList;
 std::mutex textureListMutex;
 
 static std::vector<int> shaderList;
 std::mutex shaderListMutex;
 
-static std::vector<std::shared_ptr<FrameBufferObject>> framebufferList;
+static std::unordered_map<int, std::shared_ptr<CR::Gfx::FramebufferObj>> framebufferList;
 std::mutex framebufferListMutex;
 
 double CR::getDelta(){
@@ -206,8 +193,8 @@ bool CR::Gfx::isRunning(){
 }
 
 
-int CR::Gfx::createTexture2D(unsigned char *data, int w, int h, int format){
-    unsigned int texture;
+unsigned CR::Gfx::createTexture2D(unsigned char *data, unsigned w, unsigned h, unsigned format){
+    unsigned texture;
     glGenTextures(1, &texture);  
     glBindTexture(GL_TEXTURE_2D, texture);  
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -242,12 +229,11 @@ int CR::Gfx::createTexture2D(unsigned char *data, int w, int h, int format){
     return texture;
 }
 
-bool CR::Gfx::deleteTexture2D(int id){
+bool CR::Gfx::deleteTexture2D(unsigned id){
     std::unique_lock<std::mutex> lock(textureListMutex);
     for(int i = 0; i < textureList.size(); ++i){
         if(textureList[i] == id){
-            GLuint glId = id;
-            glDeleteTextures(1, &glId);
+            glDeleteTextures(1, &id);
             textureList.erase(textureList.begin() + i);
             return true;
         }
@@ -256,38 +242,40 @@ bool CR::Gfx::deleteTexture2D(int id){
     return false;
 }
 
-int CR::Gfx::createFramebuffer(int w, int h){
-    GLuint id;
+std::shared_ptr<CR::Gfx::FramebufferObj> CR::Gfx::createFramebuffer(unsigned w, unsigned h){
+    unsigned id;
     glGenFramebuffers(1, &id);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, id);
-    GLuint texture = CR::Gfx::createTexture2D(0, w, h, ImageFormat::RGBA);
+    unsigned texture = CR::Gfx::createTexture2D(0, w, h, ImageFormat::RGBA);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);    
     std::unique_lock<std::mutex> lock(framebufferListMutex);
-    auto handle = std::shared_ptr<FrameBufferObject>(new FrameBufferObject(id, texture, w, h));
-    framebufferList.push_back(handle);
+
+    auto handle = std::shared_ptr<FramebufferObj>(new FramebufferObj(id, texture, w, h));
+    framebufferList[id] = handle;
     lock.unlock();    
+    
     // TODO: check OpenGL errors
-    return id;
+    return handle;
 }
 
-bool CR::Gfx::deleteFramebuffer(int id){
+bool CR::Gfx::deleteFramebuffer(unsigned id){
     std::unique_lock<std::mutex> lock(framebufferListMutex);
-    for(int i = 0; i < framebufferList.size(); ++i){
-        if(framebufferList[i]->fbId == id){
-            GLuint glId = id;
-            glDeleteFramebuffers(1, &glId);
-            deleteTexture2D(framebufferList[i]->textureId);
-            framebufferList.erase(framebufferList.begin() + i);
-            return true;
-        }
+
+    auto it = framebufferList.find(id);
+
+    if(it == framebufferList.end()){
+        return false;
     }
+    glDeleteFramebuffers(1, &it->second->framebufferId);
+    deleteTexture2D(it->second->textureId);
+
     lock.unlock();    
-    return false;    
+    return true;    
 }
 
-int CR::Gfx::createShader(const std::string &vert, const std::string &frag){
-    int shaderId;
+unsigned CR::Gfx::createShader(const std::string &vert, const std::string &frag){
+    unsigned shaderId;
     std::string str;
     const char *fragSrc = frag.c_str();
     const char *vertSrc = vert.c_str();
@@ -350,12 +338,11 @@ int CR::Gfx::createShader(const std::string &vert, const std::string &frag){
     return shaderId;
 }
 
-bool CR::Gfx::deleteShader(int id){
+bool CR::Gfx::deleteShader(unsigned id){
     std::unique_lock<std::mutex> lock(shaderListMutex);
     for(int i = 0; i < shaderList.size(); ++i){
         if(shaderList[i] == id){
-            GLuint glId = id;
-            glDeleteTextures(1, &glId);
+            glDeleteTextures(1, &id);
             shaderList.erase(shaderList.begin() + i);
             return true;
         }

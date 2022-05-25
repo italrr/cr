@@ -15,7 +15,7 @@
         namespace Gfx {
 
             namespace ImageFormat {
-                enum ImageFormat : int {
+                enum ImageFormat : unsigned {
                     RED, // 8 bits
                     GREEN, // 8 bits
                     BLUE, // 8 bits
@@ -25,7 +25,7 @@
             }
 
             namespace RenderObjectType {
-                enum RenderObjectType : int {
+                enum RenderObjectType : unsigned {
                     // FLAT
                     SPRITE, // aka texture
                     PRIMITIVE_2D,
@@ -35,7 +35,7 @@
                     PRIMITIVE_3D,
                     MODEL
                 };
-                static std::string name(int type){
+                static std::string name(unsigned type){
                     switch(type){
                         // FLAT
                         case SPRITE:
@@ -58,20 +58,20 @@
             }
 
             struct RenderObject {
-                int type;
-                int depth;
+                unsigned type;
+                int depth; // this ignored if the renderlayer type is T_3D
                 CR::Vec3<float> position;
             };            
 
             namespace RenderLayerType {
-                enum RenderLayerType {
+                enum RenderLayerType : unsigned {
                     T_2D,
                     T_3D
                 };
             }
 
             namespace RenderLayers {
-                enum RenderLayers {
+                enum RenderLayers : unsigned {
                     BOTTOM = 0,
                     GAME,
                     MIDDLE,
@@ -81,13 +81,14 @@
             }
 
             struct RenderLayer {
-                int type;
+                unsigned id;
+                unsigned type;
                 int order;
                 std::string tag;
-                std::vector<std::shared_ptr<RenderObject>> objects;
+                std::vector<RenderObject*> objects;
                 void begin();
                 void end();
-                void flush();
+                void flush(); // render to texture
             };
 
             struct Settings {
@@ -112,14 +113,29 @@
             void render();
             bool isRunning();
 
-            int createTexture2D(unsigned char *data, int w, int h, int format);
-            bool deleteTexture2D(int id);
+            struct FramebufferObj {
+                unsigned framebufferId;
+                unsigned textureId;
+                unsigned width;
+                unsigned height;
+                FramebufferObj(unsigned framebufferId, unsigned textureId, unsigned width, unsigned height){
+                    this->framebufferId = framebufferId;
+                    this->textureId = textureId;
+                    this->width = width;
+                    this->height = height;
+                }
+            };
+
+            unsigned createTexture2D(unsigned char *data, unsigned w, unsigned h, unsigned format);
+            bool deleteTexture2D(unsigned id);
             
-            int createFramebuffer(int w, int h);
-            bool deleteFramebuffer(int id);
+            // Note: only use framebuffers directly if it's absolutely necessary, 
+            // for everything else, use renderlayer directly
+            std::shared_ptr<FramebufferObj> createFramebuffer(unsigned w, unsigned h);
+            bool deleteFramebuffer(unsigned id);
             
-            int createShader(const std::string &vert, const std::string &frag);
-            bool deleteShader(int id);
+            unsigned createShader(const std::string &vert, const std::string &frag);
+            bool deleteShader(unsigned id);
 
         }
         
