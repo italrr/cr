@@ -6,10 +6,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <dirent.h>
+#include <limits.h>
 #include <random>
 #include <cmath>
 #include <mutex>
@@ -88,6 +90,12 @@ namespace CR {
 namespace CR {
 	namespace File {
 
+        std::string getCwd(){
+            char cwd[PATH_MAX];
+            getcwd(cwd, sizeof(cwd));
+            return std::string(cwd);
+        }
+
 		std::string dirSep(){
 			return Core::PLATFORM == Core::SupportedPlatform::LINUX ? "/" : "\\";
 		}
@@ -142,7 +150,7 @@ namespace CR {
 				if (filename == "." || filename == ".."){
 					continue;
 				}
-				std::string fpath = path + dirSep() + filename;
+				std::string fpath = path + filename;
 				struct stat ft;
 				stat(fpath.c_str(), &ft);
 				/* Directory */

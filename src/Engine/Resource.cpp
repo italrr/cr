@@ -17,20 +17,20 @@ std::shared_ptr<CR::Result> CR::Resource::ResourceManager::load(const std::share
     return r;
 }
 
-std::shared_ptr<CR::Result> CR::Resource::ResourceManager::load(const std::string &name, const std::shared_ptr<Resource> &holder){
+std::shared_ptr<CR::Result> CR::Resource::ResourceManager::load(const std::string &path, const std::shared_ptr<Resource> &holder){
     auto indexer = CR::getIndexer();
-    auto file = indexer->findByName(name);
+    auto file = indexer->findByPath(path);
     if(file.get() == NULL){
-        return CR::makeResult(CR::ResultType::Failure, "'"+name+"' doesn't exist");
+        return CR::makeResult(CR::ResultType::Failure, "'"+path+"' doesn't exist");
     }
     return load(file, holder);
 }
 
-std::shared_ptr<CR::Resource::Resource> CR::Resource::ResourceManager::findByName(const std::string &name){
+std::shared_ptr<CR::Resource::Resource> CR::Resource::ResourceManager::findByPath(const std::string &hash){
     auto resource = std::shared_ptr<CR::Resource::Resource>(NULL);
     std::unique_lock<std::mutex> lk(accesMutex);
     for(auto &it : resources){
-        if(it.second->file->fname == name){
+        if(it.second->file->hash == hash){
             resource = it.second;
             break;
         }

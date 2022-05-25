@@ -70,15 +70,13 @@
                 };
             }
 
-            namespace RenderLayer {
-                enum RenderLayer {
-                    ZERO = 0,
+            namespace RenderLayers {
+                enum RenderLayers {
+                    BOTTOM = 0,
                     GAME,
                     MIDDLE,
                     UI,
-                    POST_1,
-                    POST_2,
-                    POST_2
+                    TOP
                 };
             }
 
@@ -114,9 +112,14 @@
             void render();
             bool isRunning();
 
-            int generateTexture2D(unsigned char *data, int w, int h, int format);
-            int compileShader(const std::string &vert, const std::string &frag);
-            void deleteShader(int id);
+            int createTexture2D(unsigned char *data, int w, int h, int format);
+            bool deleteTexture2D(int id);
+            
+            int createFramebuffer(int w, int h);
+            bool deleteFramebuffer(int id);
+            
+            int createShader(const std::string &vert, const std::string &frag);
+            bool deleteShader(int id);
 
         }
         

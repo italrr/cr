@@ -20,6 +20,7 @@
                     SHADER,
                     TEXTURE,
                     MODEL,
+                    FRAMEBUFFER,
                     NONE
                 };
             }
@@ -74,8 +75,8 @@
                 std::unordered_map<int, std::shared_ptr<Resource>> resources;
                 std::shared_ptr<CR::Result> load(const std::string &name, const std::shared_ptr<Resource> &holder);
                 std::shared_ptr<CR::Result> load(const std::shared_ptr<CR::Indexing::Index> &file, const std::shared_ptr<Resource> &holder);
-                std::shared_ptr<CR::Resource::Resource> findByName(const std::string &name);
                 std::shared_ptr<CR::Resource::Resource> findByHash(const std::string &hash);
+                std::shared_ptr<CR::Resource::Resource> findByPath(const std::string &hash);
                 std::shared_ptr<CR::Resource::Resource> findById(int id);
                 ResourceManager();
             };

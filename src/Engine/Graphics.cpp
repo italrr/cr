@@ -20,6 +20,28 @@ static std::shared_ptr<CR::Gfx::Settings> settings = std::shared_ptr<CR::Gfx::Se
 static double lastDeltaCheck = 0;
 static double currentDelta = 0;
 
+struct FrameBufferObject {
+    GLint fbId;
+    GLint textureId;
+    int width;
+    int height;
+    FrameBufferObject(GLint fbId, GLint textureId, int width, int height){
+        this->fbId = fbId;
+        this->textureId = textureId;
+        this->width = width;
+        this->height = height;
+    }
+};
+
+static std::vector<int> textureList;
+std::mutex textureListMutex;
+
+static std::vector<int> shaderList;
+std::mutex shaderListMutex;
+
+static std::vector<std::shared_ptr<FrameBufferObject>> framebufferList;
+std::mutex framebufferListMutex;
+
 double CR::getDelta(){
     return currentDelta;
 }
@@ -184,14 +206,14 @@ bool CR::Gfx::isRunning(){
 }
 
 
-int CR::Gfx::generateTexture2D(unsigned char *data, int w, int h, int format){
+int CR::Gfx::createTexture2D(unsigned char *data, int w, int h, int format){
     unsigned int texture;
     glGenTextures(1, &texture);  
     glBindTexture(GL_TEXTURE_2D, texture);  
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     GLenum glformat;
     switch(format){
         case ImageFormat::RED: {
@@ -204,19 +226,67 @@ int CR::Gfx::generateTexture2D(unsigned char *data, int w, int h, int format){
             glformat = GL_BLUE;
         } break;        
         case ImageFormat::RGB: {
-            glformat = GL_RGB;
+            glformat = GL_RGB8;
         } break;
         case ImageFormat::RGBA: {
-            glformat = GL_RGBA;
+            glformat = GL_RGBA8;
         } break;                
     }
     glTexImage2D(GL_TEXTURE_2D, 0, glformat, w, h, 0, glformat, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    std::unique_lock<std::mutex> lock(textureListMutex);
+    textureList.push_back(texture);
+    lock.unlock();
     // TODO: check OpenGL errors
     return texture;
 }
 
-int CR::Gfx::compileShader(const std::string &vert, const std::string &frag){
+bool CR::Gfx::deleteTexture2D(int id){
+    std::unique_lock<std::mutex> lock(textureListMutex);
+    for(int i = 0; i < textureList.size(); ++i){
+        if(textureList[i] == id){
+            GLuint glId = id;
+            glDeleteTextures(1, &glId);
+            textureList.erase(textureList.begin() + i);
+            return true;
+        }
+    }
+    lock.unlock();    
+    return false;
+}
+
+int CR::Gfx::createFramebuffer(int w, int h){
+    GLuint id;
+    glGenFramebuffers(1, &id);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, id);
+    GLuint texture = CR::Gfx::createTexture2D(0, w, h, ImageFormat::RGBA);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);    
+    std::unique_lock<std::mutex> lock(framebufferListMutex);
+    auto handle = std::shared_ptr<FrameBufferObject>(new FrameBufferObject(id, texture, w, h));
+    framebufferList.push_back(handle);
+    lock.unlock();    
+    // TODO: check OpenGL errors
+    return id;
+}
+
+bool CR::Gfx::deleteFramebuffer(int id){
+    std::unique_lock<std::mutex> lock(framebufferListMutex);
+    for(int i = 0; i < framebufferList.size(); ++i){
+        if(framebufferList[i]->fbId == id){
+            GLuint glId = id;
+            glDeleteFramebuffers(1, &glId);
+            deleteTexture2D(framebufferList[i]->textureId);
+            framebufferList.erase(framebufferList.begin() + i);
+            return true;
+        }
+    }
+    lock.unlock();    
+    return false;    
+}
+
+int CR::Gfx::createShader(const std::string &vert, const std::string &frag){
     int shaderId;
     std::string str;
     const char *fragSrc = frag.c_str();
@@ -274,9 +344,22 @@ int CR::Gfx::compileShader(const std::string &vert, const std::string &frag){
     glDeleteShader(vertShader);
     glDeleteShader(fragShader);
     delete buffer;
+    std::unique_lock<std::mutex> lock(shaderListMutex);
+    shaderList.push_back(shaderId);
+    lock.unlock();
     return shaderId;
 }
 
-void CR::Gfx::deleteShader(int id){
-    glDeleteProgram(id);
+bool CR::Gfx::deleteShader(int id){
+    std::unique_lock<std::mutex> lock(shaderListMutex);
+    for(int i = 0; i < shaderList.size(); ++i){
+        if(shaderList[i] == id){
+            GLuint glId = id;
+            glDeleteTextures(1, &glId);
+            shaderList.erase(shaderList.begin() + i);
+            return true;
+        }
+    }
+    lock.unlock();    
+    return false;    
 }

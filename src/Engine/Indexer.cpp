@@ -16,17 +16,15 @@ std::shared_ptr<CR::Result> CR::Indexing::Indexer::scan(const std::string &root)
             CR::File::list(path, "", CR::File::ListType::File, true, files);
             for(int j = 0; j < files.size(); ++j){
                 auto res = std::make_shared<CR::Indexing::Index>(CR::Indexing::Index());
-                // CR::log("%s\n", files[j].c_str());
                 res->read(files[j]);
                 toAdd.push_back(res);
-                // this->resources[res->hash] = res;
                 bytes += res->size;
                 ++found;
             }
         }
         std::unique_lock<std::mutex> lk(accesMutex);
         for(int i = 0; i < toAdd.size(); ++i){
-            this->resources[toAdd[i]->hash] = toAdd[i];
+            this->resources[CR::String::toLower(toAdd[i]->path)] = toAdd[i];
         }
         lk.unlock();        
         result->set(ResultType::Success);
@@ -37,7 +35,20 @@ std::shared_ptr<CR::Result> CR::Indexing::Indexer::scan(const std::string &root)
 
 std::shared_ptr<CR::Indexing::Index> CR::Indexing::Indexer::findByHash(const std::string &hash){
     std::unique_lock<std::mutex> lk(accesMutex);
-    auto it = this->resources.find(hash);
+    for(auto &it : this->resources){
+        if(it.second->hash == hash){
+            auto rs = it.second;
+            lk.unlock();
+            return rs;
+        }
+    }
+    lk.unlock();
+    return std::shared_ptr<CR::Indexing::Index>(NULL);
+}
+
+std::shared_ptr<CR::Indexing::Index> CR::Indexing::Indexer::findByPath(const std::string &path){
+    std::unique_lock<std::mutex> lk(accesMutex);
+    auto it = this->resources.find(path);
     if(it == this->resources.end()){
         lk.unlock();
         return std::shared_ptr<CR::Indexing::Index>(NULL);
@@ -47,23 +58,9 @@ std::shared_ptr<CR::Indexing::Index> CR::Indexing::Indexer::findByHash(const std
     return it->second;
 }
 
-std::shared_ptr<CR::Indexing::Index> CR::Indexing::Indexer::findByName(const std::string &name){
-    std::unique_lock<std::mutex> lk(accesMutex);
-    for(auto &it : this->resources){
-        if(it.second->fname == name){
-            auto rs = it.second;
-            lk.unlock();
-            return rs;
-        }
-    }
-    lk.unlock();
-    return std::shared_ptr<CR::Indexing::Index>(NULL); 
-}
-
 std::shared_ptr<CR::Result> CR::Indexing::Indexer::asyncFindByHash(const std::string &hash, std::function<void(std::shared_ptr<Index> &file)> callback){
     auto result = CR::makeResult(CR::ResultType::Waiting);
     result->job = CR::spawn([&, hash, result, callback](CR::Job &ctx){    
-
         auto find = this->findByHash(hash);
         if(find.get() != NULL){
             callback(find);
@@ -75,11 +72,10 @@ std::shared_ptr<CR::Result> CR::Indexing::Indexer::asyncFindByHash(const std::st
     return result;
 }
 
-std::shared_ptr<CR::Result> CR::Indexing::Indexer::asyncFindByName(const std::string &name, std::function<void(std::shared_ptr<Index> &file)> callback){
+std::shared_ptr<CR::Result> CR::Indexing::Indexer::asyncFindByPath(const std::string &path, std::function<void(std::shared_ptr<Index> &file)> callback){
     auto result = CR::makeResult(CR::ResultType::Waiting);
-    result->job = CR::spawn([&, name, result, callback](CR::Job &ctx){    
-
-        auto find = this->findByName(name);
+    result->job = CR::spawn([&, path, result, callback](CR::Job &ctx){    
+        auto find = this->findByPath(path);
         if(find.get() != NULL){
             callback(find);
             result->setSuccess();
@@ -109,12 +105,12 @@ std::shared_ptr<CR::Result> CR::Indexing::Indexer::asyncFindManyByHash(const std
     return result;
 }
 
-std::shared_ptr<CR::Result> CR::Indexing::Indexer::asyncFindManyByName(const std::vector<std::string> &names, std::function<void(std::vector<std::shared_ptr<Index>> &files)> callback){
+std::shared_ptr<CR::Result> CR::Indexing::Indexer::asyncFindManyByPath(const std::vector<std::string> &paths, std::function<void(std::vector<std::shared_ptr<Index>> &files)> callback){
     auto result = CR::makeResult(CR::ResultType::Waiting);
-    result->job = CR::spawn([&, names, result, callback](CR::Job &ctx){    
+    result->job = CR::spawn([&, paths, result, callback](CR::Job &ctx){    
         std::vector<std::shared_ptr<Index>> find;
-        for(int i = 0; i < names.size(); ++i){
-            auto c = this->findByName(names[i]);
+        for(int i = 0; i < paths.size(); ++i){
+            auto c = this->findByPath(paths[i]);
             if(c.get() == NULL){
                 return;
             }

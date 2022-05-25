@@ -89,11 +89,15 @@
         }
         
         namespace File {
-            enum ListType : int {
-                File,
-                Directory,
-                Any
-            };
+            namespace ListType {
+                enum ListType : int {
+                    File,
+                    Directory,
+                    Any
+                }; 
+            }           
+            std::string getCwd();
+
             std::string dirSep();
             std::string fixPath(const std::string &path);
             bool exists(const std::string &path);
