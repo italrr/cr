@@ -304,7 +304,10 @@ void CR::Gfx::render(){
     lastDeltaCheck = currentTime;
 
 
-    // RENDER LAYERS HERE
+    // render user layers
+
+
+    // finally render system layers onto main framebuffer(0)
 
 
 
@@ -340,6 +343,9 @@ int CR::Gfx::getHeight(){
     return size.y;
 }
 
+CR::Vec2<int> CR::Gfx::getSize(){
+    return size;
+}
 
 unsigned CR::Gfx::createTexture2D(unsigned char *data, unsigned w, unsigned h, unsigned format){
     unsigned texture;

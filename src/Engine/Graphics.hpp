@@ -140,6 +140,7 @@
             bool isRunning();
             int getWidth();
             int getHeight();
+            CR::Vec2<int> getSize();
 
             unsigned createTexture2D(unsigned char *data, unsigned w, unsigned h, unsigned format);
             bool deleteTexture2D(unsigned id);
