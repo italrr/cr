@@ -14,6 +14,17 @@
 
         namespace Gfx {
 
+            struct Settings {
+                int width;
+                int height;
+                bool resizable;
+                bool fullscreen;
+                void setParams(const std::vector<std::string> &params);
+                void readSettings(const std::string &path);
+            };
+
+            void loadSettings(const std::vector<std::string> &params, const std::string &path);
+
             namespace ImageFormat {
                 enum ImageFormat : unsigned {
                     RED, // 8 bits
@@ -37,7 +48,7 @@
                 };
                 static std::string name(unsigned type){
                     switch(type){
-                        // FLAT
+                        // FLAT (This won't draw on T_3D)
                         case SPRITE:
                             return "SPRITE";
                         case PRIMITIVE_2D:
@@ -59,7 +70,7 @@
 
             struct RenderObject {
                 unsigned type;
-                int depth; // this ignored if the renderlayer type is T_3D
+                int depth; // this ignored if it's on T_3D
                 CR::Vec3<float> position;
             };            
 
@@ -86,25 +97,14 @@
                 int order;
                 std::string tag;
                 std::vector<RenderObject*> objects;
-                void begin();
-                void end();
-                void flush(); // render to texture
+                void render(bool flush, const std::function<void(RenderLayer *layer)> &on);
             };
 
-            struct Settings {
-                int width;
-                int height;
-                bool resizable;
-                bool fullscreen;
-                void setParams(const std::vector<std::string> &params);
-                void readSettings(const std::string &path);
-            };
-
-            void loadSettings(const std::vector<std::string> &params, const std::string &path);
             
-            int addRenderLayer(int type, const std::string &tag, int order);
+            std::shared_ptr<RenderLayer> addRenderLayer(int type, const std::string &tag, int order = -1); // -1 = auto
+            std::shared_ptr<RenderLayer> getRenderLayer(int id);
+            std::shared_ptr<RenderLayer> getRenderLayer(const std::string &tag);
 
-            void setRenderLayer(int id);
 
 
             bool init();

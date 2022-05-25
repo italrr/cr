@@ -29,6 +29,11 @@ std::mutex shaderListMutex;
 static std::unordered_map<int, std::shared_ptr<CR::Gfx::FramebufferObj>> framebufferList;
 std::mutex framebufferListMutex;
 
+
+static std::unordered_map<unsigned, std::shared_ptr<CR::Gfx::RenderLayer>> internalLayers;
+static std::unordered_map<unsigned, std::shared_ptr<CR::Gfx::RenderLayer>> userLayers;
+
+
 double CR::getDelta(){
     return currentDelta;
 }
