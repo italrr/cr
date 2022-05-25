@@ -19,19 +19,46 @@ static CR::Resource::ResourceManager rscmng;
 static std::shared_ptr<CR::Gfx::Settings> settings = std::shared_ptr<CR::Gfx::Settings>(new CR::Gfx::Settings());
 static double lastDeltaCheck = 0;
 static double currentDelta = 0;
+static CR::Vec2<int> size = CR::Vec2<int>(1920, 1080);
 
+// Garbage collection
 static std::vector<int> textureList;
-std::mutex textureListMutex;
-
+static std::mutex textureListMutex;
 static std::vector<int> shaderList;
-std::mutex shaderListMutex;
-
+static std::mutex shaderListMutex;
 static std::unordered_map<int, std::shared_ptr<CR::Gfx::FramebufferObj>> framebufferList;
-std::mutex framebufferListMutex;
+static std::mutex framebufferListMutex;
 
 
-static std::unordered_map<unsigned, std::shared_ptr<CR::Gfx::RenderLayer>> internalLayers;
+static unsigned lastGenId = CR::Math::random(25, 50);
+static std::mutex genIdMutex;
+
+static unsigned genId(){
+    std::unique_lock<std::mutex> texLock(genIdMutex);
+    int id = ++lastGenId;
+    texLock.unlock();
+    return id;
+}
+
+static std::unordered_map<unsigned, std::shared_ptr<CR::Gfx::RenderLayer>> systemLayers;
 static std::unordered_map<unsigned, std::shared_ptr<CR::Gfx::RenderLayer>> userLayers;
+static std::mutex renderLayerListMutex;
+static std::mutex framebufferRenderMutex;
+static std::mutex textureRenderMutex;
+
+static std::vector<std::shared_ptr<CR::Gfx::RenderLayer>> getSortedRenderList(const std::unordered_map<unsigned, std::shared_ptr<CR::Gfx::RenderLayer>> &layers){
+    std::vector<std::shared_ptr<CR::Gfx::RenderLayer>> list;
+
+    for(auto &it : layers){
+        list.push_back(it.second);
+    }
+
+    std::sort(list.begin(), list.end(), [&](std::shared_ptr<CR::Gfx::RenderLayer> &a, std::shared_ptr<CR::Gfx::RenderLayer> &b) {
+        return a->order < a->order;
+    });       
+
+    return list;
+}
 
 
 double CR::getDelta(){
@@ -44,6 +71,116 @@ void __CR_end_input();
 void __CR_init_job();
 void __CR_end_job();
 void __CR_update_job();
+
+bool CR::Gfx::RenderLayer::init(int width, int height){
+    this->size.set(width, height);
+    this->id = genId();
+    this->fb = CR::Gfx::createFramebuffer(this->size.x, this->size.y);
+    this->order = 0;
+    this->depth = 0;
+    this->objects.clear();
+    this->type = RenderLayerType::T_3D;
+    // TODO: check errors
+    return true;
+}
+
+bool CR::Gfx::RenderLayer::init(){
+    return init(CR::Gfx::getWidth(), CR::Gfx::getHeight());    
+}
+
+void CR::Gfx::RenderLayer::setDepth(int n){
+    this->depth = n;   
+}
+
+void CR::Gfx::RenderLayer::renderOn(const std::function<void(CR::Gfx::RenderLayer *layer)> &what, bool clear){
+    if(clear){
+        this->clear();
+    }
+
+}
+
+void CR::Gfx::RenderLayer::clear(){
+    std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb->framebufferId);
+    switch(type){
+        case RenderLayerType::T_3D: {
+	        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    	    glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+	        glEnable(GL_DEPTH_TEST);
+	        glViewport(0, 0, this->size.x, this->size.y);               
+        } break;
+        case RenderLayerType::T_2D: {
+            glClear(GL_COLOR_BUFFER_BIT);
+            glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+            glDisable(GL_DEPTH_TEST);
+            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+            glViewport(0, 0, this->size.x, this->size.y);
+        } break;        
+    }
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    fblock.unlock();
+}   
+
+void CR::Gfx::RenderLayer::flush(){
+    std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
+
+
+    fblock.unlock();
+}
+
+
+
+std::shared_ptr<CR::Gfx::RenderLayer> CR::Gfx::addRenderLayer(const CR::Vec2<int> &size, int type, const std::string &tag, bool systemLayer, int order){
+    auto rl = std::shared_ptr<CR::Gfx::RenderLayer>(new CR::Gfx::RenderLayer());
+    
+    rl->init(size.x, size.y);
+    rl->type = type;
+    rl->tag = tag;
+    rl->order = order == -1 ? 0 : order;
+
+    if(systemLayer){
+        rl->order = order == -1 ?  : order;   
+        systemLayers[rl->id] = rl;
+    }else{
+
+
+    }
+
+    return rl;
+}
+
+std::shared_ptr<CR::Gfx::RenderLayer> CR::Gfx::getRenderLayer(int id, bool isSystemLayer){
+    std::unique_lock<std::mutex> rllock(renderLayerListMutex);
+    auto &list = isSystemLayer ? systemLayers : userLayers;
+    auto it = list.find(id);
+    if(it == list.end()){
+        rllock.unlock();
+        return std::shared_ptr<CR::Gfx::RenderLayer>(NULL);
+    }
+    auto rl = it->second;
+    rllock.unlock();
+    return rl;
+}
+
+std::shared_ptr<CR::Gfx::RenderLayer> CR::Gfx::getRenderLayer(const std::string &tag, bool isSystemLayer){
+    std::unique_lock<std::mutex> rllock(renderLayerListMutex);
+    auto &list = isSystemLayer ? systemLayers : userLayers;
+
+    for(auto &it : list){
+        if(it.second->tag == tag){
+            auto rl = it.second;
+            rllock.unlock();
+            return rl;
+        }
+    }
+    rllock.unlock();
+    return std::shared_ptr<CR::Gfx::RenderLayer>(NULL);
+}
+
+
+   
+
+
 
 CR::Indexing::Indexer *CR::getIndexer(){
     return &indexer;
@@ -110,6 +247,8 @@ bool CR::Gfx::init(){
     auto platformName = Core::SupportedPlatform::name(Core::PLATFORM).c_str();
     auto archName = Core::SupportedArchitecture::name(Core::ARCH).c_str();
     
+    size.x = settings->width;
+    size.y = settings->height;
     CR::log("[GFX] CAVERN RUSH | res: %dx%d | OS: %s | ARCH: %s | Mode: %s \n", settings->width, settings->height, platformName, archName, wst.c_str());
 
 
@@ -139,11 +278,6 @@ bool CR::Gfx::init(){
 
 
     CR::log("[GFX] GPU OpenGL version: %s\n", glGetString(GL_VERSION));
-
-    glViewport(0, 0, settings->width, settings->height);
-
-    glEnable(GL_DEPTH_TEST);
-
     
     signal(SIGINT, ctrlC);
 
@@ -170,6 +304,7 @@ void CR::Gfx::render(){
     lastDeltaCheck = currentTime;
 
 
+    // RENDER LAYERS HERE
 
 
 
@@ -197,9 +332,18 @@ bool CR::Gfx::isRunning(){
     return running;
 }
 
+int CR::Gfx::getWidth(){
+    return size.x;
+}
+
+int CR::Gfx::getHeight(){
+    return size.y;
+}
+
 
 unsigned CR::Gfx::createTexture2D(unsigned char *data, unsigned w, unsigned h, unsigned format){
     unsigned texture;
+    std::unique_lock<std::mutex> texLock(textureRenderMutex);
     glGenTextures(1, &texture);  
     glBindTexture(GL_TEXTURE_2D, texture);  
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -227,6 +371,7 @@ unsigned CR::Gfx::createTexture2D(unsigned char *data, unsigned w, unsigned h, u
     glTexImage2D(GL_TEXTURE_2D, 0, glformat, w, h, 0, glformat, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
+    texLock.unlock();
     std::unique_lock<std::mutex> lock(textureListMutex);
     textureList.push_back(texture);
     lock.unlock();
@@ -238,7 +383,9 @@ bool CR::Gfx::deleteTexture2D(unsigned id){
     std::unique_lock<std::mutex> lock(textureListMutex);
     for(int i = 0; i < textureList.size(); ++i){
         if(textureList[i] == id){
+            std::unique_lock<std::mutex> texLock(textureRenderMutex);
             glDeleteTextures(1, &id);
+            texLock.unlock();
             textureList.erase(textureList.begin() + i);
             return true;
         }
@@ -249,13 +396,15 @@ bool CR::Gfx::deleteTexture2D(unsigned id){
 
 std::shared_ptr<CR::Gfx::FramebufferObj> CR::Gfx::createFramebuffer(unsigned w, unsigned h){
     unsigned id;
+    std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
     glGenFramebuffers(1, &id);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, id);
     unsigned texture = CR::Gfx::createTexture2D(0, w, h, ImageFormat::RGBA);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);    
-    std::unique_lock<std::mutex> lock(framebufferListMutex);
+    fblock.unlock();
 
+    std::unique_lock<std::mutex> lock(framebufferListMutex);
     auto handle = std::shared_ptr<FramebufferObj>(new FramebufferObj(id, texture, w, h));
     framebufferList[id] = handle;
     lock.unlock();    
@@ -272,8 +421,14 @@ bool CR::Gfx::deleteFramebuffer(unsigned id){
     if(it == framebufferList.end()){
         return false;
     }
+    
+    std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
     glDeleteFramebuffers(1, &it->second->framebufferId);
+    fblock.unlock();
+
     deleteTexture2D(it->second->textureId);
+    
+    framebufferList.erase(it);
 
     lock.unlock();    
     return true;    

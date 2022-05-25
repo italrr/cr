@@ -25,6 +25,19 @@
 
             void loadSettings(const std::vector<std::string> &params, const std::string &path);
 
+            struct FramebufferObj {
+                unsigned framebufferId;
+                unsigned textureId;
+                unsigned width;
+                unsigned height;
+                FramebufferObj(unsigned framebufferId, unsigned textureId, unsigned width, unsigned height){
+                    this->framebufferId = framebufferId;
+                    this->textureId = textureId;
+                    this->width = width;
+                    this->height = height;
+                }
+            };
+
             namespace ImageFormat {
                 enum ImageFormat : unsigned {
                     RED, // 8 bits
@@ -91,19 +104,32 @@
                 };
             }
 
+            struct Camera {
+
+            };
+
             struct RenderLayer {
                 unsigned id;
                 unsigned type;
+                std::shared_ptr<FramebufferObj> fb;
                 int order;
+                int depth; // current depth (doesn't work in T_3D)
                 std::string tag;
                 std::vector<RenderObject*> objects;
-                void render(bool flush, const std::function<void(RenderLayer *layer)> &on);
+                std::shared_ptr<Camera> camera;
+                std::mutex accesMutex;
+                CR::Vec2<int> size;
+                bool init(int width, int height);
+                bool init();
+                void setDepth(int n);
+                void renderOn(const std::function<void(RenderLayer *layer)> &what, bool clear = true); // flush = immediate render, clear = clear to white
+                void clear(); 
+                void flush();
             };
-
             
-            std::shared_ptr<RenderLayer> addRenderLayer(int type, const std::string &tag, int order = -1); // -1 = auto
-            std::shared_ptr<RenderLayer> getRenderLayer(int id);
-            std::shared_ptr<RenderLayer> getRenderLayer(const std::string &tag);
+            std::shared_ptr<RenderLayer> addRenderLayer(const CR::Vec2<int> &size, int type, const std::string &tag, bool systemLayer, int order = -1); // -1 = auto
+            std::shared_ptr<RenderLayer> getRenderLayer(int id, bool isSystemLayer);
+            std::shared_ptr<RenderLayer> getRenderLayer(const std::string &tag, bool isSystemLayer);
 
 
 
@@ -112,19 +138,8 @@
             void onEnd();
             void render();
             bool isRunning();
-
-            struct FramebufferObj {
-                unsigned framebufferId;
-                unsigned textureId;
-                unsigned width;
-                unsigned height;
-                FramebufferObj(unsigned framebufferId, unsigned textureId, unsigned width, unsigned height){
-                    this->framebufferId = framebufferId;
-                    this->textureId = textureId;
-                    this->width = width;
-                    this->height = height;
-                }
-            };
+            int getWidth();
+            int getHeight();
 
             unsigned createTexture2D(unsigned char *data, unsigned w, unsigned h, unsigned format);
             bool deleteTexture2D(unsigned id);
