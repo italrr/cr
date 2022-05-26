@@ -14,14 +14,10 @@ int main(int argc, char* argv[]){
     auto gameL = CR::Gfx::addRenderLayer(CR::Gfx::getSize(), CR::Gfx::RenderLayerType::T_3D, "game", true, 0);
     auto uiL = CR::Gfx::addRenderLayer(CR::Gfx::getSize(), CR::Gfx::RenderLayerType::T_2D, "ui", true, 1);
 
+    auto indexer = CR::getIndexer();
+    while(indexer->isScanning){ CR::Gfx::render(); CR::sleep(16); } // wait for indexer to finish
 
-    auto job = CR::findJob({"indexing"});
-
-    job.get() != NULL && job->setOnEnd([&](CR::Job &ctx){
-        auto texture = CR::qLoadTexture("data/texture/converted.png");
-
-    });
-    
+    auto texture = CR::qLoadTexture("data/texture/container.png");
 
     while(CR::Gfx::isRunning()){
         CR::Gfx::render();

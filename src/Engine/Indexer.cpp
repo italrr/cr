@@ -6,6 +6,7 @@
 std::shared_ptr<CR::Result> CR::Indexing::Indexer::scan(const std::string &root){
     auto startTime = CR::ticks();
     auto result = CR::makeResult(CR::ResultType::Waiting);
+    isScanning = true;
     result->job = CR::spawn([&, root, result, startTime](CR::Job &ctx){
         std::vector<std::shared_ptr<Index>> toAdd;
         int found = 0;
@@ -29,6 +30,7 @@ std::shared_ptr<CR::Result> CR::Indexing::Indexer::scan(const std::string &root)
         lk.unlock();        
         result->set(ResultType::Success);
         CR::log("[IND] indexed %i files(s) | total %s | elapsed %.2f secs\n", found, CR::String::formatByes(bytes).c_str(), (float)(CR::ticks()-startTime)/1000);
+        isScanning = false;
     }, CR::JobSpec(true, false, true, {"indexing", root}));
     return result;
 }
@@ -129,7 +131,7 @@ void CR::Indexing::Index::read(const std::string &path){
     this->path = path;
     this->size = File::size(path);
     this->fname = File::filename(path);
-    this->hash = Hash::md5(path); // TODO: implement partial hashing
+    // this->hash = Hash::md5(path); // TODO: implement partial hashing
     this->autotag();   
 }
 

@@ -1,6 +1,6 @@
 #include "Resource.hpp"
 #include "Graphics.hpp"
-
+#include "Log.hpp"
 
 std::shared_ptr<CR::Result> CR::Resource::ResourceManager::load(const std::shared_ptr<CR::Indexing::Index> &file, const std::shared_ptr<Resource> &holder){
     if(file.get() == NULL){
@@ -14,6 +14,11 @@ std::shared_ptr<CR::Result> CR::Resource::ResourceManager::load(const std::share
     lk.unlock();
     auto r = holder->load(file);
     r->payload->write(&holder->rscId, sizeof(holder->rscId));
+
+    if(r->done && r->msg.length() > 0){
+        CR::log("%s\n", r->msg.c_str());
+    }
+
     return r;
 }
 

@@ -31,6 +31,7 @@
             struct Indexer {
                 std::string path;
                 std::mutex accesMutex;
+                bool isScanning;
                 std::unordered_map<std::string, std::shared_ptr<Index>> resources;
                 std::shared_ptr<CR::Result> scan(const std::string &root);
                 
@@ -42,6 +43,10 @@
 
                 std::shared_ptr<CR::Result> asyncFindManyByHash(const std::vector<std::string> &hashes, std::function<void(std::vector<std::shared_ptr<Index>> &files)> callback);
                 std::shared_ptr<CR::Result> asyncFindManyByPath(const std::vector<std::string> &paths, std::function<void(std::vector<std::shared_ptr<Index>> &files)> callback);
+                
+                Indexer(){
+                    isScanning = false;
+                }
             };
         }
 

@@ -33,6 +33,7 @@
                 return std::shared_ptr<CR::Gfx::Texture>(NULL);
             }
 
+
             auto result = mgnr->load(textureFile, texture);
             
             if(!result->isSuccessful()){

@@ -105,13 +105,13 @@ void CR::Gfx::RenderLayer::clear(){
     switch(type){
         case RenderLayerType::T_3D: {
 	        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    	    glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+    	    glClearColor(1.0f, 0.3f, 0.3f, 1.0f);
 	        glEnable(GL_DEPTH_TEST);
 	        glViewport(0, 0, this->size.x, this->size.y);               
         } break;
         case RenderLayerType::T_2D: {
             glClear(GL_COLOR_BUFFER_BIT);
-            glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+            glClearColor(1.0f, 0.3f, 0.3f, 1.0f);
             glDisable(GL_DEPTH_TEST);
             glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
             glViewport(0, 0, this->size.x, this->size.y);
@@ -124,6 +124,8 @@ void CR::Gfx::RenderLayer::clear(){
 void CR::Gfx::RenderLayer::flush(){
     std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
 
+
+ 
 
     fblock.unlock();
 }
@@ -308,20 +310,21 @@ CR::Gfx::Renderable *CR::Gfx::drawRenderLayer(const std::shared_ptr<RenderLayer>
         auto &region = obj->region;
         auto &origSize = obj->origSize;
 
-        GLfloat box[] = {
-            -origin.x, 					-origin.y,
-            size.x*scale.x-origin.x, 	-origin.y,
-            size.x*scale.x-origin.x, 	size.y*scale.y-origin.y,
-            -origin.x,					size.y*scale.y-origin.y,
-        };
-        GLfloat texBox[] = {
-            region.x / origSize.x,					region.y / origSize.y,
-            (region.x + region.w) / origSize.x,	 	region.y / origSize.y,
-            (region.x + region.w) / origSize.x,		(region.y + region.h) / origSize.y,
-            region.x / origSize.x,					(region.y + region.h) / origSize.y
-        };
+        // GLfloat box[] = {
+        //     -origin.x, 					-origin.y,
+        //     size.x*scale.x-origin.x, 	-origin.y,
+        //     size.x*scale.x-origin.x, 	size.y*scale.y-origin.y,
+        //     -origin.x,					size.y*scale.y-origin.y,
+        // };
+        // GLfloat texBox[] = {
+        //     region.x / origSize.x,					region.y / origSize.y,
+        //     (region.x + region.w) / origSize.x,	 	region.y / origSize.y,
+        //     (region.x + region.w) / origSize.x,		(region.y + region.h) / origSize.y,
+        //     region.x / origSize.x,					(region.y + region.h) / origSize.y
+        // };
 
-
+        // glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(float), line, GL_STATIC_DRAW);
+        
     };
 
     return self;
@@ -342,17 +345,18 @@ void CR::Gfx::render(){
     currentDelta = (currentTime - lastDeltaCheck) * 1000;
     lastDeltaCheck = currentTime;
 
-
-    // render user layers
-    for(auto &it : userLayers){
+    // render system layers
+    for(auto &it : systemLayers){
         auto &layer = it.second;
         layer->flush();
         layer->clear();
     }
 
-    // finally render system layers onto main framebuffer(0)
-
-
+    // draw layers
+    for(auto &it : systemLayers){
+        auto &layer = it.second;
+        drawRenderLayer(layer, Vec2<float>(0), getSize(), Vec2<float>(0.0f), 0.0f);
+    }    
 
     glfwSwapBuffers(static_cast<GLFWwindow*>(window));
 
@@ -397,8 +401,8 @@ unsigned CR::Gfx::createTexture2D(unsigned char *data, unsigned w, unsigned h, u
     glBindTexture(GL_TEXTURE_2D, texture);  
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     GLenum glformat;
     switch(format){
         case ImageFormat::RED: {
@@ -411,10 +415,10 @@ unsigned CR::Gfx::createTexture2D(unsigned char *data, unsigned w, unsigned h, u
             glformat = GL_BLUE;
         } break;        
         case ImageFormat::RGB: {
-            glformat = GL_RGB8;
+            glformat = GL_RGB;
         } break;
         case ImageFormat::RGBA: {
-            glformat = GL_RGBA8;
+            glformat = GL_RGBA;
         } break;                
     }
     glTexImage2D(GL_TEXTURE_2D, 0, glformat, w, h, 0, glformat, GL_UNSIGNED_BYTE, data);
