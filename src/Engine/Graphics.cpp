@@ -95,6 +95,8 @@ bool CR::Gfx::RenderLayer::init(int width, int height){
         } break;
     }
 
+    this->objects.reserve(2000);
+
     access.unlock();
 
     return true;
@@ -129,10 +131,16 @@ void CR::Gfx::RenderLayer::clear(){
 
 void CR::Gfx::RenderLayer::flush(){
     std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
-
-
- 
-
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this->fb->framebufferId);
+    // TODO: solve depth for T_2D
+    for(int i = 0; i < this->objects.size(); ++i){
+        this->objects[i]->render(this->objects[i], this);
+    }
+    for(int i = 0; i < this->objects.size(); ++i){
+        delete this->objects[i];
+    }    
+    this->objects.clear();
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     fblock.unlock();
 }
 
@@ -331,6 +339,8 @@ CR::Gfx::Renderable *CR::Gfx::drawRenderLayer(const std::shared_ptr<RenderLayer>
         // glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(float), line, GL_STATIC_DRAW);
         
     };
+
+    rl->objects.push_back(self);
 
     return self;
 }
