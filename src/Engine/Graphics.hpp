@@ -165,8 +165,6 @@
             unsigned createTexture2D(unsigned char *data, unsigned w, unsigned h, unsigned format);
             bool deleteTexture2D(unsigned id);
             
-            // Note: only use framebuffers directly if it's absolutely necessary, 
-            // for everything else, use renderlayer directly
             std::shared_ptr<FramebufferObj> createFramebuffer(unsigned w, unsigned h);
             bool deleteFramebuffer(unsigned id);
             

@@ -30,24 +30,24 @@ std::shared_ptr<CR::Result> CR::Gfx::Texture::load(const std::shared_ptr<CR::Ind
 
     result->setSuccess(String::format("Loaded Texture %s | Size %ix%i | Channels %i", file->path.c_str(), width, height, nrChannels));
 
+    // TODO: error checking
+
     return result;
 }
 
 std::shared_ptr<CR::Result> CR::Gfx::Texture::unload(){
     auto result = CR::makeResult(CR::ResultType::Waiting);
-
-    if(textureId == 0){
+    if(this->textureId == 0){
         result->setSuccess();
         return result;
     }else{
         if(Gfx::deleteTexture2D(this->textureId)){
-            textureId = 0;
+            this->textureId = 0;
+            this->rscLoaded = false;
             result->setSuccess();
         }else{
             result->setFailure();
         }
     }
-
-
     return result;
 }
