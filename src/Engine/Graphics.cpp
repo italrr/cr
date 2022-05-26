@@ -7,10 +7,11 @@
 #include <memory>
 #include <GLFW/glfw3.h>
 
+#include "Graphics.hpp"
 #include "3rdparty/glad.h"
 #include "Tools.hpp"
 #include "Log.hpp"
-#include "Graphics.hpp"
+#include "Shader.hpp"
 
 static GLFWwindow *window = NULL;
 static bool running = true;
@@ -45,6 +46,7 @@ static std::unordered_map<unsigned, std::shared_ptr<CR::Gfx::RenderLayer>> userL
 static std::mutex renderLayerListMutex;
 static std::mutex framebufferRenderMutex;
 static std::mutex textureRenderMutex;
+static std::mutex shaderUseMutex;
 
 static std::vector<std::shared_ptr<CR::Gfx::RenderLayer>> getSortedRenderList(const std::unordered_map<unsigned, std::shared_ptr<CR::Gfx::RenderLayer>> &layers){
     std::vector<std::shared_ptr<CR::Gfx::RenderLayer>> list;
@@ -73,6 +75,9 @@ void __CR_end_job();
 void __CR_update_job();
 
 bool CR::Gfx::RenderLayer::init(int width, int height){
+
+    std::unique_lock<std::mutex> access(this->accesMutex);
+
     this->size.set(width, height);
     this->id = genId();
     this->fb = CR::Gfx::createFramebuffer(this->size.x, this->size.y);
@@ -80,7 +85,18 @@ bool CR::Gfx::RenderLayer::init(int width, int height){
     this->depth = 0;
     this->objects.clear();
     this->type = RenderLayerType::T_3D;
-    // TODO: check errors
+
+    switch(this->type){
+        case RenderLayerType::T_3D: {
+            this->projection = CR::Math::perspective(45.0f, static_cast<float>(this->size.x) /  static_cast<float>(this->size.y), 0.1f, 100.0f);
+        } break;
+        case RenderLayerType::T_2D: {
+            this->projection = CR::Math::orthogonal(0, size.x, 0, size.y);
+        } break;
+    }
+
+    access.unlock();
+
     return true;
 }
 
@@ -93,6 +109,7 @@ void CR::Gfx::RenderLayer::setDepth(int n){
 }
 
 void CR::Gfx::RenderLayer::renderOn(const std::function<void(CR::Gfx::RenderLayer *layer)> &what, bool clear){
+    what(this);
     if(clear){
         this->clear();
     }
@@ -102,21 +119,10 @@ void CR::Gfx::RenderLayer::renderOn(const std::function<void(CR::Gfx::RenderLaye
 void CR::Gfx::RenderLayer::clear(){
     std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb->framebufferId);
-    switch(type){
-        case RenderLayerType::T_3D: {
-	        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    	    glClearColor(1.0f, 0.3f, 0.3f, 1.0f);
-	        glEnable(GL_DEPTH_TEST);
-	        glViewport(0, 0, this->size.x, this->size.y);               
-        } break;
-        case RenderLayerType::T_2D: {
-            glClear(GL_COLOR_BUFFER_BIT);
-            glClearColor(1.0f, 0.3f, 0.3f, 1.0f);
-            glDisable(GL_DEPTH_TEST);
-            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-            glViewport(0, 0, this->size.x, this->size.y);
-        } break;        
-    }
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(1.0f, 0.3f, 0.3f, 1.0f);
+    glEnable(GL_DEPTH_TEST);
+    glViewport(0, 0, this->size.x, this->size.y);   
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     fblock.unlock();
 }   
@@ -144,8 +150,7 @@ std::shared_ptr<CR::Gfx::RenderLayer> CR::Gfx::addRenderLayer(const CR::Vec2<int
         rl->order = order == -1 ?  : order;   
         systemLayers[rl->id] = rl;
     }else{
-
-
+        userLayers[rl->id] = rl;
     }
 
     return rl;
@@ -500,6 +505,7 @@ unsigned CR::Gfx::createShader(const std::string &vert, const std::string &frag)
     char *buffer = new char[logLength];
     memset(buffer, 0, logLength);
     // compile vertex
+    std::unique_lock<std::mutex> shaderlk(shaderUseMutex);
     glShaderSource(vertShader, 1, &vertSrc, NULL);
     glCompileShader(vertShader);
     glGetShaderiv(vertShader, GL_COMPILE_STATUS, &gResult);
@@ -544,6 +550,7 @@ unsigned CR::Gfx::createShader(const std::string &vert, const std::string &frag)
     // clean
     glDeleteShader(vertShader);
     glDeleteShader(fragShader);
+    shaderlk.unlock();
     delete buffer;
     std::unique_lock<std::mutex> lock(shaderListMutex);
     shaderList.push_back(shaderId);
@@ -555,11 +562,107 @@ bool CR::Gfx::deleteShader(unsigned id){
     std::unique_lock<std::mutex> lock(shaderListMutex);
     for(int i = 0; i < shaderList.size(); ++i){
         if(shaderList[i] == id){
-            glDeleteTextures(1, &id);
+            std::unique_lock<std::mutex> shaderlk(shaderUseMutex);
+            glDeleteShader(id);
+            shaderlk.unlock();
             shaderList.erase(shaderList.begin() + i);
             return true;
         }
     }
     lock.unlock();    
     return false;    
+}
+
+unsigned CR::Gfx::findShaderAttr(unsigned shaderId, const std::string &name){
+    unsigned locId = 0;
+    std::unique_lock<std::mutex> lock(shaderUseMutex);
+    glUseProgram(shaderId);
+    locId = glGetUniformLocation(shaderId, name.c_str());
+    glUseProgram(0);
+    lock.unlock();
+    return locId;
+}
+
+bool CR::Gfx::applyShader(unsigned shaderId, const std::unordered_map<std::string, unsigned> &loc, const std::unordered_map<std::string, std::shared_ptr<CR::Gfx::ShaderAttr>> &attrs){
+    glUseProgram(shaderId);
+    if(attrs.size() == 0){
+        return false;
+    }
+    
+    for(auto &it : attrs){
+        unsigned attrLoc = loc.find(it.first)->second;
+        switch(it.second->type){
+            case CR::Gfx::ShaderAttrType::FLOAT: {
+                auto attrf = std::static_pointer_cast<CR::Gfx::ShaderAttrFloat>(it.second);
+                glUniform1f(attrLoc, attrf->n);
+            } break;
+            case CR::Gfx::ShaderAttrType::INT: {
+                auto attri = std::static_pointer_cast<CR::Gfx::ShaderAttrInt>(it.second);
+                glUniform1i(attrLoc, attri->n);
+            } break;                 
+            case CR::Gfx::ShaderAttrType::COLOR: {
+                auto attrc = std::static_pointer_cast<CR::Gfx::ShaderAttrColor>(it.second);
+                float v[4] = {attrc->color.r, attrc->color.g, attrc->color.b};
+                glUniform3fv(attrLoc, 1, v);
+            } break;
+            case CR::Gfx::ShaderAttrType::VEC2: {
+                auto attrvec = std::static_pointer_cast<CR::Gfx::ShaderAttrVec2>(it.second);
+                float v[2] = {attrvec->vec.x, attrvec->vec.y};
+                glUniform2fv(attrLoc, 1, v);
+            } break;     
+            case CR::Gfx::ShaderAttrType::VEC3: {
+                auto attrvec = std::static_pointer_cast<CR::Gfx::ShaderAttrVec3>(it.second);
+                float v[3] = {attrvec->vec.x, attrvec->vec.y, attrvec->vec.z};
+                glUniform3fv(attrLoc, 1, v);
+            } break; 
+            case CR::Gfx::ShaderAttrType::MAT4: {
+                auto attrmat = std::static_pointer_cast<CR::Gfx::ShaderAttrMat4>(it.second);
+                glUniformMatrix4fv(attrLoc, 1, GL_FALSE, attrmat->mat.mat);                        
+            } break;                                                           
+            default: {
+                CR::log("[GFX] undefined shader type to apply '%s'\n", it.second->type);
+                return false;
+            } break;
+        }
+    }
+    return true;
+}
+
+
+
+void CR::Gfx::Camera::setPosition(const CR::Vec3<float> &pos){
+    this->position = pos;    
+}
+
+void CR::Gfx::Camera::setFront(const CR::Vec3<float> &front){
+    this->front = front;
+    this->update();
+}
+
+void CR::Gfx::Camera::update(){
+    front.x = Math::cos(Math::rads(yaw)) * Math::cos(Math::rads(pitch));
+    front.y = Math::sin(Math::rads(pitch));
+    front.z = Math::sin(Math::rads(yaw)) * Math::cos(Math::rads(pitch));
+    front = front.normalize();
+    right = front.cross(this->worldUp).normalize();  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+    up = right.cross(front).normalize();
+}
+
+void CR::Gfx::Camera::setUp(const CR::Vec3<float> &up){
+    this->worldUp = up;
+    this->update();
+}
+
+void CR::Gfx::Camera::init(){
+    this->yaw = -90.0f;
+    this->pitch = 0.0f;
+    this->up = CR::Vec3<float>(0.0f, 1.0f, 0.0f);
+    this->worldUp = this->up;
+    this->position = CR::Vec3<float>(0.0f, 0.0f, 0.0f);
+    this->front = CR::Vec3<float>(0.0f, 0.0f, -1.0f);
+    update();
+}
+
+CR::Mat<4, 4, float> CR::Gfx::Camera::getView(){
+    return Math::lookAt(position, position + front, up);
 }

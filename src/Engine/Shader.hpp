@@ -134,9 +134,12 @@
                     rscType = CR::Resource::ResourceType::SHADER;
                     shaderId = 0;
                 }
+                std::unordered_map<std::string, unsigned> shAttrs;
+                void findAttrs(const std::vector<std::string> &list);
                 std::shared_ptr<CR::Result> unload();
                 std::shared_ptr<CR::Result> load(const std::shared_ptr<CR::Indexing::Index> &file);
             };              
+            
         }
 
     }

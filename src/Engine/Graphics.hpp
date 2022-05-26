@@ -81,8 +81,82 @@
                 }
             }
 
+            namespace TextureRole {
+                enum TextureRole : int {
+                    DIFFUSE,
+                    SPECULAR,
+					NORMAL,
+					HEIGHT,
+                    NONE
+                };
+            }
+
+            struct BindTexture {
+                unsigned textureId;
+                int role;
+				BindTexture(unsigned textureId, int role){
+					this->textureId = textureId;
+					this->role = role;
+				}
+                BindTexture(){
+                    this->role = TextureRole::NONE;
+                }
+            };
+
+			namespace MaterialMode {
+				enum MaterialMode : int {
+					DIFFUSE = 1,
+					SPECULAR = 2,
+					NORMAL = 4,
+					HEIGHT = 8,
+				};
+			}
+
+			struct Material {
+				int diffuse;
+				int specular;
+				float shininess;
+				Material(){
+
+				}
+				Material(int diffuse, int specular, float shininess){
+					this->diffuse = diffuse;
+					this->specular = specular;
+					this->shininess = shininess;
+				}
+			};
+
+            struct Transform {
+				int matMode;
+				CR::Gfx::Material material;
+				CR::Mat<4, 4, float> model;
+				CR::Vec3<float> position;
+				CR::Color color;
+				Transform(){
+					this->model = CR::MAT4Identity;
+					this->matMode = 0;
+					enMatMode(Gfx::MaterialMode::DIFFUSE);
+					enMatMode(Gfx::MaterialMode::SPECULAR);
+					enMatMode(Gfx::MaterialMode::NORMAL);
+					enMatMode(Gfx::MaterialMode::HEIGHT);
+				}
+				void enMatMode(int mode){
+					this->matMode = this->matMode | (1 << mode);
+				}
+				void disMatMode(int mode){
+					this->matMode = this->matMode & (~mode);
+				}
+				void resetMatMode(){
+					this->matMode = 0;
+				}
+				bool hasMatMode(int mode){
+					return this->matMode & (1 << mode); 
+				}
+            };
+
             struct RenderLayer;
             struct Renderable {
+                Transform transform;
                 unsigned type;
                 void *self;
                 std::function<void(Renderable*, RenderLayer *rl)> render;
@@ -123,7 +197,19 @@
             }
 
             struct Camera {
-
+				CR::Vec3<float> position;
+				CR::Vec3<float> front;
+				CR::Vec3<float> up;
+				CR::Vec3<float> right;
+				CR::Vec3<float> worldUp;
+				float yaw;
+				float pitch;
+				void setPosition(const CR::Vec3<float> &pos);
+				void setFront(const CR::Vec3<float> &front);
+				void update();
+				void setUp(const CR::Vec3<float> &up);
+				void init();
+				CR::Mat<4, 4, float> getView();
             };
 
             struct RenderLayer {
@@ -134,7 +220,8 @@
                 int depth; // current depth (doesn't work in T_3D)
                 std::string tag;
                 std::vector<Renderable*> objects;
-                std::shared_ptr<Camera> camera;
+                CR::Gfx::Camera camera;
+                CR::Mat<4, 4, float> projection;
                 std::mutex accesMutex;
                 CR::Vec2<int> size;
                 void add(const std::vector<Renderable*> &objs);
@@ -150,8 +237,6 @@
             std::shared_ptr<RenderLayer> getRenderLayer(int id, bool isSystemLayer);
             std::shared_ptr<RenderLayer> getRenderLayer(const std::string &tag, bool isSystemLayer);
             CR::Gfx::Renderable *drawRenderLayer(const std::shared_ptr<RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle);        
-
-
 
             bool init();
             void end();
@@ -169,6 +254,9 @@
             bool deleteFramebuffer(unsigned id);
             
             unsigned createShader(const std::string &vert, const std::string &frag);
+            unsigned findShaderAttr(unsigned shaderId, const std::string &name);
+            struct ShaderAttr;
+            bool applyShader(unsigned shaderId, const std::unordered_map<std::string, unsigned> &loc, const std::unordered_map<std::string, std::shared_ptr<CR::Gfx::ShaderAttr>> &attrs);
             bool deleteShader(unsigned id);
 
         }

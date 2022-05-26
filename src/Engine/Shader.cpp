@@ -62,3 +62,9 @@ std::shared_ptr<CR::Result> CR::Gfx::Shader::unload(){
     }
     return result;
 }
+
+void CR::Gfx::Shader::findAttrs(const std::vector<std::string> &list){
+    for(unsigned i = 0; i < list.size(); ++i){
+        this->shAttrs[list[i]] = CR::Gfx::findShaderAttr(this->shaderId, list[i].c_str());
+    }
+}
