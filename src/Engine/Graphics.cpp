@@ -288,6 +288,45 @@ bool CR::Gfx::init(){
     return true;
 }
 
+CR::Gfx::Renderable *CR::Gfx::drawRenderLayer(const std::shared_ptr<RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle){
+    CR::Gfx::Renderable2D *self = new CR::Gfx::Renderable2D(); // layer's flush is in charge of deleting this
+
+    self->position = pos;
+    self->size = size;
+    self->origin = origin;
+    self->angle = angle;
+    self->origSize = rl->size;
+    self->region = CR::Rect<float>(0, 0, size.x, size.y);
+    self->type = RenderableType::TEXTURE;
+    self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
+        auto *obj = static_cast<Renderable2D*>(renobj);
+
+        auto &position = obj->position;
+        auto &size = obj->size;
+        auto &scale = obj->scale;
+        auto &origin = obj->origin;
+        auto &region = obj->region;
+        auto &origSize = obj->origSize;
+
+        GLfloat box[] = {
+            -origin.x, 					-origin.y,
+            size.x*scale.x-origin.x, 	-origin.y,
+            size.x*scale.x-origin.x, 	size.y*scale.y-origin.y,
+            -origin.x,					size.y*scale.y-origin.y,
+        };
+        GLfloat texBox[] = {
+            region.x / origSize.x,					region.y / origSize.y,
+            (region.x + region.w) / origSize.x,	 	region.y / origSize.y,
+            (region.x + region.w) / origSize.x,		(region.y + region.h) / origSize.y,
+            region.x / origSize.x,					(region.y + region.h) / origSize.y
+        };
+
+
+    };
+
+    return self;
+}
+
 void CR::Gfx::render(){
     if(!running){
         return;
@@ -305,7 +344,11 @@ void CR::Gfx::render(){
 
 
     // render user layers
-
+    for(auto &it : userLayers){
+        auto &layer = it.second;
+        layer->flush();
+        layer->clear();
+    }
 
     // finally render system layers onto main framebuffer(0)
 

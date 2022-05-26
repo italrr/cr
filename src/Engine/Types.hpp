@@ -249,6 +249,84 @@
 
         };  
 
+        // copy pasted vec4
+        template<typename T>
+        struct Rect {
+            T x, y, w, h;
+            
+            Rect(T x, T y, T w, T h){
+                set(x, y, w, h);
+            }
+            
+            Rect(T c){
+                set(c);
+            }
+            
+            Rect(){
+                set(0);
+            }
+
+			Rect(const CR::Rect<T> &vec){
+				this->x = vec.x;
+				this->y = vec.y;
+				this->w = vec.w;
+				this->h = vec.h;
+			}			
+            
+            void set(T x, T y, T w, T h){
+                this->x = x; this->y = y; this->w = w; this->h = h;
+            }
+
+            void set(T c){
+                this->x = c;
+                this->y = c;
+                this->w = w;
+				this->h = h;
+            }
+
+			CR::Rect<T> operator*(const CR::Rect<T> &vec) const{
+				return CR::Rect<T>(this->x * vec.x, this->y * vec.y, this->w * vec.w, this->h * vec.h);
+			}
+
+			CR::Rect<T> operator/(const CR::Rect<T> &vec) const{
+				return CR::Rect<T>(this->x / vec.x, this->y / vec.y, this->w / vec.w, this->h / vec.h);
+			}
+
+			CR::Rect<T> operator+(const CR::Rect<T> &vec) const{
+				return CR::Rect<T>(this->x + vec.x, this->y + vec.y, this->w + vec.w, this->h + vec.h);
+			}
+
+			CR::Rect<T> operator-(const CR::Rect<T> &vec) const{
+				return CR::Rect<T>(this->x - vec.x, this->y - vec.y, this->w - vec.w, this->h - vec.h);
+			}									
+
+			CR::Rect<T> normalize() const{
+				CR::Rect<T> normalized = *this;
+				float sqr = normalized.x * normalized.x + normalized.y * normalized.y + normalized.w * normalized.w;
+				if(sqr == 1 || sqr == 0){
+					return normalized;
+				}
+				float invrt = 1.0f/CR::Math::sqrt(sqr);
+				normalized.x *= invrt;
+				normalized.y *= invrt;
+				normalized.w *= invrt;				
+				return normalized;
+			}
+
+			float dot(const CR::Rect<T> &vec) const{
+				return this->x * vec.x + this->y * vec.y + this->w * vec.w + this->h * vec.h;
+			}
+
+			CR::Rect<T> cross(const CR::Rect<T> &vec) const{
+				CR::Rect<T> out;
+				out.x = this->y*vec.w - this->z*vec.y;
+				out.y = this->z*vec.x - this->x*vec.w;
+				out.z = this->x*vec.y - this->y*vec.x;
+				return out;
+			}
+
+        };         
+
 		static const float MAT4FIdentity[16] = {
 			1, 0, 0, 0,
 			0, 1, 0, 0,

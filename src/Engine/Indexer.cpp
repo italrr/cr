@@ -48,7 +48,7 @@ std::shared_ptr<CR::Indexing::Index> CR::Indexing::Indexer::findByHash(const std
 
 std::shared_ptr<CR::Indexing::Index> CR::Indexing::Indexer::findByPath(const std::string &path){
     std::unique_lock<std::mutex> lk(accesMutex);
-    auto it = this->resources.find(path);
+    auto it = this->resources.find(CR::File::fixPath(path));
     if(it == this->resources.end()){
         lk.unlock();
         return std::shared_ptr<CR::Indexing::Index>(NULL);

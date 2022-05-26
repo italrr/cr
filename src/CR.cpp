@@ -1,5 +1,7 @@
 #include "Engine/Log.hpp"
 #include "Engine/Graphics.hpp"
+#include "Engine/Texture.hpp"
+#include "Engine/Job.hpp"
 
 
 int main(int argc, char* argv[]){
@@ -11,6 +13,15 @@ int main(int argc, char* argv[]){
     // setup gfx
     auto gameL = CR::Gfx::addRenderLayer(CR::Gfx::getSize(), CR::Gfx::RenderLayerType::T_3D, "game", true, 0);
     auto uiL = CR::Gfx::addRenderLayer(CR::Gfx::getSize(), CR::Gfx::RenderLayerType::T_2D, "ui", true, 1);
+
+
+    auto job = CR::findJob({"indexing"});
+
+    job.get() != NULL && job->setOnEnd([&](CR::Job &ctx){
+        auto texture = CR::qLoadTexture("data/texture/converted.png");
+
+    });
+    
 
     while(CR::Gfx::isRunning()){
         CR::Gfx::render();

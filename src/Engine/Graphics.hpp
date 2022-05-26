@@ -48,10 +48,10 @@
                 };
             }
 
-            namespace RenderObjectType {
-                enum RenderObjectType : unsigned {
+            namespace RenderableType {
+                enum RenderableType : unsigned {
                     // FLAT
-                    SPRITE, // aka texture
+                    TEXTURE,
                     PRIMITIVE_2D,
                     TEXT,
                     // 3D
@@ -62,8 +62,8 @@
                 static std::string name(unsigned type){
                     switch(type){
                         // FLAT (This won't draw on T_3D)
-                        case SPRITE:
-                            return "SPRITE";
+                        case TEXTURE:
+                            return "TEXTURE";
                         case PRIMITIVE_2D:
                             return "PRIMITIVE_2D";
                         case TEXT:
@@ -81,10 +81,28 @@
                 }
             }
 
-            struct RenderObject {
+            struct RenderLayer;
+            struct Renderable {
                 unsigned type;
-                int depth; // this ignored if it's on T_3D
-                CR::Vec3<float> position;
+                void *self;
+                std::function<void(Renderable*, RenderLayer *rl)> render;
+            };
+
+            struct Renderable2D : Renderable {
+                Vec2<float> position;
+                Vec2<int> size;
+                Vec2<float> origin;
+                Vec2<float> scale;
+                Vec2<int> origSize;
+                Rect<float> region;                
+                float angle;
+                Renderable2D(){
+                    scale = CR::Vec2<float>(1.0f);
+                }
+            };
+
+            struct Renderable3D : Renderable {
+                // transformation
             };            
 
             namespace RenderLayerType {
@@ -115,10 +133,11 @@
                 int order;
                 int depth; // current depth (doesn't work in T_3D)
                 std::string tag;
-                std::vector<RenderObject*> objects;
+                std::vector<Renderable*> objects;
                 std::shared_ptr<Camera> camera;
                 std::mutex accesMutex;
                 CR::Vec2<int> size;
+                void add(const std::vector<Renderable*> &objs);
                 bool init(int width, int height);
                 bool init();
                 void setDepth(int n);
@@ -130,6 +149,7 @@
             std::shared_ptr<RenderLayer> addRenderLayer(const CR::Vec2<int> &size, int type, const std::string &tag, bool systemLayer, int order = -1); // -1 = auto
             std::shared_ptr<RenderLayer> getRenderLayer(int id, bool isSystemLayer);
             std::shared_ptr<RenderLayer> getRenderLayer(const std::string &tag, bool isSystemLayer);
+            CR::Gfx::Renderable *drawRenderLayer(const std::shared_ptr<RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle);        
 
 
 
