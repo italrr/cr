@@ -112,6 +112,13 @@
 				};
 			}
 
+            namespace MeshType {
+                enum MeshType : unsigned {
+                    PRIMITIVE, // verts only
+                    COMPLEX // verts & indices
+                };
+            }
+
 			struct Material {
 				int diffuse;
 				int specular;
@@ -125,6 +132,13 @@
 					this->shininess = shininess;
 				}
 			};
+
+            struct MeshData {
+                unsigned vbo;
+                unsigned vao;
+                unsigned ebo;
+            };
+            
 
             struct Transform {
 				int matMode;
@@ -152,6 +166,40 @@
 				bool hasMatMode(int mode){
 					return this->matMode & (1 << mode); 
 				}
+            };
+
+            struct Vertex {
+                CR::Vec3<float> position;
+                CR::Vec3<float> normal;
+                CR::Vec2<float> texCoords;
+				CR::Vec3<float> tangent;
+				CR::Vec3<float> bitangent;
+				// bone data
+				unsigned int id[4];
+				float weight[4];
+				Vertex(){
+                    memset(this->id, 0, 4 * sizeof(id[0]));
+                    memset(this->weight, 0, 4 * sizeof(weight[0]));                    
+                }
+				void setBoneData(unsigned int bId, float weight){
+                    for(unsigned int i = 0; i < 4; ++i){ 
+                        if(this->weight[i] == 0.0f){
+                            this->id[i] = bId;
+                            this->weight[i] = weight;
+                            return;
+                        }
+                    }                    
+                }           
+            };
+
+            struct Mesh {
+                std::vector<CR::Gfx::Vertex> vertices;
+                const std::vector<unsigned int> indices;
+                unsigned nverts;
+                unsigned strides;
+                unsigned vbo;
+                unsigned vao;
+                unsigned ebo;
             };
 
             struct RenderLayer;

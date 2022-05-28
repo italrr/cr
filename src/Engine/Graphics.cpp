@@ -42,7 +42,7 @@ static unsigned genId(){
 }
 
 static std::unordered_map<unsigned, std::shared_ptr<CR::Gfx::RenderLayer>> systemLayers;
-static std::unordered_map<unsigned, std::shared_ptr<CR::Gfx::RenderLayer>> userLayers;
+static std::unordered_map<unsigned, std::shared_ptr<CR::Gfx::RenderLayer>> userLayers; // TODO: create unload procedure
 static std::mutex renderLayerListMutex;
 static std::mutex framebufferRenderMutex;
 static std::mutex textureRenderMutex;
@@ -107,15 +107,18 @@ bool CR::Gfx::RenderLayer::init(){
 }
 
 void CR::Gfx::RenderLayer::setDepth(int n){
+    std::unique_lock<std::mutex> access(this->accesMutex);
     this->depth = n;   
+    access.unlock();
 }
 
 void CR::Gfx::RenderLayer::renderOn(const std::function<void(CR::Gfx::RenderLayer *layer)> &what, bool clear){
-    what(this);
+    std::unique_lock<std::mutex> access(this->accesMutex);
     if(clear){
         this->clear();
     }
-
+    access.unlock();    
+    what(this);
 }
 
 void CR::Gfx::RenderLayer::clear(){
@@ -164,6 +167,51 @@ std::shared_ptr<CR::Gfx::RenderLayer> CR::Gfx::addRenderLayer(const CR::Vec2<int
     return rl;
 }
 
+
+CR::Gfx::Renderable *CR::Gfx::drawRenderLayer(const std::shared_ptr<RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle){
+    CR::Gfx::Renderable2D *self = new CR::Gfx::Renderable2D(); // layer's flush is in charge of deleting this
+
+    self->position = pos;
+    self->size = size;
+    self->origin = origin;
+    self->angle = angle;
+    self->origSize = rl->size;
+    self->region = CR::Rect<float>(0, 0, size.x, size.y);
+    self->type = RenderableType::TEXTURE;
+    self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
+        auto *obj = static_cast<Renderable2D*>(renobj);
+
+        auto &position = obj->position;
+        auto &size = obj->size;
+        auto &scale = obj->scale;
+        auto &origin = obj->origin;
+        auto &region = obj->region;
+        auto &origSize = obj->origSize;
+
+        // GLfloat box[] = {
+        //     -origin.x, 					-origin.y,
+        //     size.x*scale.x-origin.x, 	-origin.y,
+        //     size.x*scale.x-origin.x, 	size.y*scale.y-origin.y,
+        //     -origin.x,					size.y*scale.y-origin.y,
+        // };
+        // GLfloat texBox[] = {
+        //     region.x / origSize.x,					region.y / origSize.y,
+        //     (region.x + region.w) / origSize.x,	 	region.y / origSize.y,
+        //     (region.x + region.w) / origSize.x,		(region.y + region.h) / origSize.y,
+        //     region.x / origSize.x,					(region.y + region.h) / origSize.y
+        // };
+
+        // glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(float), line, GL_STATIC_DRAW);
+        
+    };
+
+    rl->objects.push_back(self);
+
+    return self;
+}
+
+
+
 std::shared_ptr<CR::Gfx::RenderLayer> CR::Gfx::getRenderLayer(int id, bool isSystemLayer){
     std::unique_lock<std::mutex> rllock(renderLayerListMutex);
     auto &list = isSystemLayer ? systemLayers : userLayers;
@@ -191,11 +239,6 @@ std::shared_ptr<CR::Gfx::RenderLayer> CR::Gfx::getRenderLayer(const std::string 
     rllock.unlock();
     return std::shared_ptr<CR::Gfx::RenderLayer>(NULL);
 }
-
-
-   
-
-
 
 CR::Indexing::Indexer *CR::getIndexer(){
     return &indexer;
@@ -301,48 +344,6 @@ bool CR::Gfx::init(){
     indexer.scan("data/");
 
     return true;
-}
-
-CR::Gfx::Renderable *CR::Gfx::drawRenderLayer(const std::shared_ptr<RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle){
-    CR::Gfx::Renderable2D *self = new CR::Gfx::Renderable2D(); // layer's flush is in charge of deleting this
-
-    self->position = pos;
-    self->size = size;
-    self->origin = origin;
-    self->angle = angle;
-    self->origSize = rl->size;
-    self->region = CR::Rect<float>(0, 0, size.x, size.y);
-    self->type = RenderableType::TEXTURE;
-    self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
-        auto *obj = static_cast<Renderable2D*>(renobj);
-
-        auto &position = obj->position;
-        auto &size = obj->size;
-        auto &scale = obj->scale;
-        auto &origin = obj->origin;
-        auto &region = obj->region;
-        auto &origSize = obj->origSize;
-
-        // GLfloat box[] = {
-        //     -origin.x, 					-origin.y,
-        //     size.x*scale.x-origin.x, 	-origin.y,
-        //     size.x*scale.x-origin.x, 	size.y*scale.y-origin.y,
-        //     -origin.x,					size.y*scale.y-origin.y,
-        // };
-        // GLfloat texBox[] = {
-        //     region.x / origSize.x,					region.y / origSize.y,
-        //     (region.x + region.w) / origSize.x,	 	region.y / origSize.y,
-        //     (region.x + region.w) / origSize.x,		(region.y + region.h) / origSize.y,
-        //     region.x / origSize.x,					(region.y + region.h) / origSize.y
-        // };
-
-        // glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(float), line, GL_STATIC_DRAW);
-        
-    };
-
-    rl->objects.push_back(self);
-
-    return self;
 }
 
 void CR::Gfx::render(){
