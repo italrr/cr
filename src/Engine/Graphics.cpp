@@ -63,6 +63,9 @@ static std::vector<std::shared_ptr<CR::Gfx::RenderLayer>> getSortedRenderList(co
 }
 
 
+static std::shared_ptr<CR::Gfx::Shader> shBRect = std::shared_ptr<CR::Gfx::Shader>(NULL);
+
+
 double CR::getDelta(){
     return currentDelta;
 }
@@ -73,6 +76,11 @@ void __CR_end_input();
 void __CR_init_job();
 void __CR_end_job();
 void __CR_update_job();
+
+CR::Gfx::Vertex::Vertex(){
+    memset(this->id, 0, 4 * sizeof(id[0]));
+    memset(this->weight, 0, 4 * sizeof(weight[0]));   
+}
 
 bool CR::Gfx::RenderLayer::init(int width, int height){
 
@@ -343,6 +351,10 @@ bool CR::Gfx::init(){
     __CR_init_job();
     indexer.scan("data/");
 
+    while(indexer.isScanning){ CR::Gfx::render(); CR::sleep(16); } // wait for indexer to finish
+
+    shBRect = qLoadShader("data/shader/b_rect_texture_f.glsl");
+
     return true;
 }
 
@@ -501,6 +513,91 @@ bool CR::Gfx::deleteFramebuffer(unsigned id){
 
     lock.unlock();    
     return true;    
+}
+
+
+CR::Gfx::MeshData CR::Gfx::createPrimMesh(const std::vector<float> &vertices, unsigned strides){
+
+    unsigned int vbo;
+    unsigned int vao;
+    unsigned int ebo;
+
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);  
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
+    
+    glBindVertexArray(vao);
+    
+    // position
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, strides * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    
+    // color
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, strides * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    
+    // texture coordinates
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, strides * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    MeshData md;
+    md.vbo = vbo;
+    md.vao = vao;
+    md.ebo = ebo;
+
+    return md;
+}
+
+CR::Gfx::MeshData CR::Gfx::createMesh(const std::vector<CR::Gfx::Vertex> &vertices, const std::vector<unsigned int> &indices){
+    unsigned int vao, vbo, ebo;
+
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+    glGenBuffers(1, &ebo);
+  
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);  
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+
+    // positions
+    glEnableVertexAttribArray(0);	
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+    // normals
+    glEnableVertexAttribArray(1);	
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+    // texture coords
+    glEnableVertexAttribArray(2);	
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
+    // tangent
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tangent));
+    // bitangent
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bitangent));
+    // ids
+    glEnableVertexAttribArray(5);
+    glVertexAttribIPointer(5, 4, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, id));
+    // weights
+    glEnableVertexAttribArray(6);
+    glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, weight));
+
+    glBindVertexArray(0);        
+
+    MeshData md;
+    md.vao = vao;
+    md.vbo = vbo;
+    md.ebo = ebo;
+    return md;
+}
+
+bool CR::Gfx::deleteMesh(CR::Gfx::MeshData &md){
+    
 }
 
 unsigned CR::Gfx::createShader(const std::string &vert, const std::string &frag){

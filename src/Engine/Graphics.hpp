@@ -177,10 +177,7 @@
 				// bone data
 				unsigned int id[4];
 				float weight[4];
-				Vertex(){
-                    memset(this->id, 0, 4 * sizeof(id[0]));
-                    memset(this->weight, 0, 4 * sizeof(weight[0]));                    
-                }
+				Vertex();
 				void setBoneData(unsigned int bId, float weight){
                     for(unsigned int i = 0; i < 4; ++i){ 
                         if(this->weight[i] == 0.0f){
@@ -301,6 +298,10 @@
             std::shared_ptr<FramebufferObj> createFramebuffer(unsigned w, unsigned h);
             bool deleteFramebuffer(unsigned id);
             
+            MeshData createPrimMesh(const std::vector<CR::Gfx::Vertex> &vertices, unsigned strides);
+            MeshData createMesh(const std::vector<CR::Gfx::Vertex> &vertices, const std::vector<unsigned int> &indices);
+            bool deleteMesh(MeshData &md);
+
             unsigned createShader(const std::string &vert, const std::string &frag);
             unsigned findShaderAttr(unsigned shaderId, const std::string &name);
             struct ShaderAttr;

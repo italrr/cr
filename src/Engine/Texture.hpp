@@ -26,7 +26,7 @@
             auto texture = std::make_shared<CR::Gfx::Texture>(CR::Gfx::Texture()); 
             auto indexer = CR::getIndexer();
             auto mgnr = CR::getResourceMngr();
-            auto textureFile = indexer->findByPath("data/texture/converted.png");
+            auto textureFile = indexer->findByPath(path);
 
             if(textureFile.get() == NULL){
                 CR::log("Failed to load texture '%s': Doesn't exist or wasn't indexed\n", path.c_str());

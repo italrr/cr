@@ -15,7 +15,6 @@ int main(int argc, char* argv[]){
     auto uiL = CR::Gfx::addRenderLayer(CR::Gfx::getSize(), CR::Gfx::RenderLayerType::T_2D, "ui", true, 1);
 
     auto indexer = CR::getIndexer();
-    while(indexer->isScanning){ CR::Gfx::render(); CR::sleep(16); } // wait for indexer to finish
 
     auto texture = CR::qLoadTexture("data/texture/container.png");
 

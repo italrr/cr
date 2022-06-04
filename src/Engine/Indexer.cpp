@@ -35,6 +35,22 @@ std::shared_ptr<CR::Result> CR::Indexing::Indexer::scan(const std::string &root)
     return result;
 }
 
+std::shared_ptr<CR::Indexing::Index> CR::Indexing::Indexer::add(const std::string &path){
+    
+    if(!CR::File::exists(path)){
+        return std::shared_ptr<CR::Indexing::Index>(NULL);   
+    }
+    
+    auto res = std::make_shared<CR::Indexing::Index>(CR::Indexing::Index());
+    res->read(path);
+    
+    std::unique_lock<std::mutex> lk(accesMutex);
+    this->resources[path] = res;
+    lk.unlock();        
+
+    return res;
+}
+
 std::shared_ptr<CR::Indexing::Index> CR::Indexing::Indexer::findByHash(const std::string &hash){
     std::unique_lock<std::mutex> lk(accesMutex);
     for(auto &it : this->resources){

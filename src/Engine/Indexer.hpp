@@ -35,6 +35,9 @@
                 std::unordered_map<std::string, std::shared_ptr<Index>> resources;
                 std::shared_ptr<CR::Result> scan(const std::string &root);
                 
+
+                std::shared_ptr<Index> add(const std::string &path);
+
                 std::shared_ptr<Index> findByHash(const std::string &hash);
                 std::shared_ptr<Index> findByPath(const std::string &path);
 

@@ -1,13 +1,22 @@
-#version 150 core
+#version 450 core
 
-in vec2 position;
-in vec3 color;
-in vec2 texcoord;
-out vec3 Color;
-out vec2 Texcoord;
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aColor;
+layout (location = 2) in vec2 aTexCoords;
+
+out vec3 fragPos;
+out vec3 color;
+out vec2 texCoords;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
 
 void main(){
-   Color = color;
-   Texcoord = texcoord;
-   gl_Position = vec4(position, 0.0, 1.0);
+   gl_Position = (projection * view * model) * aPos;
+
+   // out
+   fragPos = (model * aPos).xyz;
+   color = aColor;
+   texCoords = aTexCoords;
 }

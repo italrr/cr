@@ -16,6 +16,7 @@ set (cr_src
     src/Engine/Types.cpp
     src/Engine/Input.cpp
     src/Engine/Indexer.cpp
+    src/Engine/Shader.cpp
     src/Engine/Texture.cpp
     src/Engine/Resource.cpp
     src/Engine/3rdparty/glad.c
