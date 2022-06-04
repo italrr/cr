@@ -1,12 +1,12 @@
 #version 450 core
 
-out vec4 color;
+out vec4 FragColor;
 
 in vec2 texCoords;
 
-uniform sampler2D tex;
-uniform vec3 spriteColor;
+uniform sampler2D image;
+uniform vec3 color;
 
 void main(){
-    color = texture(tex, texCoords) * vec4(spriteColor, 1.0);
+    FragColor = texture(image, texCoords) * vec4(color, 1.0);
 }
