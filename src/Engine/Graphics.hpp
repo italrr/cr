@@ -137,6 +137,11 @@
                 unsigned vbo;
                 unsigned vao;
                 unsigned ebo;
+                MeshData(){
+                    vbo = 0;
+                    vao = 0;
+                    ebo = 0;
+                }
             };
             
 
@@ -298,8 +303,8 @@
             std::shared_ptr<FramebufferObj> createFramebuffer(unsigned w, unsigned h);
             bool deleteFramebuffer(unsigned id);
             
-            MeshData createPrimMesh(const std::vector<CR::Gfx::Vertex> &vertices, unsigned strides);
-            MeshData createMesh(const std::vector<CR::Gfx::Vertex> &vertices, const std::vector<unsigned int> &indices);
+            CR::Gfx::MeshData createPrimMesh(const std::vector<float> &vertices);
+            CR::Gfx::MeshData createMesh(const std::vector<CR::Gfx::Vertex> &vertices, const std::vector<unsigned int> &indices);
             bool deleteMesh(MeshData &md);
 
             unsigned createShader(const std::string &vert, const std::string &frag);

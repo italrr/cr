@@ -14,10 +14,6 @@ int main(int argc, char* argv[]){
     auto gameL = CR::Gfx::addRenderLayer(CR::Gfx::getSize(), CR::Gfx::RenderLayerType::T_3D, "game", true, 0);
     auto uiL = CR::Gfx::addRenderLayer(CR::Gfx::getSize(), CR::Gfx::RenderLayerType::T_2D, "ui", true, 1);
 
-    auto indexer = CR::getIndexer();
-
-    auto texture = CR::qLoadTexture("data/texture/container.png");
-
     while(CR::Gfx::isRunning()){
         CR::Gfx::render();
     }

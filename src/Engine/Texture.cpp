@@ -28,6 +28,7 @@ std::shared_ptr<CR::Result> CR::Gfx::Texture::load(const std::shared_ptr<CR::Ind
 
     auto r = CR::Gfx::createTexture2D(data, width, height, format);
 
+    this->textureId = r;
     result->setSuccess(String::format("Loaded Texture %s | Size %ix%i | Channels %i", file->path.c_str(), width, height, nrChannels));
 
     // TODO: error checking

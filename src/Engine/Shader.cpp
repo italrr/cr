@@ -41,9 +41,10 @@ std::shared_ptr<CR::Result> CR::Gfx::Shader::load(const std::shared_ptr<CR::Inde
 
     auto r = CR::Gfx::createShader(this->vertSrc, this->fragSrc);
     if(r == 0){
-        result->setFailure(CR::String::format("Shader::compile: failed to compile shader '%s'", file->fname.c_str()));
+        result->setFailure("Shader::compile: failed to compile shader");
         return result;
     }
+    this->shaderId = r;
 
     result->setSuccess(String::format("Loaded Shader | frag %s | vert %s", fragPath.c_str(), vertPath.c_str()));
 

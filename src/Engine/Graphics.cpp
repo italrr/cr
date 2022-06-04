@@ -12,6 +12,7 @@
 #include "Tools.hpp"
 #include "Log.hpp"
 #include "Shader.hpp"
+#include "Texture.hpp"
 
 static GLFWwindow *window = NULL;
 static bool running = true;
@@ -63,7 +64,9 @@ static std::vector<std::shared_ptr<CR::Gfx::RenderLayer>> getSortedRenderList(co
 }
 
 
+static std::shared_ptr<CR::Gfx::Texture> dummyTexture;
 static std::shared_ptr<CR::Gfx::Shader> shBRect = std::shared_ptr<CR::Gfx::Shader>(NULL);
+static CR::Gfx::MeshData mBRect;
 
 
 double CR::getDelta(){
@@ -351,9 +354,22 @@ bool CR::Gfx::init(){
     __CR_init_job();
     indexer.scan("data/");
 
-    while(indexer.isScanning){ CR::Gfx::render(); CR::sleep(16); } // wait for indexer to finish
+    while(indexer.isScanning){ __CR_update_job(); CR::sleep(16); } // wait for indexer to finish
 
+    // basic rectangle for 2d rendering
     shBRect = qLoadShader("data/shader/b_rect_texture_f.glsl");
+    shBRect->findAttrs({"spriteColor", "model", "projection", "tex"});
+    mBRect = createPrimMesh({ 
+        // pos      // tex
+        0.0f, 1.0f, 0.0f, 1.0f,
+        1.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.0f, 
+    
+        0.0f, 1.0f, 0.0f, 1.0f,
+        1.0f, 1.0f, 1.0f, 1.0f,
+        1.0f, 0.0f, 1.0f, 0.0f
+    });
+    dummyTexture = qLoadTexture("data/texture/container.png");
 
     return true;
 }
@@ -374,19 +390,59 @@ void CR::Gfx::render(){
     lastDeltaCheck = currentTime;
 
     // render system layers
-    for(auto &it : systemLayers){
-        auto &layer = it.second;
-        layer->flush();
-        layer->clear();
-    }
+    // for(auto &it : systemLayers){
+    //     auto &layer = it.second;
+    //     layer->flush();
+    //     layer->clear();
+    // }
 
-    // draw layers
-    for(auto &it : systemLayers){
-        auto &layer = it.second;
-        drawRenderLayer(layer, Vec2<float>(0), getSize(), Vec2<float>(0.0f), 0.0f);
-    }    
+    // // draw layers
+    // for(auto &it : systemLayers){
+    //     auto &layer = it.second;
+    //     drawRenderLayer(layer, Vec2<float>(0), getSize(), Vec2<float>(0.0f), 0.0f);
+    // }    
 
-    glfwSwapBuffers(static_cast<GLFWwindow*>(window));
+    // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb->framebufferId);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+    glEnable(GL_DEPTH_TEST);
+    glViewport(0, 0, size.x, size.y);   
+    // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+    CR::Vec2<float>size(500);
+
+    auto model = CR::MAT4Identity;
+
+    model = model.translate(CR::Vec3<float>(0.0f));  
+
+    // model = glm::translate(model, glm::vec3(0.5f * size.x, 0.5f * size.y, 0.0f)); 
+    // model = glm::rotate(model, glm::radians(rotate), glm::vec3(0.0f, 0.0f, 1.0f)); 
+    // model = glm::translate(model, glm::vec3(-0.5f * size.x, -0.5f * size.y, 0.0f));
+
+    model = model.scale(CR::Vec3<float>(size.x, size.y, 1.0f)); 
+
+
+    static const auto projection = CR::Math::orthogonal(0, size.x, 0, size.y);;
+
+
+    applyShader(shBRect->shaderId, shBRect->shAttrs, {
+        {"tex", std::make_shared<ShaderAttrInt>(0)},
+        {"model", std::make_shared<ShaderAttrMat4>(model)},
+        {"projection", std::make_shared<ShaderAttrMat4>(projection)},
+        {"spriteColor", std::make_shared<ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))}
+    });
+
+    // CR::log("%i %i %i %i\n", mBRect.vao, mBRect.vbo, dummyTexture->textureId, shBRect->shaderId);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, dummyTexture->textureId);
+
+    glBindVertexArray(mBRect.vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);    
+
+
+    glfwSwapBuffers(window);
 
     __CR_update_job();
     glfwPollEvents();
@@ -516,37 +572,29 @@ bool CR::Gfx::deleteFramebuffer(unsigned id){
 }
 
 
-CR::Gfx::MeshData CR::Gfx::createPrimMesh(const std::vector<float> &vertices, unsigned strides){
+CR::Gfx::MeshData CR::Gfx::createPrimMesh(const std::vector<float> &vertices){
 
-    unsigned int vbo;
-    unsigned int vao;
-    unsigned int ebo;
+    unsigned vbo, vao;
 
     glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);  
-
+    glGenBuffers(1, &vbo);
+    
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
-    
+
     glBindVertexArray(vao);
-    
-    // position
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, strides * sizeof(float), (void*)0);
+
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
     
-    // color
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, strides * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    
-    // texture coordinates
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, strides * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
 
-    MeshData md;
-    md.vbo = vbo;
+    glBindBuffer(GL_ARRAY_BUFFER, 0);  
+    glBindVertexArray(0);
+
+
+    CR::Gfx::MeshData md;
     md.vao = vao;
-    md.ebo = ebo;
-
+    md.vbo = vbo;
     return md;
 }
 
@@ -597,7 +645,7 @@ CR::Gfx::MeshData CR::Gfx::createMesh(const std::vector<CR::Gfx::Vertex> &vertic
 }
 
 bool CR::Gfx::deleteMesh(CR::Gfx::MeshData &md){
-    
+    return true;
 }
 
 unsigned CR::Gfx::createShader(const std::string &vert, const std::string &frag){
@@ -682,13 +730,16 @@ bool CR::Gfx::deleteShader(unsigned id){
 }
 
 unsigned CR::Gfx::findShaderAttr(unsigned shaderId, const std::string &name){
-    unsigned locId = 0;
+    int locId = 0;
     std::unique_lock<std::mutex> lock(shaderUseMutex);
     glUseProgram(shaderId);
     locId = glGetUniformLocation(shaderId, name.c_str());
     glUseProgram(0);
     lock.unlock();
-    return locId;
+    if(locId == -1){
+        CR::log("CR::Gfx::findShaderAttr: Failed to find attribute '%s'\n", name.c_str());
+    }
+    return locId == -1 ? 0 : locId;
 }
 
 bool CR::Gfx::applyShader(unsigned shaderId, const std::unordered_map<std::string, unsigned> &loc, const std::unordered_map<std::string, std::shared_ptr<CR::Gfx::ShaderAttr>> &attrs){
@@ -710,7 +761,7 @@ bool CR::Gfx::applyShader(unsigned shaderId, const std::unordered_map<std::strin
             } break;                 
             case CR::Gfx::ShaderAttrType::COLOR: {
                 auto attrc = std::static_pointer_cast<CR::Gfx::ShaderAttrColor>(it.second);
-                float v[4] = {attrc->color.r, attrc->color.g, attrc->color.b};
+                float v[3] = {attrc->color.r, attrc->color.g, attrc->color.b};
                 glUniform3fv(attrLoc, 1, v);
             } break;
             case CR::Gfx::ShaderAttrType::VEC2: {
