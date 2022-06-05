@@ -85,6 +85,74 @@ CR::Gfx::Vertex::Vertex(){
     memset(this->weight, 0, 4 * sizeof(weight[0]));   
 }
 
+
+
+static std::string getOpenGLError(int v){
+	switch(v){
+		case 0x0500:
+			return "GL_INVALID_ENUM";
+		case 0x0501:
+			return "GL_INVALID_VALUE";
+		case 0x0502:
+			return "GL_INVALID_OPERATION";
+		case 0x0503:
+			return "GL_STACK_OVERFLOW";
+		case 0x0504:
+			return "GL_STACK_UNDERFLOW";
+		case 0x0505:
+			return "GL_OUT_OF_MEMORY";
+		case 0x0506:
+			return "GL_INVALID_FRAMEBUFFER_OPERATION";
+		case 0x0507:
+			return "GL_CONTEXT_LOST";
+		case 0x8031:
+			return "GL_TABLE_TOO_LARGE1";
+		default:
+			return "UNDEFINED";
+	}
+}
+
+static std::string handleOpenGLFrameBufferError(){
+	GLuint status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	switch(status) {
+		case GL_FRAMEBUFFER_COMPLETE:
+		    return "[FB OK]";
+		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+		    return "An attachment could not be bound to frame buffer object!";
+		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+		    return "Attachments are missing! At least one image (texture) must be bound to the frame buffer object!";
+		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+		    return "A Draw buffer is incomplete or undefinied. All draw buffers must specify attachment points that have images attached.";
+		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+		    return "A Read buffer is incomplete or undefinied. All read buffers must specify attachment points that have images attached.";
+		case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+		    return "All images must have the same number of multisample samples.";
+		case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS :
+		    return "If a layered image is attached to one attachment, then all attachments must be layered attachments. The attached layers do not have to have the same number of layers, nor do the layers have to come from the same kind of texture.";
+		case GL_FRAMEBUFFER_UNSUPPORTED:
+		    return "Attempt to use an unsupported format combinaton!";
+		default:
+		    return "Unknown error while attempting to create frame buffer object!";
+	}
+}
+
+static void handleOpenGLError(const std::string &at){
+	static GLenum err;
+	std::string fbError = handleOpenGLFrameBufferError();
+	while ((err = glGetError()) != GL_NO_ERROR){
+            auto msg = std::string("OpenGL"+(at.length() > 0 ? " '"+at+"' " : "")+": "+getOpenGLError(err)+" "+fbError);
+			CR::log("%s\n", msg.c_str());
+	}
+}
+
+
+
+
+
+
+
+
+
 bool CR::Gfx::RenderLayer::init(int width, int height){
 
     std::unique_lock<std::mutex> access(this->accesMutex);
@@ -113,6 +181,30 @@ bool CR::Gfx::RenderLayer::init(int width, int height){
     return true;
 }
 
+void CR::Gfx::RenderLayer::add(const std::vector<Renderable*> &objs){
+    std::unique_lock<std::mutex> access(this->accesMutex);
+
+    for(int i = 0; i < objs.size(); ++i){
+        if(objs[i] == NULL){
+            continue;
+        }
+        this->objects.push_back(objs[i]);
+    }
+
+    access.unlock();
+}
+
+void CR::Gfx::RenderLayer::add(Renderable* obj){
+    if(obj == NULL){
+        return;
+    }
+    std::unique_lock<std::mutex> access(this->accesMutex);
+
+    this->objects.push_back(obj);
+
+    access.unlock();
+}
+
 bool CR::Gfx::RenderLayer::init(){
     return init(CR::Gfx::getWidth(), CR::Gfx::getHeight());    
 }
@@ -134,17 +226,17 @@ void CR::Gfx::RenderLayer::renderOn(const std::function<void(CR::Gfx::RenderLaye
 
 void CR::Gfx::RenderLayer::clear(){
     std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb->framebufferId);
+    glBindFramebuffer(GL_FRAMEBUFFER, this->fb->framebufferId);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
     glViewport(0, 0, this->size.x, this->size.y);   
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     fblock.unlock();
 }   
 
 void CR::Gfx::RenderLayer::flush(){
     std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this->fb->framebufferId);
+    glBindFramebuffer(GL_FRAMEBUFFER, this->fb->framebufferId);
     if(type == RenderLayerType::T_3D){
         glEnable(GL_DEPTH_TEST);
     }
@@ -159,41 +251,119 @@ void CR::Gfx::RenderLayer::flush(){
     if(type == RenderLayerType::T_3D){
         glDisable(GL_DEPTH_TEST);
     }    
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     fblock.unlock();
 }
 
+static void drawRLImmediate(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle){
 
+    static const auto projection = CR::Math::orthogonal(0, 1920, 1080, 0);
 
-std::shared_ptr<CR::Gfx::RenderLayer> CR::Gfx::addRenderLayer(const CR::Vec2<int> &size, int type, const std::string &tag, bool systemLayer, int order){
-    auto rl = std::shared_ptr<CR::Gfx::RenderLayer>(new CR::Gfx::RenderLayer());
+    // std::unique_lock<std::mutex> lock(rl->accesMutex);
+
+    const auto &position = pos;
+    auto model = CR::MAT4Identity;
+
+    // CR::log("%s %i\n", size.str().c_str(), rl->fb->textureId);
+
+    model = model.translate(CR::Vec3<float>(position.x, position.y, 0.0f));  
+
+    model = model.translate(CR::Vec3<float>(origin.x * static_cast<float>(size.x), origin.y * static_cast<float>(size.y), 0.0f)); 
+
+    model = model.rotate(angle, CR::Vec3<float>(0.0f, 0.0f, 1.0f)); 
+
+    model = model.translate(CR::Vec3<float>(-origin.x * static_cast<float>(size.x), -origin.y * static_cast<float>(size.y), 0.0f));
+
+    model = model.scale(CR::Vec3<float>(size.x, size.y, 1.0f)); 
+
+    CR::Gfx::applyShader(shBRect->shaderId, shBRect->shAttrs, {
+        {"image", std::make_shared<CR::Gfx::ShaderAttrInt>(0)},
+        {"model", std::make_shared<CR::Gfx::ShaderAttrMat4>(model)},
+        {"projection", std::make_shared<CR::Gfx::ShaderAttrMat4>(projection)},
+        {"color", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))}
+    });
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, rl->fb->textureId);
+
+    glBindVertexArray(mBRect.vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);  
+    glUseProgram(0);
     
-    rl->init(size.x, size.y);
-    rl->type = type;
-    rl->tag = tag;
-    rl->order = order == -1 ? 0 : order;
-
-    if(systemLayer){
-        rl->order = order == -1 ?  : order;   
-        systemLayers[rl->id] = rl;
-    }else{
-        userLayers[rl->id] = rl;
-    }
-
-    return rl;
+    // lock.unlock();
 }
 
-
-CR::Gfx::Renderable *CR::Gfx::drawRenderLayer(const std::shared_ptr<RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle){
+CR::Gfx::Renderable *CR::Gfx::Draw::RenderLayer(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle){
     CR::Gfx::Renderable2D *self = new CR::Gfx::Renderable2D(); // layer's flush is in charge of deleting this
+
+    std::unique_lock<std::mutex> lock(rl->accesMutex);
 
     self->position = pos;
     self->size = size;
     self->origin = origin;
     self->angle = angle;
     self->origSize = rl->size;
+    self->region = CR::Rect<float>(0, 0, rl->size.x, rl->size.y);
+    self->type = RenderableType::TEXTURE;
+    self->handleId = rl->fb->textureId;
+
+    lock.unlock();
+
+    self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
+        auto *obj = static_cast<Renderable2D*>(renobj);
+
+        auto &position = obj->position;
+        auto &size = obj->size;
+        auto &scale = obj->scale;
+        auto &origin = obj->origin;
+        auto &region = obj->region;
+        auto &origSize = obj->origSize;
+        auto &angle = obj->angle;
+        auto &fbId = obj->handleId;
+
+        auto model = CR::MAT4Identity;
+
+        model = model.translate(CR::Vec3<float>(position.x, position.y, 0.0f));  
+
+        model = model.translate(CR::Vec3<float>(origin.x * static_cast<float>(size.x), origin.y * static_cast<float>(size.y), 0.0f)); 
+
+        model = model.rotate(angle, CR::Vec3<float>(0.0f, 0.0f, 1.0f)); 
+
+        model = model.translate(CR::Vec3<float>(-origin.x * static_cast<float>(size.x), -origin.y * static_cast<float>(size.y), 0.0f));
+
+        model = model.scale(CR::Vec3<float>(size.x, size.y, 1.0f)); 
+
+        applyShader(shBRect->shaderId, shBRect->shAttrs, {
+            {"image", std::make_shared<ShaderAttrInt>(0)},
+            {"model", std::make_shared<ShaderAttrMat4>(model)},
+            {"projection", std::make_shared<ShaderAttrMat4>(rl->projection)},
+            {"color", std::make_shared<ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))}
+        });
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, fbId);
+
+        glBindVertexArray(mBRect.vao);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(0);         
+        glUseProgram(0);   
+    };
+
+    return self;
+}
+
+CR::Gfx::Renderable *CR::Gfx::Draw::Texture(const std::shared_ptr<CR::Gfx::Texture> &tex, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle){
+    CR::Gfx::Renderable2D *self = new CR::Gfx::Renderable2D(); // layer's flush is in charge of deleting this
+
+    self->position = pos;
+    self->size = size;
+    self->origin = origin;
+    self->angle = angle;
+    self->origSize = tex->size;
     self->region = CR::Rect<float>(0, 0, size.x, size.y);
     self->type = RenderableType::TEXTURE;
+
     self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
         auto *obj = static_cast<Renderable2D*>(renobj);
 
@@ -224,24 +394,35 @@ CR::Gfx::Renderable *CR::Gfx::drawRenderLayer(const std::shared_ptr<RenderLayer>
             {"color", std::make_shared<ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))}
         });
 
-        // CR::log("%i %i %i %i\n", mBRect.vao, mBRect.vbo, dummyTexture->textureId, shBRect->shaderId);
-
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, rl->fb->textureId);
 
         glBindVertexArray(mBRect.vao);
         glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);    
-
-        
+        glBindVertexArray(0);       
+        glUseProgram(0);     
     };
-
-    rl->objects.push_back(self);
 
     return self;
 }
 
+std::shared_ptr<CR::Gfx::RenderLayer> CR::Gfx::addRenderLayer(const CR::Vec2<int> &size, int type, const std::string &tag, bool systemLayer, int order){
+    auto rl = std::shared_ptr<CR::Gfx::RenderLayer>(new CR::Gfx::RenderLayer());
+    
+    rl->init(size.x, size.y);
+    rl->type = type;
+    rl->tag = tag;
+    rl->order = order == -1 ? 0 : order;
 
+    if(systemLayer){
+        rl->order = order == -1 ?  : order;   
+        systemLayers[rl->id] = rl;
+    }else{
+        userLayers[rl->id] = rl;
+    }
+
+    return rl;
+}
 
 std::shared_ptr<CR::Gfx::RenderLayer> CR::Gfx::getRenderLayer(int id, bool isSystemLayer){
     std::unique_lock<std::mutex> rllock(renderLayerListMutex);
@@ -406,24 +587,143 @@ void CR::Gfx::render(){
 
     // time
     auto currentTime = glfwGetTime();
-    currentDelta = (currentTime - lastDeltaCheck) * 1000;
+    currentDelta = (currentTime - lastDeltaCheck);
     lastDeltaCheck = currentTime;
 
-    // flush layers
-    for(auto &it : systemLayers){
-        auto &layer = it.second;
-        // layer->flush();
-        layer->clear();
+
+    // systemLayers.begin()->second->renderOn([](CR::Gfx::RenderLayer *layer){
+    //     // layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->size, CR::Vec2<float>(0.0f), 0.0f));
+    // });
+
+
+    // // flush layers
+    // for(auto &it : systemLayers){
+    //     auto &layer = it.second;
+    //     // layer->flush();
+    //     layer->clear();
+    // }
+
+
+    // // std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
+    // glBindFramebuffer(GL_FRAMEBUFFER, 1);
+    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+    // // glViewport(0, 0, this->size.x, this->size.y);   
+    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // // fblock.unlock();
+
+
+    static bool yes = false;
+    static unsigned fb = 0;
+    static unsigned tex = 0;
+
+    if(!yes){
+        yes = true;
+        glGenFramebuffers(1, &fb);
+        glBindFramebuffer(GL_FRAMEBUFFER, fb);
+
+            glGenTextures(1, &tex);  
+            glBindTexture(GL_TEXTURE_2D, tex);  
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 500, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            // glGenerateMipmap(GL_TEXTURE_2D);
+            glBindTexture(GL_TEXTURE_2D, 0);
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);    
+
     }
+    if(fb > 0){
+        glBindFramebuffer(GL_FRAMEBUFFER, fb);
+
+	    glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glDisable(GL_DEPTH_TEST);
+        glEnable(GL_TEXTURE_2D);
+        glEnable(GL_BLEND);
+        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        glViewport(0, 0, 500, 500);
+
+        static const auto projection = CR::Math::orthogonal(0, 500, 500, 0);
+        CR::Vec2<float> position(0.0f);
+        CR::Vec2<int> size(500);
+        CR::Vec2<float> origin(0.0f);
+        float angle = 0.0f;
+
+        auto model = CR::MAT4Identity
+                    .translate(CR::Vec3<float>(position.x - origin.x * static_cast<float>(size.x), position.y - origin.y * static_cast<float>(size.y), 0.0f))
+                    .translate(CR::Vec3<float>(origin.x * static_cast<float>(size.x), origin.y * static_cast<float>(size.y), 0.0f))
+                    .rotate(angle, CR::Vec3<float>(0.0f, 0.0f, 1.0f))
+                    .translate(CR::Vec3<float>(-origin.x * static_cast<float>(size.x), -origin.y * static_cast<float>(size.y), 0.0f))
+                    .scale(CR::Vec3<float>(size.x, size.y, 1.0f));
+
+        CR::Gfx::applyShader(shBRect->shaderId, shBRect->shAttrs, {
+            {"image", std::make_shared<CR::Gfx::ShaderAttrInt>(0)},
+            {"model", std::make_shared<CR::Gfx::ShaderAttrMat4>(model)},
+            {"projection", std::make_shared<CR::Gfx::ShaderAttrMat4>(projection)},
+            {"color", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))}
+        });
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, dummyTexture->textureId);
+
+        glBindVertexArray(mBRect.vao);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(0);  
+        glUseProgram(0);
+
+
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+
 
     // render layers bare to the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
     glViewport(0, 0, size.x, size.y);   
-    for(auto &it : systemLayers){
-        auto &layer = it.second;
-        // drawRenderLayer(layer, Vec2<float>(0), getSize(), Vec2<float>(0.0f), CR::Math::rads(90));
-    }    
+
+    static const auto projection = CR::Math::orthogonal(0, size.x, size.y, 0);
+    static float add = 0.0f;
+    CR::Vec2<float> position(size.x * 0.5f, size.y * 0.5f);
+    CR::Vec2<int> size(500);
+    CR::Vec2<float> origin(0.5f);
+    add += 90.0f * currentDelta;
+    float angle = CR::Math::rads(add);
+
+    auto model = CR::MAT4Identity
+                .translate(CR::Vec3<float>(position.x - origin.x * static_cast<float>(size.x), position.y - origin.y * static_cast<float>(size.y), 0.0f))
+                .translate(CR::Vec3<float>(origin.x * static_cast<float>(size.x), origin.y * static_cast<float>(size.y), 0.0f))
+                .rotate(angle, CR::Vec3<float>(0.0f, 0.0f, 1.0f))
+                .translate(CR::Vec3<float>(-origin.x * static_cast<float>(size.x), -origin.y * static_cast<float>(size.y), 0.0f))
+                .scale(CR::Vec3<float>(size.x, size.y, 1.0f));
+
+    CR::Gfx::applyShader(shBRect->shaderId, shBRect->shAttrs, {
+        {"image", std::make_shared<CR::Gfx::ShaderAttrInt>(0)},
+        {"model", std::make_shared<CR::Gfx::ShaderAttrMat4>(model)},
+        {"projection", std::make_shared<CR::Gfx::ShaderAttrMat4>(projection)},
+        {"color", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))}
+    });
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, tex);
+
+    glBindVertexArray(mBRect.vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);  
+    glUseProgram(0);
+
+
+
+    // for(auto &it : systemLayers){
+    //     auto &layer = it.second;
+    //     drawRLImmediate(layer, Vec2<float>(0), layer->size, Vec2<float>(0.0f), CR::Math::rads(90));
+
+    // }    
 
     glfwSwapBuffers(window);
 
@@ -488,7 +788,7 @@ unsigned CR::Gfx::createTexture2D(unsigned char *data, unsigned w, unsigned h, u
             glformat = GL_RGBA;
         } break;                
     }
-    glTexImage2D(GL_TEXTURE_2D, 0, glformat, w, h, 0, glformat, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
     texLock.unlock();
@@ -518,8 +818,9 @@ std::shared_ptr<CR::Gfx::FramebufferObj> CR::Gfx::createFramebuffer(unsigned w, 
     unsigned id;
     std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
     glGenFramebuffers(1, &id);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, id);
+    glBindFramebuffer(GL_FRAMEBUFFER, id);
     unsigned texture = CR::Gfx::createTexture2D(0, w, h, ImageFormat::RGBA);
+    
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);    
     fblock.unlock();

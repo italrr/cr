@@ -94,7 +94,11 @@
 
 			CR::Vec2<T> cross(T sc) {
 				return CR::Vec2<T>(sc * this->y, -sc * this->x);
-			}										
+			}	
+
+			std::string str() const{
+				return "["+std::to_string(this->x)+", "+std::to_string(this->y)+"]";
+			}									
         };
         
         template<typename T>
@@ -426,35 +430,54 @@
 			CR::Mat<4, 4, T> translate(const CR::Vec3<T> &vec) const{
 				Mat<4, 4, T> out(*this);
 				
-				out.mat[12] = vec.x;
-				out.mat[13] = vec.y;
-				out.mat[14] = vec.z;
+				out.mat[3*4 + 0] = this->mat[0*4 + 0] * vec.x + this->mat[1*4 + 0] * vec.y + this->mat[2*4 + 0] * vec.z + this->mat[3*4 + 0];
+				out.mat[3*4 + 1] = this->mat[0*4 + 1] * vec.x + this->mat[1*4 + 1] * vec.y + this->mat[2*4 + 1] * vec.z + this->mat[3*4 + 1];
+				out.mat[3*4 + 2] = this->mat[0*4 + 2] * vec.x + this->mat[1*4 + 2] * vec.y + this->mat[2*4 + 2] * vec.z + this->mat[3*4 + 2];
+				out.mat[3*4 + 3] = this->mat[0*4 + 3] * vec.x + this->mat[1*4 + 3] * vec.y + this->mat[2*4 + 3] * vec.z + this->mat[3*4 + 3];
+
+				// out[2*4 + 0] = this->mat[0*4 + 0] * vec.x;
+				// out[2*4 + 1] = this->mat[0*4 + 1] * vec.x;
+				// out[2*4 + 2] = this->mat[0*4 + 2] * vec.x;
+				// out[2*4 + 3] = this->mat[0*4 + 3] * vec.x;
+
+				// out[2*4 + 0] = this->mat[0*4 + 0] * vec.x;
+				// out[2*4 + 1] = this->mat[0*4 + 1] * vec.x;
+				// out[2*4 + 2] = this->mat[0*4 + 2] * vec.x;
+				// out[2*4 + 3] = this->mat[0*4 + 3] * vec.x;				
+
+
+				// out.mat[12] = vec.x;
+				// out.mat[13] = vec.y;
+				// out.mat[14] = vec.z;
+
+
+				// out[3]
 
 				return out;
 			}
 
 			CR::Mat<4, 4, T> scale(const CR::Vec3<T> &vec) const{
-				Mat<4, 4, T> out;
+				Mat<4, 4, T> out(*this);
 				
-				out.mat[0 + 4*0] = this->mat[0 + 4*0] * vec.x;
-				out.mat[0 + 4*1] = this->mat[0 + 4*1] * vec.x;
-				out.mat[0 + 4*2] = this->mat[0 + 4*2] * vec.x;
-				out.mat[0 + 4*3] = this->mat[0 + 4*3] * vec.x;
+				out.mat[0 + 0] = this->mat[0* 4+ 0] * vec.x;
+				out.mat[0*4 + 1] = this->mat[0* 4+ 1] * vec.x;
+				out.mat[0*4 + 2] = this->mat[0* 4+ 2] * vec.x;
+				out.mat[0*4 + 3] = this->mat[0* 4+ 3] * vec.x;
 
-				out.mat[1 + 4*0] = this->mat[1 + 4*0] * vec.y;
-				out.mat[1 + 4*1] = this->mat[1 + 4*1] * vec.y;
-				out.mat[1 + 4*2] = this->mat[1 + 4*2] * vec.y;
-				out.mat[1 + 4*3] = this->mat[1 + 4*3] * vec.y;
+				out.mat[1*4 + 0] = this->mat[1* 4+ 0] * vec.y;
+				out.mat[1*4 + 1] = this->mat[1* 4+ 1] * vec.y;
+				out.mat[1*4 + 2] = this->mat[1* 4+ 2] * vec.y;
+				out.mat[1*4 + 3] = this->mat[1* 4+ 3] * vec.y;
 
-				out.mat[2 + 4*0] = this->mat[2 + 4*0] * vec.z;
-				out.mat[2 + 4*1] = this->mat[2 + 4*1] * vec.z;
-				out.mat[2 + 4*2] = this->mat[2 + 4*2] * vec.z;
-				out.mat[2 + 4*3] = this->mat[2 + 4*3] * vec.z;				
+				out.mat[2*4 + 0] = this->mat[2* 4+ 0] * vec.z;
+				out.mat[2*4 + 1] = this->mat[2* 4+ 1] * vec.z;
+				out.mat[2*4 + 2] = this->mat[2* 4+ 2] * vec.z;
+				out.mat[2*4 + 3] = this->mat[2* 4+ 3] * vec.z;				
 
-				out.mat[3 + 4*0] = this->mat[3 + 4*0];
-				out.mat[3 + 4*1] = this->mat[3 + 4*1];
-				out.mat[3 + 4*2] = this->mat[3 + 4*2];
-				out.mat[3 + 4*3] = this->mat[3 + 4*3];
+				out.mat[3*4 + 0] = this->mat[3* 4+ 0];
+				out.mat[3*4 + 1] = this->mat[3* 4+ 1];
+				out.mat[3*4 + 2] = this->mat[3*4 + 2];
+				out.mat[3*4 + 3] = this->mat[3*4 + 3];
 
 				return out;
 			}
@@ -536,40 +559,41 @@
 				float cdiff = (T)1 - c;
 				CR::Vec3<T> temp(axis.x * cdiff, axis.y * cdiff, axis.z * cdiff);
 
-				Mat<4, 4, T> rotate(MAT4FIdentity);
+				Mat<4, 4, T> rotate;
 				
-				rotate.mat[0 + 0*4] = c + temp.x * axis.x;
-				rotate.mat[0 + 1*4] = temp.x * axis.y + s * axis.z;
-				rotate.mat[0 + 2*4] = temp.x * axis.z - s * axis.y;
+				rotate.mat[0*4 + 0] = c + temp.x * axis.x;
+				rotate.mat[0*4 + 1] = temp.x * axis.y + s * axis.z;
+				rotate.mat[0*4 + 2] = temp.x * axis.z - s * axis.y;
 
-				rotate.mat[1 + 0*4] = temp.y * axis.x - s * axis.z;
-				rotate.mat[1 + 1*4] = c + temp.y * axis.y;
-				rotate.mat[1 + 2*4] = temp.y * axis.z + s * axis.x;
+				rotate.mat[1*4 + 0] = temp.y * axis.x - s * axis.z;
+				rotate.mat[1*4 + 1] = c + temp.y * axis.y;
+				rotate.mat[1*4 + 2] = temp.y * axis.z + s * axis.x;
 
-				rotate.mat[2 + 0*4] = temp.z * axis.x + s * axis.y;
-				rotate.mat[2 + 1*4] = temp.z * axis.y - s * axis.x;
-				rotate.mat[2 + 2*4] = c + temp.z * axis.z;
+				rotate.mat[2*4 + 0] = temp.z * axis.x + s * axis.y;
+				rotate.mat[2*4 + 1] = temp.z * axis.y - s * axis.x;
+				rotate.mat[2*4 + 2] = c + temp.z * axis.z;
 
-				Mat<4, 4, T> out(MAT4FIdentity);
+				Mat<4, 4, T> out;
 
-				auto &m = this->mat;
+				Mat<4, 4, T> mout(*this);
+				auto &m = mout.mat;
 				
-				out.mat[0 + 0*4] = m[0 + 0*4] * rotate.mat[0 + 0*4] + m[1 + 0*4] * rotate.mat[0 + 1*4] + m[2 + 0*4] * rotate.mat[0 + 2*4];
-				out.mat[0 + 1*4] = m[0 + 1*4] * rotate.mat[0 + 0*4] + m[1 + 1*4] * rotate.mat[0 + 1*4] + m[2 + 1*4] * rotate.mat[0 + 2*4];
-				out.mat[0 + 2*4] = m[0 + 2*4] * rotate.mat[0 + 0*4] + m[1 + 2*4] * rotate.mat[0 + 1*4] + m[2 + 2*4] * rotate.mat[0 + 2*4];
+				out.mat[0*4 + 0] = m[0*4 + 0] * rotate.mat[0*4 + 0] + m[1*4 + 0] * rotate.mat[0*4 + 1] + m[2*4 + 0] * rotate.mat[0*4 + 2];
+				out.mat[0*4 + 1] = m[0*4 + 1] * rotate.mat[0*4 + 0] + m[1*4 + 1] * rotate.mat[0*4 + 1] + m[2*4 + 1] * rotate.mat[0*4 + 2];
+				out.mat[0*4 + 2] = m[0*4 + 2] * rotate.mat[0*4 + 0] + m[1*4 + 2] * rotate.mat[0*4 + 1] + m[2*4 + 2] * rotate.mat[0*4 + 2];
 
-				out.mat[1 + 0*4] = m[0 + 0*4] * rotate.mat[1 + 0*4] + m[1 + 0*4] * rotate.mat[1 + 1*4] + m[2 + 0*4] * rotate.mat[1 + 2*4];
-				out.mat[1 + 1*4] = m[0 + 1*4] * rotate.mat[1 + 0*4] + m[1 + 1*4] * rotate.mat[1 + 1*4] + m[2 + 1*4] * rotate.mat[1 + 2*4];
-				out.mat[1 + 2*4] = m[0 + 2*4] * rotate.mat[1 + 0*4] + m[1 + 2*4] * rotate.mat[1 + 1*4] + m[2 + 2*4] * rotate.mat[1 + 2*4];
+				out.mat[1*4 + 0] = m[0*4 + 0] * rotate.mat[1*4 + 0] + m[1*4 + 0] * rotate.mat[1*4 + 1] + m[2*4 + 0] * rotate.mat[1*4 + 2];
+				out.mat[1*4 + 1] = m[0*4 + 1] * rotate.mat[1*4 + 0] + m[1*4 + 1] * rotate.mat[1*4 + 1] + m[2*4 + 1] * rotate.mat[1*4 + 2];
+				out.mat[1*4 + 2] = m[0*4 + 2] * rotate.mat[1*4 + 0] + m[1*4 + 2] * rotate.mat[1*4 + 1] + m[2*4 + 2] * rotate.mat[1*4 + 2];
 
-				out.mat[2 + 0*4] = m[0 + 0*4] * rotate.mat[2 + 0*4] + m[1 + 0*4] * rotate.mat[2 + 1*4] + m[2 + 0*4] * rotate.mat[2 + 2*4];
-				out.mat[2 + 1*4] = m[0 + 1*4] * rotate.mat[2 + 0*4] + m[1 + 1*4] * rotate.mat[2 + 1*4] + m[2 + 1*4] * rotate.mat[2 + 2*4];
-				out.mat[2 + 2*4] = m[0 + 2*4] * rotate.mat[2 + 0*4] + m[1 + 2*4] * rotate.mat[2 + 1*4] + m[2 + 2*4] * rotate.mat[2 + 2*4];
+				out.mat[2*4 + 0] = m[0*4 + 0] * rotate.mat[2*4 + 0] + m[1*4 + 0] * rotate.mat[2*4 + 1] + m[2*4 + 0] * rotate.mat[2*4 + 2];
+				out.mat[2*4 + 1] = m[0*4 + 1] * rotate.mat[2*4 + 0] + m[1*4 + 1] * rotate.mat[2*4 + 1] + m[2*4 + 1] * rotate.mat[2*4 + 2];
+				out.mat[2*4 + 2] = m[0*4 + 2] * rotate.mat[2*4 + 0] + m[1*4 + 2] * rotate.mat[2*4 + 1] + m[2*4 + 2] * rotate.mat[2*4 + 2];
 		
-				out.mat[3 + 0*4] = m[3 + 0*4];
-				out.mat[3 + 1*4] = m[3 + 1*4];
-				out.mat[3 + 2*4] = m[3 + 2*4];
-				out.mat[3 + 3*4] = m[3 + 3*4];
+				out.mat[3*4 + 0] = m[3*4 + 0];
+				out.mat[3*4 + 1] = m[3*4 + 1];
+				out.mat[3*4 + 2] = m[3*4 + 2];
+				out.mat[3*4 + 3] = m[3*4 + 3];
 				return out;
 			}
 

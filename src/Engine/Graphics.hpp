@@ -218,7 +218,8 @@
                 Vec2<float> origin;
                 Vec2<float> scale;
                 Vec2<int> origSize;
-                Rect<float> region;                
+                Rect<float> region;  
+                unsigned handleId;              
                 float angle;
                 Renderable2D(){
                     scale = CR::Vec2<float>(1.0f);
@@ -275,10 +276,11 @@
                 std::mutex accesMutex;
                 CR::Vec2<int> size;
                 void add(const std::vector<Renderable*> &objs);
+                void add(Renderable* obj);
                 bool init(int width, int height);
                 bool init();
                 void setDepth(int n);
-                void renderOn(const std::function<void(RenderLayer *layer)> &what, bool clear = true); // flush = immediate render, clear = clear to white
+                void renderOn(const std::function<void(RenderLayer *layer)> &what, bool clear = false); // flush = immediate render, clear = clear to white
                 void clear(); 
                 void flush();
             };
@@ -286,7 +288,13 @@
             std::shared_ptr<RenderLayer> addRenderLayer(const CR::Vec2<int> &size, int type, const std::string &tag, bool systemLayer, int order = -1); // -1 = auto
             std::shared_ptr<RenderLayer> getRenderLayer(int id, bool isSystemLayer);
             std::shared_ptr<RenderLayer> getRenderLayer(const std::string &tag, bool isSystemLayer);
-            CR::Gfx::Renderable *drawRenderLayer(const std::shared_ptr<RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle);        
+
+            // 2D default render methods (mainly for debugging, or specific internal usage)
+            struct Texture;
+            namespace Draw {
+                CR::Gfx::Renderable *RenderLayer(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle);        
+                CR::Gfx::Renderable *Texture(const std::shared_ptr<CR::Gfx::Texture> &tex, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle); 
+            } 
 
             bool init();
             void end();

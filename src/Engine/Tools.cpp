@@ -346,11 +346,25 @@ namespace CR {
 		}
 		Mat<4, 4, float> orthogonal(float left, float right, float bottom, float top){
 			auto out = MAT4Identity;
-			out.mat[0] = 2 / (right - left);
-			out.mat[5] = 2 / (top - bottom);
-			out.mat[10] = -1;
+			// out.mat[0] = 2 / (right - left);
+			// out.mat[5] = 2 / (top - bottom);
+			// out.mat[10] = -1;
+			// out.mat[12] = - (right + left) / (right - left);
+			// out.mat[13] = - (top + bottom) / (top - bottom);
+
+
+			static float zFar = -1.0f;
+			static float zNear = 1.0f;
+
+
+			out.mat[0] = static_cast<float>(2) / (right - left);
+			out.mat[5] = static_cast<float>(2) / (top - bottom);
+			out.mat[10] = static_cast<float>(1) / (zFar - zNear);
 			out.mat[12] = - (right + left) / (right - left);
 			out.mat[13] = - (top + bottom) / (top - bottom);
+			out.mat[14] = - zNear / (zFar - zNear);
+
+
 			return out;
 		}
 		Mat<4, 4, float> lookAt(const CR::Vec3<float> &pos, const CR::Vec3<float> &dir, const Vec3<float> &up){
