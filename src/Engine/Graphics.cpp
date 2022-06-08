@@ -170,7 +170,7 @@ bool CR::Gfx::RenderLayer::init(int width, int height){
             this->projection = CR::Math::perspective(45.0f, static_cast<float>(this->size.x) /  static_cast<float>(this->size.y), 0.1f, 100.0f);
         } break;
         case RenderLayerType::T_2D: {
-            this->projection = CR::Math::orthogonal(0, size.x, size.y, 0);
+            this->projection = CR::Math::orthogonal(0, size.x, 0, size.y);
         } break;
     }
 
@@ -261,7 +261,7 @@ void CR::Gfx::RenderLayer::flush(){
 
 static void drawRLImmediate(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle){
 
-    const auto projection = CR::Math::orthogonal(0, rl->size.x, 0, rl->size.y);
+    const auto projection = CR::Math::orthogonal(0, rl->size.x, rl->size.y, 0); // draw from top to bottom
 
     // std::unique_lock<std::mutex> lock(rl->accesMutex);
 
@@ -312,7 +312,7 @@ CR::Gfx::Renderable *CR::Gfx::Draw::RenderLayer(const std::shared_ptr<CR::Gfx::R
     self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
         auto *obj = static_cast<Renderable2D*>(renobj);
 
-        const auto projection = CR::Math::orthogonal(0, rl->size.x, 0, rl->size.y);
+        const auto projection = CR::Math::orthogonal(0, rl->size.x, rl->size.y, 0);
 
         auto &position = obj->position;
         auto &size = obj->size;
@@ -363,6 +363,9 @@ CR::Gfx::Renderable *CR::Gfx::Draw::Texture(const std::shared_ptr<CR::Gfx::Textu
 
     self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
         auto *obj = static_cast<Renderable2D*>(renobj);
+        
+        // const auto projection = CR::Math::orthogonal(0, rl->size.x, rl->size.y, 0);
+
 
         auto &position = obj->position;
         auto &size = obj->size;
@@ -597,7 +600,7 @@ void CR::Gfx::render(){
     }
 
     dummyLayer->renderOn([](CR::Gfx::RenderLayer *layer){
-        layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->size, CR::Vec2<float>(0.5f), CR::Math::rads(45)));
+        layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->size, CR::Vec2<float>(0.5f), CR::Math::rads(0)));
     });
     dummyLayer->clear();
     dummyLayer->flush();
@@ -606,6 +609,8 @@ void CR::Gfx::render(){
 
 
     systemLayers.begin()->second->renderOn([](CR::Gfx::RenderLayer *layer){    
+        // layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->size, CR::Vec2<float>(0.5f), CR::Math::rads(0)));
+
         layer->add(CR::Gfx::Draw::RenderLayer(dummyLayer, CR::Vec2<float>(0), CR::Vec2<int>(1000, 1000), CR::Vec2<float>(0.0f), 0.0f));
     });
 
