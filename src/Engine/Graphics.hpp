@@ -285,6 +285,7 @@
                 void flush();
             };
             
+            std::shared_ptr<RenderLayer> addRenderLayer(const CR::Vec2<int> &size, int type);
             std::shared_ptr<RenderLayer> addRenderLayer(const CR::Vec2<int> &size, int type, const std::string &tag, bool systemLayer, int order = -1); // -1 = auto
             std::shared_ptr<RenderLayer> getRenderLayer(int id, bool isSystemLayer);
             std::shared_ptr<RenderLayer> getRenderLayer(const std::string &tag, bool isSystemLayer);

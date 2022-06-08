@@ -218,7 +218,7 @@ void CR::Gfx::RenderLayer::setDepth(int n){
 void CR::Gfx::RenderLayer::renderOn(const std::function<void(CR::Gfx::RenderLayer *layer)> &what, bool clear){
     // std::unique_lock<std::mutex> access(this->accesMutex);
     if(clear){
-        // this->clear();
+        this->clear();
     }
     // access.unlock();    
     what(this);
@@ -227,13 +227,12 @@ void CR::Gfx::RenderLayer::renderOn(const std::function<void(CR::Gfx::RenderLaye
 void CR::Gfx::RenderLayer::clear(){
     // std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
     glBindFramebuffer(GL_FRAMEBUFFER, this->fb->framebufferId);
-	glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glDisable(GL_DEPTH_TEST);
-    glEnable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
-    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    // glDisable(GL_DEPTH_TEST);
+    // glEnable(GL_TEXTURE_2D);
+    // glEnable(GL_BLEND);
+    // glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     glViewport(0, 0, this->size.x, this->size.y);   
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     // fblock.unlock();
@@ -262,7 +261,7 @@ void CR::Gfx::RenderLayer::flush(){
 
 static void drawRLImmediate(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle){
 
-    // static const auto projection = CR::Math::orthogonal(0, rl->size, 1080, 0);
+    const auto projection = CR::Math::orthogonal(0, rl->size.x, 0, rl->size.y);
 
     // std::unique_lock<std::mutex> lock(rl->accesMutex);
 
@@ -279,7 +278,7 @@ static void drawRLImmediate(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, con
     CR::Gfx::applyShader(shBRect->shaderId, shBRect->shAttrs, {
         {"image", std::make_shared<CR::Gfx::ShaderAttrInt>(0)},
         {"model", std::make_shared<CR::Gfx::ShaderAttrMat4>(model)},
-        {"projection", std::make_shared<CR::Gfx::ShaderAttrMat4>(rl->projection)},
+        {"projection", std::make_shared<CR::Gfx::ShaderAttrMat4>(projection)},
         {"color", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))}
     });
 
@@ -312,6 +311,8 @@ CR::Gfx::Renderable *CR::Gfx::Draw::RenderLayer(const std::shared_ptr<CR::Gfx::R
 
     self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
         auto *obj = static_cast<Renderable2D*>(renobj);
+
+        const auto projection = CR::Math::orthogonal(0, rl->size.x, 0, rl->size.y);
 
         auto &position = obj->position;
         auto &size = obj->size;
@@ -395,6 +396,10 @@ CR::Gfx::Renderable *CR::Gfx::Draw::Texture(const std::shared_ptr<CR::Gfx::Textu
     };
 
     return self;
+}
+
+std::shared_ptr<CR::Gfx::RenderLayer> CR::Gfx::addRenderLayer(const CR::Vec2<int> &size, int type){
+    return addRenderLayer(size, type, "", false, -1);
 }
 
 std::shared_ptr<CR::Gfx::RenderLayer> CR::Gfx::addRenderLayer(const CR::Vec2<int> &size, int type, const std::string &tag, bool systemLayer, int order){
@@ -582,8 +587,26 @@ void CR::Gfx::render(){
     lastDeltaCheck = currentTime;
 
 
-    systemLayers.begin()->second->renderOn([](CR::Gfx::RenderLayer *layer){
-        layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->size, CR::Vec2<float>(0.0f), 0.0f));
+
+    static bool yes = false;
+    static std::shared_ptr<RenderLayer> dummyLayer;
+
+    if(!yes){
+        yes = true;
+        dummyLayer = CR::Gfx::addRenderLayer(CR::Vec2<int>(1000, 1000), CR::Gfx::RenderLayerType::T_2D);
+    }
+
+    dummyLayer->renderOn([](CR::Gfx::RenderLayer *layer){
+        layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->size, CR::Vec2<float>(0.5f), CR::Math::rads(45)));
+    });
+    dummyLayer->clear();
+    dummyLayer->flush();
+
+
+
+
+    systemLayers.begin()->second->renderOn([](CR::Gfx::RenderLayer *layer){    
+        layer->add(CR::Gfx::Draw::RenderLayer(dummyLayer, CR::Vec2<float>(0), CR::Vec2<int>(1000, 1000), CR::Vec2<float>(0.0f), 0.0f));
     });
 
 
@@ -597,13 +620,13 @@ void CR::Gfx::render(){
 
 
     // // std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
-    // glBindFramebuffer(GL_FRAMEBUFFER, 1);
-    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
-    // // glViewport(0, 0, this->size.x, this->size.y);   
+    // glBindFramebuffer(GL_FRAMEBUFFER, 1); 
     // glBindFramebuffer(GL_FRAMEBUFFER, 0);
     // // fblock.unlock();
 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+    glViewport(0, 0, size.x, size.y);  
 
     for(auto &it : systemLayers){
         auto &layer = it.second;
