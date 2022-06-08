@@ -215,34 +215,41 @@ void CR::Gfx::RenderLayer::setDepth(int n){
     access.unlock();
 }
 
-void CR::Gfx::RenderLayer::renderOn(const std::function<void(CR::Gfx::RenderLayer *layer)> &what, bool clear){
-    // std::unique_lock<std::mutex> access(this->accesMutex);
+void CR::Gfx::RenderLayer::renderOn(const std::function<void(RenderLayer *layer)> &what){
+    renderOn(what, false, false);
+}
+
+void CR::Gfx::RenderLayer::renderOn(const std::function<void(CR::Gfx::RenderLayer *layer)> &what, bool flush, bool clear){
+    std::unique_lock<std::mutex> access(this->accesMutex);
     if(clear){
         this->clear();
     }
-    // access.unlock();    
+    access.unlock();    
     what(this);
+    if(flush){
+        this->flush();
+    }
 }
 
 void CR::Gfx::RenderLayer::clear(){
-    // std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
+    std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
     glBindFramebuffer(GL_FRAMEBUFFER, this->fb->framebufferId);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    // glDisable(GL_DEPTH_TEST);
-    // glEnable(GL_TEXTURE_2D);
-    // glEnable(GL_BLEND);
-    // glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);    
     glViewport(0, 0, this->size.x, this->size.y);   
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    // fblock.unlock();
+    fblock.unlock();
 }   
 
 void CR::Gfx::RenderLayer::flush(){
-    // std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
+    std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
     glBindFramebuffer(GL_FRAMEBUFFER, this->fb->framebufferId);
     if(type == RenderLayerType::T_3D){
         glEnable(GL_DEPTH_TEST);
+    }else
+    if(type == RenderLayerType::T_2D){
+        glEnable(GL_BLEND);
+        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     }
     // TODO: solve depth for T_2D
     for(int i = 0; i < this->objects.size(); ++i){
@@ -254,9 +261,12 @@ void CR::Gfx::RenderLayer::flush(){
     this->objects.clear();
     if(type == RenderLayerType::T_3D){
         glDisable(GL_DEPTH_TEST);
-    }    
+    }else
+    if(type == RenderLayerType::T_2D){
+        glDisable(GL_BLEND);
+    }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    // fblock.unlock();
+    fblock.unlock();
 }
 
 static void drawRLImmediate(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle){
@@ -401,11 +411,11 @@ CR::Gfx::Renderable *CR::Gfx::Draw::Texture(const std::shared_ptr<CR::Gfx::Textu
     return self;
 }
 
-std::shared_ptr<CR::Gfx::RenderLayer> CR::Gfx::addRenderLayer(const CR::Vec2<int> &size, int type){
-    return addRenderLayer(size, type, "", false, -1);
+std::shared_ptr<CR::Gfx::RenderLayer> CR::Gfx::createRenderLayer(const CR::Vec2<int> &size, int type){
+    return createRenderLayer(size, type, "", false, -1);
 }
 
-std::shared_ptr<CR::Gfx::RenderLayer> CR::Gfx::addRenderLayer(const CR::Vec2<int> &size, int type, const std::string &tag, bool systemLayer, int order){
+std::shared_ptr<CR::Gfx::RenderLayer> CR::Gfx::createRenderLayer(const CR::Vec2<int> &size, int type, const std::string &tag, bool systemLayer, int order){
     auto rl = std::shared_ptr<CR::Gfx::RenderLayer>(new CR::Gfx::RenderLayer());
     
     rl->init(size.x, size.y);
@@ -596,7 +606,7 @@ void CR::Gfx::render(){
 
     if(!yes){
         yes = true;
-        dummyLayer = CR::Gfx::addRenderLayer(CR::Vec2<int>(1000, 1000), CR::Gfx::RenderLayerType::T_2D);
+        dummyLayer = CR::Gfx::createRenderLayer(CR::Vec2<int>(1000, 1000), CR::Gfx::RenderLayerType::T_2D);
     }
 
     dummyLayer->renderOn([](CR::Gfx::RenderLayer *layer){

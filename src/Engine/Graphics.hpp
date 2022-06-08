@@ -280,13 +280,14 @@
                 bool init(int width, int height);
                 bool init();
                 void setDepth(int n);
-                void renderOn(const std::function<void(RenderLayer *layer)> &what, bool clear = false); // flush = immediate render, clear = clear to white
+                void renderOn(const std::function<void(RenderLayer *layer)> &what, bool flush, bool clear);
+                void renderOn(const std::function<void(RenderLayer *layer)> &whatr);
                 void clear(); 
                 void flush();
             };
             
-            std::shared_ptr<RenderLayer> addRenderLayer(const CR::Vec2<int> &size, int type);
-            std::shared_ptr<RenderLayer> addRenderLayer(const CR::Vec2<int> &size, int type, const std::string &tag, bool systemLayer, int order = -1); // -1 = auto
+            std::shared_ptr<RenderLayer> createRenderLayer(const CR::Vec2<int> &size, int type);
+            std::shared_ptr<RenderLayer> createRenderLayer(const CR::Vec2<int> &size, int type, const std::string &tag, bool systemLayer, int order = -1); // -1 = auto
             std::shared_ptr<RenderLayer> getRenderLayer(int id, bool isSystemLayer);
             std::shared_ptr<RenderLayer> getRenderLayer(const std::string &tag, bool isSystemLayer);
 

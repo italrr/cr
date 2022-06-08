@@ -13,10 +13,32 @@
 
     namespace CR {
         
-        namespace Resource {
+        namespace Rsc {
+
+            struct Index {
+                std::string hash;
+                std::string fname;
+                std::string fpath;
+                std::string path; //abs
+                size_t size;
+                std::vector<std::string> tags;
+                void read(const std::string &path);
+                bool isIt(const std::string &tag);
+                void autotag();
+            };            
+
+            namespace SourceType {
+                enum SourceType : unsigned {
+                    FILE,
+                    MEMORY
+                };
+            };
 
             namespace ResourceType {
-                enum ResourceType : int {
+                enum ResourceType : unsigned {
+                    BINARY,
+                    JSON,
+                    TEXT,
                     SHADER,
                     TEXTURE,
                     MODEL,
@@ -26,59 +48,31 @@
             }
 
             struct Resource {
+                std::shared_ptr<CR::Rsc::Index> file;
                 std::mutex accesMutex;
+                
                 bool rscLoaded;
-                int rscType;
-                int rscId;
-                std::shared_ptr<CR::Indexing::Index> file;
+                unsigned rscType;
+                unsigned srcType;
+                unsigned rscId;
+
                 Resource(){
                     rscType = ResourceType::NONE;
+                    srcType = SourceType::MEMORY;
                     rscLoaded = false;
+                    rscId = 0;
+                    file = std::shared_ptr<CR::Rsc::Index>(new Index());
                 }
-                Resource(const Resource &rsc){
-                    this->file = rsc.file;
-                    this->rscType = rsc.rscLoaded;
-                    this->rscId = rsc.rscId;
-                    this->rscLoaded = rsc.rscLoaded;
-                }
-                void setId(int id){
-                    std::unique_lock<std::mutex> lk(accesMutex);
-                    this->rscId = id;
-                    lk.unlock();
-                }
-                void setType(int type){
-                    std::unique_lock<std::mutex> lk(accesMutex);
-                    this->rscLoaded = type;
-                    lk.unlock();
-                }        
-                void setLoaded(bool v){
-                    std::unique_lock<std::mutex> lk(accesMutex);
-                    this->rscLoaded = v;
-                    lk.unlock();                    
-                }
-                void setFile(const std::shared_ptr<CR::Indexing::Index> &file){
-                    std::unique_lock<std::mutex> lk(accesMutex);
-                    this->file = file;
-                    lk.unlock();                      
-                }
-                virtual std::shared_ptr<CR::Result> unload(){
-                    return CR::makeResult(CR::ResultType::Success);
-                }
-                virtual std::shared_ptr<CR::Result> load(const std::shared_ptr<CR::Indexing::Index> &file){
-                    return CR::makeResult(CR::ResultType::Success);
-                }
-            };
 
-            struct ResourceManager {
-                int lastId;
-                std::mutex accesMutex;
-                std::unordered_map<int, std::shared_ptr<Resource>> resources;
-                std::shared_ptr<CR::Result> load(const std::string &name, const std::shared_ptr<Resource> &holder);
-                std::shared_ptr<CR::Result> load(const std::shared_ptr<CR::Indexing::Index> &file, const std::shared_ptr<Resource> &holder);
-                std::shared_ptr<CR::Resource::Resource> findByHash(const std::string &hash);
-                std::shared_ptr<CR::Resource::Resource> findByPath(const std::string &hash);
-                std::shared_ptr<CR::Resource::Resource> findById(int id);
-                ResourceManager();
+                virtual bool load(){
+                    return true;
+                }
+
+                virtual bool unload(){
+                    return false;
+                }
+
+            
             };
 
         }
