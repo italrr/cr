@@ -15,61 +15,66 @@ static std::string loadSource(const std::string &path){
     return src;
 }
 
-std::shared_ptr<CR::Result> CR::Gfx::Shader::load(const std::shared_ptr<CR::Indexing::Index> &file){
-    auto result = CR::makeResult(CR::ResultType::Waiting);
 
-    // infer other shader filename(have _v ? infere _f; have _f? infere _v)
-    const static std::string fprex = "_f";
-    const static std::string vprex = "_v";        
-    std::string fragPath = file->fname.find(fprex) != -1 ? file->path : "";
-    std::string vertPath = file->fname.find(vprex) != -1 ? file->path : "";
-    if(fragPath.length() == 0 && vertPath.size() == 0){
-        result->setFailure(CR::String::format("Shader::load: failed to find both fragment and vertex files for '%s'", file->fname.c_str()));
-        return result;
-    }
-    if(fragPath.length() == 0){
-        fragPath = vertPath;
-        fragPath.replace(fragPath.find(vprex), vprex.size(), fprex);
-    }
-    if(vertPath.length() == 0){
-        vertPath = fragPath;
-        vertPath.replace(vertPath.find(fprex), fprex.size(), vprex);
-    }
-    
-    this->fragSrc = loadSource(fragPath);
-    this->vertSrc = loadSource(vertPath);
-
-    auto r = CR::Gfx::createShader(this->vertSrc, this->fragSrc);
-    if(r == 0){
-        result->setFailure("Shader::compile: failed to compile shader");
-        return result;
-    }
-    this->shaderId = r;
-
-    result->setSuccess(String::format("Loaded Shader | frag %s | vert %s", fragPath.c_str(), vertPath.c_str()));
-
-    return result;
-}
-
-std::shared_ptr<CR::Result> CR::Gfx::Shader::unload(){
-    auto result = CR::makeResult(CR::ResultType::Waiting);
-    if(this->shaderId == 0){
-        result->setSuccess();
-        return result;
+void CR::Gfx::ShaderResource::unload(){
+    if(Gfx::deleteShader(this->shaderId)){
+        this->shaderId = 0;
+        this->rscLoaded = false;
     }else{
-        if(Gfx::deleteShader(this->shaderId)){
-            this->shaderId = 0;
-            this->rscLoaded = false;
-            result->setSuccess();
-        }else{
-            result->setFailure();
-        }
+        CR::log("[GFX] Failed to unload texture %i\n", this->shaderId);
     }
-    return result;
 }
 
 void CR::Gfx::Shader::findAttrs(const std::vector<std::string> &list){
+
+    auto rsc = std::static_pointer_cast<CR::Gfx::ShaderResource>(this->rsc);
+    
+
     for(unsigned i = 0; i < list.size(); ++i){
-        this->shAttrs[list[i]] = CR::Gfx::findShaderAttr(this->shaderId, list[i].c_str());
+        this->shAttrs[list[i]] = CR::Gfx::findShaderAttr(rsc->shaderId, list[i].c_str());
     }
+}
+
+bool CR::Gfx::Shader::load(const std::string &frag, const std::string &vert){
+
+    auto result = this->findAllocByPath(frag);
+    if(result == CR::Rsc::AllocationResult::PROXY){
+        return true;
+    }    
+
+    if(!CR::File::exists(frag) || !CR::File::exists(vert)){
+        CR::log("[GFX] Shader::load: failed to load Shader '%s': file doesn't exist\n", frag.c_str());
+        return false;        
+    }    
+
+    auto rscShader = std::make_shared<CR::Gfx::ShaderResource>(CR::Gfx::ShaderResource());
+    auto rsc = std::static_pointer_cast<CR::Gfx::ShaderResource>(rscShader);
+
+    allocate(rscShader);
+
+
+    const std::string &fragPath = frag;
+    const std::string &vertPath = vert;
+
+    rsc->fragSrc = loadSource(fragPath);
+    rsc->vertSrc = loadSource(vertPath);
+
+    auto r = CR::Gfx::createShader(rsc->vertSrc, rsc->fragSrc);
+    if(r == 0){
+        CR::log("[GFX] Shader::load: failed to compile shader\n");
+        return false;
+    }
+    rsc->shaderId = r;
+
+    CR::log("[GFX] Loaded Shader | frag %s | vert %s\n", fragPath.c_str(), vertPath.c_str());
+
+    return true;
+}
+
+CR::Gfx::Shader::Shader(){
+
+}
+
+void CR::Gfx::Shader::unload(){
+    this->rsc->unload();
 }

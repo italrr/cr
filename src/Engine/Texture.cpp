@@ -4,15 +4,40 @@
 #include "Graphics.hpp"
 #include "Texture.hpp"
 
-std::shared_ptr<CR::Result> CR::Gfx::Texture::load(const std::shared_ptr<CR::Indexing::Index> &file){
-    auto result = CR::makeResult(CR::ResultType::Waiting);
+
+void CR::Gfx::TextureResource::unload(){
+    if(Gfx::deleteTexture2D(this->textureId)){
+        this->textureId = 0;
+        this->rscLoaded = false;
+    }else{
+        CR::log("[GFX] Failed to unload texture %i\n", this->textureId);
+    }
+}
+
+bool CR::Gfx::Texture::load(const std::string &path){
+    auto result = this->findAllocByPath(path);
+    if(result == CR::Rsc::AllocationResult::PROXY){
+        return true;
+    }
+
+    if(!CR::File::exists(path)){
+        CR::log("[GFX] Texture::load: failed to load texture '%s': file doesn't exist\n", path.c_str());
+        return false;        
+    }
+
+    auto rscTexture = std::make_shared<CR::Gfx::TextureResource>(CR::Gfx::TextureResource());
+    auto rsc = std::static_pointer_cast<CR::Gfx::TextureResource>(rscTexture);
+
+    allocate(rscTexture);
+
+    rsc->file->read(path);
 
     int width, height, nrChannels;
-    unsigned char *data = stbi_load(file->path.c_str(), &width, &height, &nrChannels, 0); 
+    unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0); 
 
     if(!data){
-        result->setFailure(String::format("Texture::load: failed to load texture '%s': incompatible format?", file->fname.c_str()));
-        return result;
+        CR::log("[GFX] Texture::load: failed to load texture '%s': incompatible format?\n", path.c_str());
+        return false;
     }
 
     int format;
@@ -23,32 +48,27 @@ std::shared_ptr<CR::Result> CR::Gfx::Texture::load(const std::shared_ptr<CR::Ind
     else if (nrChannels == 4)
         format = ImageFormat::RGBA;
 
-    this->size.set(width, height);
-    this->channels = nrChannels;
+    rsc->size.set(width, height);
+    rsc->channels = nrChannels;
 
     auto r = CR::Gfx::createTexture2D(data, width, height, format);
 
-    this->textureId = r;
-    result->setSuccess(String::format("Loaded Texture %s | Size %ix%i | Channels %i", file->path.c_str(), width, height, nrChannels));
+    rsc->textureId = r;
+    rsc->rscLoaded = true;
+    CR::log("[GFX] Loaded Texture %s | Size %ix%i | Channels %i\n", path.c_str(), width, height, nrChannels);
 
-    // TODO: error checking
+    return true;    
 
-    return result;
 }
 
-std::shared_ptr<CR::Result> CR::Gfx::Texture::unload(){
-    auto result = CR::makeResult(CR::ResultType::Waiting);
-    if(this->textureId == 0){
-        result->setSuccess();
-        return result;
-    }else{
-        if(Gfx::deleteTexture2D(this->textureId)){
-            this->textureId = 0;
-            this->rscLoaded = false;
-            result->setSuccess();
-        }else{
-            result->setFailure();
-        }
-    }
-    return result;
+CR::Gfx::Texture::Texture(const std::string &path){
+    load(path);
+}
+
+CR::Gfx::Texture::Texture(){
+
+}
+
+void CR::Gfx::Texture::unload(){
+    this->rsc->unload();
 }

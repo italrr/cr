@@ -8,7 +8,6 @@
     #include "Types.hpp"
     #include "Result.hpp"
     
-    #include "Indexer.hpp"
     #include "Job.hpp"
 
     namespace CR {
@@ -21,10 +20,14 @@
                 std::string fpath;
                 std::string path; //abs
                 size_t size;
+                bool loaded;
                 std::vector<std::string> tags;
                 void read(const std::string &path);
                 bool isIt(const std::string &tag);
                 void autotag();
+                Index(){
+                    this->loaded = false;
+                }
             };            
 
             namespace SourceType {
@@ -47,9 +50,16 @@
                 };
             }
 
+            namespace AllocationResult {
+                enum AllocationResult : unsigned {
+                    PROXY,
+                    ANEW,
+                    NONE
+                };                  
+            };
+
             struct Resource {
                 std::shared_ptr<CR::Rsc::Index> file;
-                std::mutex accesMutex;
                 
                 bool rscLoaded;
                 unsigned rscType;
@@ -57,22 +67,28 @@
                 unsigned rscId;
 
                 Resource(){
-                    rscType = ResourceType::NONE;
-                    srcType = SourceType::MEMORY;
-                    rscLoaded = false;
-                    rscId = 0;
-                    file = std::shared_ptr<CR::Rsc::Index>(new Index());
+                    this->file = std::shared_ptr<CR::Rsc::Index>(new Index());
+                    this->rscLoaded = false;
+                    this->rscType = CR::Rsc::ResourceType::NONE;
+                    this->srcType = CR::Rsc::SourceType::MEMORY;
                 }
 
-                virtual bool load(){
-                    return true;
+                virtual void unload(){
+                    this->rscLoaded = false;
                 }
+            };
 
-                virtual bool unload(){
-                    return false;
+
+            struct Proxy {
+                std::shared_ptr<CR::Rsc::Resource> rsc;
+                Proxy(){
+                    this->rsc = std::make_shared<CR::Rsc::Resource>(CR::Rsc::Resource());
                 }
-
-            
+                ~Proxy(){
+                    
+                }
+                unsigned findAllocByPath(const std::string &path);
+                bool allocate(const std::shared_ptr<CR::Rsc::Resource> &rsc);
             };
 
         }

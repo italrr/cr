@@ -8,43 +8,29 @@
 
         namespace Gfx {
 
-            struct Texture : CR::Resource::Resource {
+            struct TextureResource : CR::Rsc::Resource {
                 int textureId;
                 Vec2<int> size;
                 int channels;
-                Texture(){
-                    rscType = CR::Resource::ResourceType::TEXTURE;
+                TextureResource() : Resource() {
+                    rscType = CR::Rsc::ResourceType::TEXTURE;
+                    srcType = CR::Rsc::SourceType::FILE;
                     textureId = 0;
                 }
-                std::shared_ptr<CR::Result> unload();
-                std::shared_ptr<CR::Result> load(const std::shared_ptr<CR::Indexing::Index> &file);
-            };            
+                void unload();
+            };         
 
-        }     
+            struct Texture : CR::Rsc::Proxy {
+                bool load(const std::string &path);
+                Texture(const std::string &path);
+                Texture();
+                void unload();
+                std::shared_ptr<CR::Gfx::TextureResource> getRsc(){
+                    return std::static_pointer_cast<CR::Gfx::TextureResource>(rsc);
+                }                
+            };
 
-        static inline std::shared_ptr<CR::Gfx::Texture> qLoadTexture(const std::string &path){
-            auto texture = std::make_shared<CR::Gfx::Texture>(CR::Gfx::Texture()); 
-            auto indexer = CR::getIndexer();
-            auto mgnr = CR::getResourceMngr();
-            auto textureFile = indexer->findByPath(path);
-
-            if(textureFile.get() == NULL){
-                CR::log("Failed to load texture '%s': Doesn't exist or wasn't indexed\n", path.c_str());
-                return std::shared_ptr<CR::Gfx::Texture>(NULL);
-            }
-
-
-            auto result = mgnr->load(textureFile, texture);
-            
-            if(!result->isSuccessful()){
-                CR::log("Failed to load texture '%s': %s\n", path.c_str(), result->msg.c_str());
-                return std::shared_ptr<CR::Gfx::Texture>(NULL);                
-            }
-
-            return texture;
         }
-
-
     }
 
 

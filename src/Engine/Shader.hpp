@@ -126,44 +126,31 @@
                 }
             };                                    
 
-            struct Shader : CR::Resource::Resource {
+            struct ShaderResource : CR::Rsc::Resource {
                 std::string vertSrc;
                 std::string fragSrc;
                 int shaderId;
-                Shader(){
-                    rscType = CR::Resource::ResourceType::SHADER;
+                ShaderResource(){
+                    rscType = CR::Rsc::ResourceType::SHADER;
                     shaderId = 0;
                 }
+                void unload() override;
+                // std::shared_ptr<CR::Result> load(const std::shared_ptr<CR::Indexing::Index> &file);
+            };       
+
+
+            struct Shader : CR::Rsc::Proxy {
                 std::unordered_map<std::string, unsigned> shAttrs;
-                void findAttrs(const std::vector<std::string> &list);
-                std::shared_ptr<CR::Result> unload();
-                std::shared_ptr<CR::Result> load(const std::shared_ptr<CR::Indexing::Index> &file);
-            };              
+                void findAttrs(const std::vector<std::string> &list);                
+                bool load(const std::string &frag, const std::string &vert);
+                Shader();
+                void unload();
+                std::shared_ptr<CR::Gfx::ShaderResource> getRsc(){
+                    return std::static_pointer_cast<CR::Gfx::ShaderResource>(rsc);
+                }
+            };                   
 
         }
-
-        static inline std::shared_ptr<CR::Gfx::Shader> qLoadShader(const std::string &path){
-            auto shader = std::make_shared<CR::Gfx::Shader>(CR::Gfx::Shader()); 
-            auto indexer = CR::getIndexer();
-            auto mgnr = CR::getResourceMngr();
-            auto file = indexer->findByPath(path);
-
-            if(file.get() == NULL){
-                CR::log("Failed to load shader '%s': Doesn't exist or wasn't indexed\n", path.c_str());
-                return std::shared_ptr<CR::Gfx::Shader>(NULL);
-            }
-
-
-            auto result = mgnr->load(file, shader);
-            
-            if(!result->isSuccessful()){
-                CR::log("Failed to load shader '%s': %s\n", path.c_str(), result->msg.c_str());
-                return std::shared_ptr<CR::Gfx::Shader>(NULL);                
-            }
-
-            return shader;
-        }        
-
     }
 
 

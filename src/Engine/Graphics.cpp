@@ -16,8 +16,6 @@
 
 static GLFWwindow *window = NULL;
 static bool running = true;
-static CR::Indexing::Indexer indexer;
-static CR::Resource::ResourceManager rscmng;
 static std::shared_ptr<CR::Gfx::Settings> settings = std::shared_ptr<CR::Gfx::Settings>(new CR::Gfx::Settings());
 static double lastDeltaCheck = 0;
 static double currentDelta = 0;
@@ -64,8 +62,8 @@ static std::vector<std::shared_ptr<CR::Gfx::RenderLayer>> getSortedRenderList(co
 }
 
 
-static std::shared_ptr<CR::Gfx::Texture> dummyTexture;
-static std::shared_ptr<CR::Gfx::Shader> shBRect = std::shared_ptr<CR::Gfx::Shader>(NULL);
+static std::shared_ptr<CR::Gfx::Texture> dummyTexture = std::make_shared<CR::Gfx::Texture>(CR::Gfx::Texture());
+static std::shared_ptr<CR::Gfx::Shader> shBRect = std::make_shared<CR::Gfx::Shader>(CR::Gfx::Shader());
 static CR::Gfx::MeshData mBRect;
 
 
@@ -285,7 +283,7 @@ static void drawRLImmediate(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, con
                 .translate(CR::Vec3<float>(-origin.x * static_cast<float>(size.x), -origin.y * static_cast<float>(size.y), 0.0f))
                 .scale(CR::Vec3<float>(size.x, size.y, 1.0f));
 
-    CR::Gfx::applyShader(shBRect->shaderId, shBRect->shAttrs, {
+    CR::Gfx::applyShader(shBRect->getRsc()->shaderId, shBRect->shAttrs, {
         {"image", std::make_shared<CR::Gfx::ShaderAttrInt>(0)},
         {"model", std::make_shared<CR::Gfx::ShaderAttrMat4>(model)},
         {"projection", std::make_shared<CR::Gfx::ShaderAttrMat4>(projection)},
@@ -340,7 +338,7 @@ CR::Gfx::Renderable *CR::Gfx::Draw::RenderLayer(const std::shared_ptr<CR::Gfx::R
                     .translate(CR::Vec3<float>(-origin.x * static_cast<float>(size.x), -origin.y * static_cast<float>(size.y), 0.0f))
                     .scale(CR::Vec3<float>(size.x, size.y, 1.0f));
 
-        applyShader(shBRect->shaderId, shBRect->shAttrs, {
+        applyShader(shBRect->getRsc()->shaderId, shBRect->shAttrs, {
             {"image", std::make_shared<ShaderAttrInt>(0)},
             {"model", std::make_shared<ShaderAttrMat4>(model)},
             {"projection", std::make_shared<ShaderAttrMat4>(rl->projection)},
@@ -366,10 +364,10 @@ CR::Gfx::Renderable *CR::Gfx::Draw::Texture(const std::shared_ptr<CR::Gfx::Textu
     self->size = size;
     self->origin = origin;
     self->angle = angle;
-    self->origSize = tex->size;
+    self->origSize = tex->getRsc()->size;
     self->region = CR::Rect<float>(0, 0, size.x, size.y);
     self->type = RenderableType::TEXTURE;
-    self->handleId = tex->textureId;
+    self->handleId = tex->getRsc()->textureId;
 
     self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
         auto *obj = static_cast<Renderable2D*>(renobj);
@@ -392,7 +390,7 @@ CR::Gfx::Renderable *CR::Gfx::Draw::Texture(const std::shared_ptr<CR::Gfx::Textu
                     .translate(CR::Vec3<float>(-origin.x * static_cast<float>(size.x), -origin.y * static_cast<float>(size.y), 0.0f))
                     .scale(CR::Vec3<float>(size.x, size.y, 1.0f));
 
-        applyShader(shBRect->shaderId, shBRect->shAttrs, {
+        applyShader(shBRect->getRsc()->shaderId, shBRect->shAttrs, {
             {"image", std::make_shared<ShaderAttrInt>(0)},
             {"model", std::make_shared<ShaderAttrMat4>(model)},
             {"projection", std::make_shared<ShaderAttrMat4>(rl->projection)},
@@ -460,15 +458,6 @@ std::shared_ptr<CR::Gfx::RenderLayer> CR::Gfx::getRenderLayer(const std::string 
     rllock.unlock();
     return std::shared_ptr<CR::Gfx::RenderLayer>(NULL);
 }
-
-CR::Indexing::Indexer *CR::getIndexer(){
-    return &indexer;
-}
-
-CR::Resource::ResourceManager *CR::getResourceMngr(){
-    return &rscmng;
-}
-
 
 void CR::Gfx::Settings::setParams(const std::vector<std::string> &params){
     for(int i = 0; i < params.size(); ++i){
@@ -562,12 +551,10 @@ bool CR::Gfx::init(){
 
     __CR_init_input(window);
     __CR_init_job();
-    indexer.scan("data/");
-
-    while(indexer.isScanning){ __CR_update_job(); CR::sleep(16); } // wait for indexer to finish
 
     // basic rectangle for 2d rendering
-    shBRect = qLoadShader("data/shader/b_rect_texture_f.glsl");
+    shBRect->load("data/shader/b_rect_texture_f.glsl", "data/shader/b_rect_texture_v.glsl");
+    
     shBRect->findAttrs({"color", "model", "projection", "image"});
     mBRect = createPrimMesh({ 
         // pos      // tex
@@ -579,7 +566,7 @@ bool CR::Gfx::init(){
         1.0f, 1.0f, 1.0f, 1.0f,
         1.0f, 0.0f, 1.0f, 0.0f
     });
-    dummyTexture = qLoadTexture("data/texture/container.png");
+    dummyTexture->load("data/texture/container.png");
 
     return true;
 }
@@ -610,7 +597,7 @@ void CR::Gfx::render(){
     }
 
     dummyLayer->renderOn([](CR::Gfx::RenderLayer *layer){
-        layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->size, CR::Vec2<float>(0.5f), CR::Math::rads(0)));
+        layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->getRsc()->size, CR::Vec2<float>(0.5f), CR::Math::rads(0)));
     });
     dummyLayer->clear();
     dummyLayer->flush();
