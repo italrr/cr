@@ -40,7 +40,7 @@
                     GREEN, // 8 bits
                     BLUE, // 8 bits
                     RGB, // 24 bits
-                    RGBA // 32 bits
+                    RGBA, // 32 bits
                 };
             }
 
@@ -284,8 +284,8 @@
             
             std::shared_ptr<RenderLayer> createRenderLayer(const CR::Vec2<int> &size, int type);
             std::shared_ptr<RenderLayer> createRenderLayer(const CR::Vec2<int> &size, int type, const std::string &tag, bool systemLayer, int order = -1); // -1 = auto
-            std::shared_ptr<RenderLayer> getRenderLayer(int id, bool isSystemLayer);
-            std::shared_ptr<RenderLayer> getRenderLayer(const std::string &tag, bool isSystemLayer);
+            std::shared_ptr<RenderLayer> getRenderLayer(int id, bool isSystemLayer = true);
+            std::shared_ptr<RenderLayer> getRenderLayer(const std::string &tag, bool isSystemLayer = true);
 
             // 2D default render methods (mainly for debugging, or specific internal usage)
             struct Texture;

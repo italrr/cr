@@ -337,11 +337,20 @@ namespace CR {
 		Mat<4, 4, float> perspective(float fovy, float aspect, float zNear, float zFar){
 			float const tanHalfFovy = CR::Math::tan(fovy / 2.0f);
 			CR::Mat<4, 4, float> out(0.0f);
-			out.mat[0] = 1.0f / (aspect * tanHalfFovy);
-			out.mat[5] = 1.0f / (tanHalfFovy);
-			out.mat[10] = - (zFar + zNear) / (zFar - zNear);
-			out.mat[11] = - 1.0f;
-			out.mat[14] = - (2.0f * zFar * zNear) / (zFar - zNear);
+
+			// out.mat[0*4 + 0] = 1.0f / (aspect * tanHalfFovy);
+			// out.mat[1*4 + 1] = 1.0f / tanHalfFovy;
+			// out.mat[2*4 + 2] = zFar / (zNear - zFar);
+			// out.mat[2*4 + 3] = -1.0f;
+			// out.mat[3*4 + 2] = -(zFar * zNear) / (zFar - zNear);
+
+				
+			out.mat[0*4+0] = static_cast<float>(1) / (aspect * tanHalfFovy);
+			out.mat[1*4+1] = static_cast<float>(1) / (tanHalfFovy);
+			out.mat[2*4+2] = - (zFar + zNear) / (zFar - zNear);
+			out.mat[2*4+3] = - static_cast<float>(1);
+			out.mat[3*4+2] = - (static_cast<float>(2) * zFar * zNear) / (zFar - zNear);
+
 			return out;
 		}
 		Mat<4, 4, float> orthogonal(float left, float right, float bottom, float top){

@@ -64,7 +64,9 @@ static std::vector<std::shared_ptr<CR::Gfx::RenderLayer>> getSortedRenderList(co
 
 static std::shared_ptr<CR::Gfx::Texture> dummyTexture = std::make_shared<CR::Gfx::Texture>(CR::Gfx::Texture());
 static std::shared_ptr<CR::Gfx::Shader> shBRect = std::make_shared<CR::Gfx::Shader>(CR::Gfx::Shader());
+static std::shared_ptr<CR::Gfx::Shader> shBCube = std::make_shared<CR::Gfx::Shader>(CR::Gfx::Shader());
 static CR::Gfx::MeshData mBRect;
+static CR::Gfx::MeshData mBCube;
 
 
 double CR::getDelta(){
@@ -231,10 +233,16 @@ void CR::Gfx::RenderLayer::renderOn(const std::function<void(CR::Gfx::RenderLaye
 
 void CR::Gfx::RenderLayer::clear(){
     std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
+    if(type == RenderLayerType::T_3D){
+        glEnable(GL_DEPTH_TEST);   
+    }    
     glBindFramebuffer(GL_FRAMEBUFFER, this->fb->framebufferId);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);    
     glViewport(0, 0, this->size.x, this->size.y);   
+    if(type == RenderLayerType::T_3D){
+        glDisable(GL_DEPTH_TEST);
+    }else    
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     fblock.unlock();
 }   
@@ -244,6 +252,7 @@ void CR::Gfx::RenderLayer::flush(){
     glBindFramebuffer(GL_FRAMEBUFFER, this->fb->framebufferId);
     if(type == RenderLayerType::T_3D){
         glEnable(GL_DEPTH_TEST);
+        
     }else
     if(type == RenderLayerType::T_2D){
         glEnable(GL_BLEND);
@@ -275,6 +284,10 @@ static void drawRLImmediate(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, con
 
     const auto &position = pos;
 
+
+    glEnable(GL_BLEND);
+    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
     // CR::log("%s %i\n", size.str().c_str(), rl->fb->textureId);
     auto model = CR::MAT4Identity
                 .translate(CR::Vec3<float>(position.x - origin.x * static_cast<float>(size.x), position.y - origin.y * static_cast<float>(size.y), 0.0f))
@@ -297,6 +310,8 @@ static void drawRLImmediate(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, con
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);  
     glUseProgram(0);
+
+    glDisable(GL_BLEND);
     
     // lock.unlock();
 }
@@ -554,22 +569,116 @@ bool CR::Gfx::init(){
 
     // basic rectangle for 2d rendering
     shBRect->load("data/shader/b_rect_texture_f.glsl", "data/shader/b_rect_texture_v.glsl");
+    shBCube->load("data/shader/b_cube_texture_f.glsl", "data/shader/b_cube_texture_v.glsl");
     
     shBRect->findAttrs({"color", "model", "projection", "image"});
+    shBCube->findAttrs({"color", "model", "projection", "image", "view"});
+
     mBRect = createPrimMesh({ 
-        // pos      // tex
-        0.0f, 1.0f, 0.0f, 1.0f,
-        1.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 0.0f, 
+        // pos              // tex
+        0.0f, 1.0f, 0.0f,   0.0f, 1.0f,
+        1.0f, 0.0f, 0.0f,   1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f,   0.0f, 0.0f, 
     
-        0.0f, 1.0f, 0.0f, 1.0f,
-        1.0f, 1.0f, 1.0f, 1.0f,
-        1.0f, 0.0f, 1.0f, 0.0f
+        0.0f, 1.0f, 0.0f,   0.0f, 1.0f,
+        1.0f, 1.0f, 0.0f,   1.0f, 1.0f,
+        1.0f, 0.0f, 0.0f,   1.0f, 0.0f
     });
+
+    mBCube = createPrimMesh({ 
+        // pos                  // tex
+        -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,    1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,    0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,
+
+        -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,    1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,    1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,    1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,    0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+
+        -0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+
+         0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+
+        -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,    1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,    1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,    1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+
+        -0.5f,  0.5f, -0.5f,    0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,    0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,    0.0f, 1.0f
+    });
+
     dummyTexture->load("data/texture/container.png");
 
     return true;
 }
+
+
+static float add = 0.0f;
+
+CR::Gfx::Renderable *Cube(){
+    CR::Gfx::Renderable2D *self = new CR::Gfx::Renderable2D(); // layer's flush is in charge of deleting this
+
+    // self->handleId = ;
+
+    self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
+        auto *obj = static_cast<CR::Gfx::Renderable2D*>(renobj);
+        
+        const auto projection = CR::Math::perspective(CR::Math::rads(45.0f), (float)size.x / (float)size.y, 0.1f, 100.0f);
+
+        auto model = CR::MAT4Identity;
+        auto view = CR::MAT4Identity;
+
+        add += 90.0f * currentDelta;
+
+        model = model.rotate(CR::Math::rads(add), CR::Vec3<float>(0.5f, 1.0f, 0.0f));
+        view = view.translate(CR::Vec3<float>(0.0f, 0.0f, -3.0f));
+                    
+
+        CR::Gfx::applyShader(shBCube->getRsc()->shaderId, shBCube->shAttrs, {
+            {"image", std::make_shared<CR::Gfx::ShaderAttrInt>(0)},
+            {"model", std::make_shared<CR::Gfx::ShaderAttrMat4>(model)},
+            {"view", std::make_shared<CR::Gfx::ShaderAttrMat4>(view)},
+            {"projection", std::make_shared<CR::Gfx::ShaderAttrMat4>(projection)},
+            {"color", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))}
+        });
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, dummyTexture->getRsc()->textureId);
+
+        glBindVertexArray(mBCube.vao);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);       
+        glUseProgram(0);     
+    };
+
+    return self;
+}
+
+
+
 
 void CR::Gfx::render(){
     if(!running){
@@ -597,19 +706,30 @@ void CR::Gfx::render(){
     }
 
     dummyLayer->renderOn([](CR::Gfx::RenderLayer *layer){
-        layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->getRsc()->size, CR::Vec2<float>(0.5f), CR::Math::rads(0)));
+        layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->getRsc()->size, CR::Vec2<float>(0.0f), CR::Math::rads(0)));
     });
     dummyLayer->clear();
     dummyLayer->flush();
 
 
 
+    static std::shared_ptr<CR::Gfx::RenderLayer> uiL = CR::Gfx::getRenderLayer("ui");
+    static std::shared_ptr<CR::Gfx::RenderLayer> wL = CR::Gfx::getRenderLayer("world");
+    
 
-    systemLayers.begin()->second->renderOn([](CR::Gfx::RenderLayer *layer){    
+    wL->renderOn([](CR::Gfx::RenderLayer *layer){    
         // layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->size, CR::Vec2<float>(0.5f), CR::Math::rads(0)));
+        layer->add(Cube());
+    });
 
+
+    uiL->renderOn([](CR::Gfx::RenderLayer *layer){    
+        // layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->size, CR::Vec2<float>(0.5f), CR::Math::rads(0)));
         layer->add(CR::Gfx::Draw::RenderLayer(dummyLayer, CR::Vec2<float>(0), CR::Vec2<int>(1000, 1000), CR::Vec2<float>(0.0f), 0.0f));
     });
+
+
+
 
 
 
@@ -626,8 +746,8 @@ void CR::Gfx::render(){
     // glBindFramebuffer(GL_FRAMEBUFFER, 0);
     // // fblock.unlock();
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glViewport(0, 0, size.x, size.y);  
 
     for(auto &it : systemLayers){
@@ -728,12 +848,23 @@ bool CR::Gfx::deleteTexture2D(unsigned id){
 std::shared_ptr<CR::Gfx::FramebufferObj> CR::Gfx::createFramebuffer(unsigned w, unsigned h){
     unsigned id;
     std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
+
+
+    GLuint rboDepthStencil;
+    glGenRenderbuffers(1, &rboDepthStencil);
+    glBindRenderbuffer(GL_RENDERBUFFER, rboDepthStencil);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, w, h);
+
     glGenFramebuffers(1, &id);
     glBindFramebuffer(GL_FRAMEBUFFER, id);
     unsigned texture = CR::Gfx::createTexture2D(0, w, h, ImageFormat::RGBA);
     
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+    
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboDepthStencil);
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);    
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
     fblock.unlock();
 
     std::unique_lock<std::mutex> lock(framebufferListMutex);
@@ -779,8 +910,13 @@ CR::Gfx::MeshData CR::Gfx::createPrimMesh(const std::vector<float> &vertices){
 
     glBindVertexArray(vao);
 
+    // position
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+
+    // texcoords
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);    
     
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);  
