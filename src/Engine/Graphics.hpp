@@ -24,11 +24,13 @@
             struct FramebufferObj {
                 unsigned framebufferId;
                 unsigned textureId;
+                unsigned renderbufferId;
                 unsigned width;
                 unsigned height;
-                FramebufferObj(unsigned framebufferId, unsigned textureId, unsigned width, unsigned height){
+                FramebufferObj(unsigned framebufferId, unsigned textureId, unsigned renderbufferId, unsigned width, unsigned height){
                     this->framebufferId = framebufferId;
                     this->textureId = textureId;
+                    this->renderbufferId = renderbufferId;
                     this->width = width;
                     this->height = height;
                 }
@@ -108,13 +110,6 @@
 				};
 			}
 
-            namespace MeshType {
-                enum MeshType : unsigned {
-                    PRIMITIVE, // verts only
-                    COMPLEX // verts & indices
-                };
-            }
-
 			struct Material {
 				int diffuse;
 				int specular;
@@ -133,10 +128,12 @@
                 unsigned vbo;
                 unsigned vao;
                 unsigned ebo;
+                unsigned vertn;
                 MeshData(){
                     vbo = 0;
                     vao = 0;
                     ebo = 0;
+                    vertn = 0;
                 }
             };
             
@@ -171,8 +168,8 @@
 
             struct Vertex {
                 CR::Vec3<float> position;
-                CR::Vec3<float> normal;
                 CR::Vec2<float> texCoords;
+                CR::Vec3<float> normal;
 				CR::Vec3<float> tangent;
 				CR::Vec3<float> bitangent;
 				// bone data
@@ -191,20 +188,19 @@
             };
 
             struct Mesh {
+                CR::Gfx::MeshData md;
                 std::vector<CR::Gfx::Vertex> vertices;
-                const std::vector<unsigned int> indices;
-                unsigned nverts;
-                unsigned strides;
-                unsigned vbo;
-                unsigned vao;
-                unsigned ebo;
+                std::vector<unsigned int> indices; 
+                unsigned textureId;
+                Mesh(){
+                    
+                }
             };
 
             struct RenderLayer;
+            
             struct Renderable {
-                Transform transform;
                 unsigned type;
-                void *self;
                 std::function<void(Renderable*, RenderLayer *rl)> render;
             };
 
@@ -223,7 +219,8 @@
             };
 
             struct Renderable3D : Renderable {
-                // transformation
+                CR::Gfx::Transform transform;
+                CR::Gfx::MeshData md;
             };            
 
             namespace RenderLayerType {
@@ -273,8 +270,8 @@
                 CR::Vec2<int> size;
                 void add(const std::vector<Renderable*> &objs);
                 void add(Renderable* obj);
-                bool init(int width, int height);
-                bool init();
+                bool init(unsigned type,  int width, int height);
+                bool init(unsigned type);
                 void setDepth(int n);
                 void renderOn(const std::function<void(RenderLayer *layer)> &what, bool flush, bool clear);
                 void renderOn(const std::function<void(RenderLayer *layer)> &whatr);
@@ -292,6 +289,8 @@
             namespace Draw {
                 CR::Gfx::Renderable *RenderLayer(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle);        
                 CR::Gfx::Renderable *Texture(const std::shared_ptr<CR::Gfx::Texture> &tex, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle); 
+                CR::Gfx::Renderable *PrimMesh(CR::Gfx::MeshData &md, unsigned nverts, unsigned textureId, const CR::Vec3<float> &position, const CR::Vec3<float> &scale, const CR::Vec4<float> &rotation); 
+
             } 
 
             bool init();

@@ -67,6 +67,7 @@ static std::shared_ptr<CR::Gfx::Shader> shBRect = std::make_shared<CR::Gfx::Shad
 static std::shared_ptr<CR::Gfx::Shader> shBCube = std::make_shared<CR::Gfx::Shader>(CR::Gfx::Shader());
 static CR::Gfx::MeshData mBRect;
 static CR::Gfx::MeshData mBCube;
+static std::shared_ptr<CR::Gfx::Mesh> mBCubeMesh = std::shared_ptr<CR::Gfx::Mesh>(new CR::Gfx::Mesh());
 
 
 double CR::getDelta(){
@@ -149,11 +150,7 @@ static void handleOpenGLError(const std::string &at){
 
 
 
-
-
-
-
-bool CR::Gfx::RenderLayer::init(int width, int height){
+bool CR::Gfx::RenderLayer::init(unsigned type, int width, int height){
 
     std::unique_lock<std::mutex> access(this->accesMutex);
 
@@ -163,11 +160,12 @@ bool CR::Gfx::RenderLayer::init(int width, int height){
     this->order = 0;
     this->depth = 0;
     this->objects.clear();
-    this->type = RenderLayerType::T_2D;
+    this->type = type;
 
     switch(this->type){
         case RenderLayerType::T_3D: {
             this->projection = CR::Math::perspective(45.0f, static_cast<float>(this->size.x) /  static_cast<float>(this->size.y), 0.1f, 100.0f);
+            this->camera.init();
         } break;
         case RenderLayerType::T_2D: {
             this->projection = CR::Math::orthogonal(0, size.x, 0, size.y);
@@ -205,8 +203,8 @@ void CR::Gfx::RenderLayer::add(Renderable* obj){
     access.unlock();
 }
 
-bool CR::Gfx::RenderLayer::init(){
-    return init(CR::Gfx::getWidth(), CR::Gfx::getHeight());    
+bool CR::Gfx::RenderLayer::init(unsigned type){
+    return init(type, CR::Gfx::getWidth(), CR::Gfx::getHeight());    
 }
 
 void CR::Gfx::RenderLayer::setDepth(int n){
@@ -237,8 +235,8 @@ void CR::Gfx::RenderLayer::clear(){
         glEnable(GL_DEPTH_TEST);   
     }    
     glBindFramebuffer(GL_FRAMEBUFFER, this->fb->framebufferId);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);    
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);      
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  
     glViewport(0, 0, this->size.x, this->size.y);   
     if(type == RenderLayerType::T_3D){
         glDisable(GL_DEPTH_TEST);
@@ -431,7 +429,7 @@ std::shared_ptr<CR::Gfx::RenderLayer> CR::Gfx::createRenderLayer(const CR::Vec2<
 std::shared_ptr<CR::Gfx::RenderLayer> CR::Gfx::createRenderLayer(const CR::Vec2<int> &size, int type, const std::string &tag, bool systemLayer, int order){
     auto rl = std::shared_ptr<CR::Gfx::RenderLayer>(new CR::Gfx::RenderLayer());
     
-    rl->init(size.x, size.y);
+    rl->init(type, size.x, size.y);
     rl->type = type;
     rl->tag = tag;
     rl->order = order == -1 ? 0 : order;
@@ -677,6 +675,37 @@ CR::Gfx::Renderable *Cube(){
     return self;
 }
 
+CR::Gfx::Renderable *CR::Gfx::Draw::PrimMesh(CR::Gfx::MeshData &md, unsigned nverts, unsigned textureId, const CR::Vec3<float> &position, const CR::Vec3<float> &scale, const CR::Vec4<float> &rotation){
+    CR::Gfx::Renderable3D *self = new CR::Gfx::Renderable3D(); // layer's flush is in charge of deleting this
+
+    self->transform.model = CR::MAT4Identity.translate(position).rotate(rotation.w, CR::Vec3<float>(rotation.x, rotation.y, rotation.z)).scale(scale);
+    self->transform.material.diffuse = textureId;
+    self->md = md;
+    self->md.vertn = nverts;
+
+    self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
+        auto *obj = static_cast<CR::Gfx::Renderable3D*>(renobj);
+        
+        CR::Gfx::applyShader(shBCube->getRsc()->shaderId, shBCube->shAttrs, {
+            {"image", std::make_shared<CR::Gfx::ShaderAttrInt>(0)},
+            {"model", std::make_shared<CR::Gfx::ShaderAttrMat4>(obj->transform.model)},
+            {"view", std::make_shared<CR::Gfx::ShaderAttrMat4>(rl->camera.getView())},
+            {"projection", std::make_shared<CR::Gfx::ShaderAttrMat4>(rl->projection)},
+            {"color", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))}
+        });
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, obj->transform.material.diffuse);
+
+        glBindVertexArray(obj->md.vao);
+        glDrawArrays(GL_TRIANGLES, 0, obj->md.vertn);
+        glBindVertexArray(0);       
+        glUseProgram(0);      
+    };
+
+    return self;
+
+}
 
 
 
@@ -698,7 +727,10 @@ void CR::Gfx::render(){
 
 
     static bool yes = false;
+    static float add = 0.0f;
     static std::shared_ptr<RenderLayer> dummyLayer;
+
+    add += 360.0f * currentDelta;
 
     if(!yes){
         yes = true;
@@ -717,9 +749,9 @@ void CR::Gfx::render(){
     static std::shared_ptr<CR::Gfx::RenderLayer> wL = CR::Gfx::getRenderLayer("world");
     
 
-    wL->renderOn([](CR::Gfx::RenderLayer *layer){    
+    wL->renderOn([&](CR::Gfx::RenderLayer *layer){    
         // layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->size, CR::Vec2<float>(0.5f), CR::Math::rads(0)));
-        layer->add(Cube());
+        layer->add(CR::Gfx::Draw::PrimMesh(mBCube, 36, dummyTexture->getRsc()->textureId, CR::Vec3<float>(0.0f), CR::Vec3<float>(1.0f), CR::Vec4<float>(0.5f, 1.0f, 0.0f, CR::Math::rads(add)))) ;
     });
 
 
@@ -728,33 +760,30 @@ void CR::Gfx::render(){
         layer->add(CR::Gfx::Draw::RenderLayer(dummyLayer, CR::Vec2<float>(0), CR::Vec2<int>(1000, 1000), CR::Vec2<float>(0.0f), 0.0f));
     });
 
-
-
-
-
-
-    // flush layers
+    
+    // Flush system layers
+    std::vector<std::shared_ptr<CR::Gfx::RenderLayer>> layerList;
     for(auto &it : systemLayers){
         auto &layer = it.second;
         layer->clear();
-        layer->flush();
+        layer->flush();           
+        layerList.push_back(layer);
     }
+    
+    // Sort layers to be rendered in order
+    std::sort(layerList.begin(), layerList.end(), [&](std::shared_ptr<CR::Gfx::RenderLayer> &a, std::shared_ptr<CR::Gfx::RenderLayer> &b) {
+        return a->order < b->order;
+    });         
 
-
-    // // std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
-    // glBindFramebuffer(GL_FRAMEBUFFER, 1); 
-    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    // // fblock.unlock();
-
+    // Render onto screen
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glViewport(0, 0, size.x, size.y);  
-
-    for(auto &it : systemLayers){
-        auto &layer = it.second;
+    for(int i = 0; i < layerList.size(); ++i){
+        auto &layer = layerList[i];
         drawRLImmediate(layer, Vec2<float>(0), layer->size, Vec2<float>(0.0f), CR::Math::rads(0));
 
-    }    
+    }   
 
     glfwSwapBuffers(window);
 
@@ -849,10 +878,9 @@ std::shared_ptr<CR::Gfx::FramebufferObj> CR::Gfx::createFramebuffer(unsigned w, 
     unsigned id;
     std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
 
-
-    GLuint rboDepthStencil;
-    glGenRenderbuffers(1, &rboDepthStencil);
-    glBindRenderbuffer(GL_RENDERBUFFER, rboDepthStencil);
+    unsigned renderbufferId;
+    glGenRenderbuffers(1, &renderbufferId);
+    glBindRenderbuffer(GL_RENDERBUFFER, renderbufferId);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, w, h);
 
     glGenFramebuffers(1, &id);
@@ -861,14 +889,14 @@ std::shared_ptr<CR::Gfx::FramebufferObj> CR::Gfx::createFramebuffer(unsigned w, 
     
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
     
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboDepthStencil);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderbufferId);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);    
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
     fblock.unlock();
 
     std::unique_lock<std::mutex> lock(framebufferListMutex);
-    auto handle = std::shared_ptr<FramebufferObj>(new FramebufferObj(id, texture, w, h));
+    auto handle = std::shared_ptr<FramebufferObj>(new FramebufferObj(id, texture, renderbufferId, w, h));
     framebufferList[id] = handle;
     lock.unlock();    
     
