@@ -192,6 +192,10 @@
                 std::vector<CR::Gfx::Vertex> vertices;
                 std::vector<unsigned int> indices; 
                 unsigned textureId;
+                unsigned int mIndex;
+                unsigned int nIndices;
+                unsigned int bVertex;
+                unsigned int bIndex;                
                 Mesh(){
                     
                 }

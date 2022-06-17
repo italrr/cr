@@ -15,6 +15,7 @@ set (cr_src
     src/Engine/Tools.cpp
     src/Engine/Types.cpp
     src/Engine/Input.cpp
+    src/Engine/Model.cpp
     src/Engine/Shader.cpp
     src/Engine/Texture.cpp
     src/Engine/Resource.cpp
@@ -30,11 +31,11 @@ if(UNIX AND NOT APPLE)
 endif()
 
 IF(LINUX)
-	target_link_libraries(cr_bin -m64 -lGL -lGLU -lglfw -pthread -ldl  -lrt -lXrandr -lXi -lXinerama -lX11 -lXxf86vm -lz)
+	target_link_libraries(cr_bin -m64 -lGL -lGLU -lglfw -pthread -ldl  -lrt -lXrandr -lXi -lXinerama -lX11 -lXxf86vm -lassimp -lz)
 ENDIF(LINUX)
 
 IF(MINGW)
-	target_link_libraries(cr_bin -m64 -lglfw3 -pthread -lgdi32 -lopengl32 -lzlib)
+	target_link_libraries(cr_bin -m64 -lglfw3 -pthread -lgdi32 -lopengl32 -lassimp -lIrrXML -lzlib)
 ENDIF(MINGW)
 
 # Apple most likely won't work

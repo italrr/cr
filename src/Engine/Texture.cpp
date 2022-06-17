@@ -21,7 +21,7 @@ bool CR::Gfx::Texture::load(const std::string &path){
     }
 
     if(!CR::File::exists(path)){
-        CR::log("[GFX] Texture::load: failed to load texture '%s': file doesn't exist\n", path.c_str());
+        CR::log("[GFX] Texture::load: failed to load texture '%s': It doesn't exist\n", path.c_str());
         return false;        
     }
 

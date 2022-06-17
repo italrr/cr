@@ -1,24 +1,106 @@
-#ifndef CR_SHADER_HPP
-    #define CR_SHADER_HPP
+#ifndef CR_MODEL_HPP
+    #define CR_MODEL_HPP
 
     #include "Types.hpp"
     #include "Resource.hpp"
+    #include "Graphics.hpp"
+    #include "Texture.hpp"
 
     namespace CR {
 
         namespace Gfx {
 
+
+            struct SkeletalFrameRotation {
+                CR::Vec4<float> rotation;
+                float time;
+            };
+
+            struct SkeletalFrameTranslation {
+                CR::Vec3<float> translation;
+                float time;
+            };
+
+            struct SkeletalFrameScaling {
+                CR::Vec3<float> scaling;
+                float time;
+            };                        
+
+            struct Bone {
+                std::string name;
+                unsigned int index;
+                std::vector<CR::Gfx::SkeletalFrameRotation> rotations;
+                std::vector<CR::Gfx::SkeletalFrameTranslation> translations;
+                std::vector<CR::Gfx::SkeletalFrameScaling> scalings;   
+            };
+
+            struct SkeletalHierarchy {
+                std::string name;
+                CR::Mat<4, 4, float> mat;
+                std::shared_ptr<CR::Gfx::SkeletalHierarchy> parent;
+                std::vector<std::shared_ptr<CR::Gfx::SkeletalHierarchy>> children;
+                CR::Mat<4, 4, float> getTransform(){
+                    auto b = this->parent.get();
+                    std::vector<CR::Mat<4, 4, float>> mats;
+                    while(b != NULL){
+                        mats.push_back(b->mat);
+                        b = b->parent.get();
+                    }
+                    CR::Mat<4, 4, float> total = MAT4Identity;
+                    for(int i = 0; i < mats.size(); ++i){
+                        total = total * mats[mats.size() - 1 - i];
+                    }
+                    return total;
+                }
+                SkeletalHierarchy(){
+                    parent = std::shared_ptr<CR::Gfx::SkeletalHierarchy>(NULL);
+                }
+            };
+
+            struct BoneInfo {
+                std::shared_ptr<CR::Gfx::SkeletalHierarchy> skeleton;
+                CR::Mat<4,4, float> transf;
+                CR::Mat<4,4, float> offset;
+                std::string name;
+            };        
+
+            struct SkeletalAnimation {
+                std::unordered_map<std::string, std::shared_ptr<CR::Gfx::Bone>> bones;
+                std::vector<CR::Mat<4, 4, float>> hierarchy;
+                std::string name;
+                float ticksPerSecond;
+                float duration;
+            };
+
+            struct TextureDependency {
+                std::shared_ptr<CR::Gfx::Texture> texture;
+                int role;
+            };
+
             struct ModelResource : CR::Rsc::Resource {
-                // std::string vertSrc;
-                // std::string fragSrc;
-                // int shaderId;
-                // ShaderResource(){
-                //     rscType = CR::Rsc::ResourceType::SHADER;
-                //     shaderId = 0;
-                // }
-                // void unload() override;
-                // std::shared_ptr<CR::Result> load(const std::shared_ptr<CR::Indexing::Index> &file);
-            };       
+                std::vector<std::shared_ptr<CR::Gfx::Mesh>> meshes;
+                std::vector<CR::Gfx::TextureDependency>  texDeps;                   
+                CR::Mat<4,4, float> gInvTrans;             
+                std::vector<BoneInfo> boneInfo;                
+                ModelResource(){
+                    rscType = CR::Rsc::ResourceType::MODEL;
+                }
+                void unload() override;
+            };     
+
+            struct Model : CR::Rsc::Proxy {
+
+                Model(const std::string &path);
+                Model(); 
+
+                bool load(const std::string &file);
+                void unload();
+
+                std::shared_ptr<CR::Gfx::ModelResource> getRsc(){
+                    return std::static_pointer_cast<CR::Gfx::ModelResource>(rsc);
+                }                  
+
+            };
 
 
                 

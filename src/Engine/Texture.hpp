@@ -21,9 +21,9 @@
             };         
 
             struct Texture : CR::Rsc::Proxy {
-                bool load(const std::string &path);
                 Texture(const std::string &path);
-                Texture();
+                Texture();                
+                bool load(const std::string &path);
                 void unload();
                 std::shared_ptr<CR::Gfx::TextureResource> getRsc(){
                     return std::static_pointer_cast<CR::Gfx::TextureResource>(rsc);
