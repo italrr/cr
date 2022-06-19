@@ -13,6 +13,7 @@
 #include "Log.hpp"
 #include "Shader.hpp"
 #include "Texture.hpp"
+#include "Model.hpp"
 
 static GLFWwindow *window = NULL;
 static bool running = true;
@@ -627,6 +628,7 @@ bool CR::Gfx::init(){
         -0.5f,  0.5f,  0.5f,    0.0f, 0.0f,
         -0.5f,  0.5f, -0.5f,    0.0f, 1.0f
     });
+    mBCube.vertn = 36;
 
     dummyTexture->load("data/texture/container.png");
 
@@ -636,66 +638,27 @@ bool CR::Gfx::init(){
 
 static float add = 0.0f;
 
-CR::Gfx::Renderable *Cube(){
-    CR::Gfx::Renderable2D *self = new CR::Gfx::Renderable2D(); // layer's flush is in charge of deleting this
-
-    // self->handleId = ;
-
-    self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
-        auto *obj = static_cast<CR::Gfx::Renderable2D*>(renobj);
-        
-        const auto projection = CR::Math::perspective(CR::Math::rads(45.0f), (float)size.x / (float)size.y, 0.1f, 100.0f);
-
-        auto model = CR::MAT4Identity;
-        auto view = CR::MAT4Identity;
-
-        add += 90.0f * currentDelta;
-
-        model = model.rotate(CR::Math::rads(add), CR::Vec3<float>(0.5f, 1.0f, 0.0f));
-        view = view.translate(CR::Vec3<float>(0.0f, 0.0f, -3.0f));
-                    
-
-        CR::Gfx::applyShader(shBCube->getRsc()->shaderId, shBCube->shAttrs, {
-            {"image", std::make_shared<CR::Gfx::ShaderAttrInt>(0)},
-            {"model", std::make_shared<CR::Gfx::ShaderAttrMat4>(model)},
-            {"view", std::make_shared<CR::Gfx::ShaderAttrMat4>(view)},
-            {"projection", std::make_shared<CR::Gfx::ShaderAttrMat4>(projection)},
-            {"color", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))}
-        });
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, dummyTexture->getRsc()->textureId);
-
-        glBindVertexArray(mBCube.vao);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glBindVertexArray(0);       
-        glUseProgram(0);     
-    };
-
-    return self;
-}
-
 CR::Gfx::Renderable *CR::Gfx::Draw::PrimMesh(CR::Gfx::MeshData &md, unsigned nverts, unsigned textureId, const CR::Vec3<float> &position, const CR::Vec3<float> &scale, const CR::Vec4<float> &rotation){
     CR::Gfx::Renderable3D *self = new CR::Gfx::Renderable3D(); // layer's flush is in charge of deleting this
 
-    self->transform.model = CR::MAT4Identity.translate(position).rotate(rotation.w, CR::Vec3<float>(rotation.x, rotation.y, rotation.z)).scale(scale);
-    self->transform.material.diffuse = textureId;
+    self->transform = std::make_shared<CR::Gfx::Transform>(CR::Gfx::Transform());
+    self->transform->model = CR::MAT4Identity.translate(position).rotate(rotation.w, CR::Vec3<float>(rotation.x, rotation.y, rotation.z)).scale(scale);
+    self->transform->textures[CR::Gfx::TextureRole::DIFFUSE] = textureId;
     self->md = md;
-    self->md.vertn = nverts;
 
     self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
         auto *obj = static_cast<CR::Gfx::Renderable3D*>(renobj);
         
         CR::Gfx::applyShader(shBCube->getRsc()->shaderId, shBCube->shAttrs, {
             {"image", std::make_shared<CR::Gfx::ShaderAttrInt>(0)},
-            {"model", std::make_shared<CR::Gfx::ShaderAttrMat4>(obj->transform.model)},
+            {"model", std::make_shared<CR::Gfx::ShaderAttrMat4>(obj->transform->model)},
             {"view", std::make_shared<CR::Gfx::ShaderAttrMat4>(rl->camera.getView())},
             {"projection", std::make_shared<CR::Gfx::ShaderAttrMat4>(rl->projection)},
             {"color", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))}
         });
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, obj->transform.material.diffuse);
+        glBindTexture(GL_TEXTURE_2D, obj->transform->textures[CR::Gfx::TextureRole::DIFFUSE]);
 
         glBindVertexArray(obj->md.vao);
         glDrawArrays(GL_TRIANGLES, 0, obj->md.vertn);
@@ -707,6 +670,40 @@ CR::Gfx::Renderable *CR::Gfx::Draw::PrimMesh(CR::Gfx::MeshData &md, unsigned nve
 
 }
 
+CR::Gfx::Renderable *CR::Gfx::Draw::Mesh(CR::Gfx::MeshData &md, const std::shared_ptr<CR::Gfx::Transform> &transform, const std::shared_ptr<CR::Gfx::Shader> &shader){
+    CR::Gfx::Renderable3D *self = new CR::Gfx::Renderable3D(); // layer's flush is in charge of deleting this
+
+    self->transform = transform;
+    self->shader = shader;
+    self->md = md;
+
+    self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
+        auto *obj = static_cast<CR::Gfx::Renderable3D*>(renobj);
+        
+        // Setup shader attributes
+        std::unordered_map<std::string, std::shared_ptr<CR::Gfx::ShaderAttr>> fShAttrs;
+        fShAttrs.insert(obj->transform->shAttrsVal.begin(), obj->transform->shAttrsVal.end());
+        fShAttrs["view"] = std::make_shared<CR::Gfx::ShaderAttrMat4>(rl->camera.getView());
+        fShAttrs["projection"] = std::make_shared<CR::Gfx::ShaderAttrMat4>(rl->projection);
+        // TODO: attend lighting
+
+        // Apply shader
+        CR::Gfx::applyShader(obj->shader->getRsc()->shaderId, obj->transform->shAttrsLoc, fShAttrs);
+
+        // Draw Triangle
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, obj->transform->textures[CR::Gfx::TextureRole::DIFFUSE]);
+        glBindVertexArray(obj->md.vao);
+        glDrawArrays(GL_TRIANGLES, 0, obj->md.vertn);
+
+        // Clean up
+        // TODO: optimize program for the same shader
+        glBindVertexArray(0);       
+        glUseProgram(0);      
+    };
+
+    return self;
+}
 
 
 void CR::Gfx::render(){
@@ -729,12 +726,15 @@ void CR::Gfx::render(){
     static bool yes = false;
     static float add = 0.0f;
     static std::shared_ptr<RenderLayer> dummyLayer;
+    static std::shared_ptr<CR::Gfx::Model> model;
 
     add += 360.0f * currentDelta;
 
     if(!yes){
         yes = true;
         dummyLayer = CR::Gfx::createRenderLayer(CR::Vec2<int>(1000, 1000), CR::Gfx::RenderLayerType::T_2D);
+        model = std::make_shared<CR::Gfx::Model>(CR::Gfx::Model());
+        model->load("data/model/cube-tex.dae");
     }
 
     dummyLayer->renderOn([](CR::Gfx::RenderLayer *layer){
@@ -1000,6 +1000,7 @@ CR::Gfx::MeshData CR::Gfx::createMesh(const std::vector<CR::Gfx::Vertex> &vertic
     md.vao = vao;
     md.vbo = vbo;
     md.ebo = ebo;
+    md.vertn = indices.size();
     return md;
 }
 

@@ -355,8 +355,7 @@ bool CR::Gfx::Model::load(const std::string &path){
 
     // Load mesh data into GPU
     for(int i = 0; i < rsc->meshes.size(); ++i){
-        auto md = CR::Gfx::createMesh(rsc->meshes[i]->vertices, rsc->meshes[i]->indices);
-        rsc->meshes[i]->md = md;
+        rsc->meshes[i]->md = CR::Gfx::createMesh(rsc->meshes[i]->vertices, rsc->meshes[i]->indices);
         // auto meshres = ren->generateMesh(meshes[i]->vertices, meshes[i]->indices, this->transform->useBones);
         // meshres->payload->reset();
         // meshres->payload->read(&meshes[i]->vao, sizeof(meshes[i]->vao));

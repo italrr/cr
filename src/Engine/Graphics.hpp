@@ -137,6 +137,9 @@
                 }
             };
             
+            struct ShaderAttr;
+            struct Texture;
+            struct Shader;
 
             struct Transform {
 				int matMode;
@@ -144,13 +147,16 @@
 				CR::Mat<4, 4, float> model;
 				CR::Vec3<float> position;
 				CR::Color color;
+                std::unordered_map<int, unsigned> textures; // ROLE -> textureId
+                std::unordered_map<std::string, unsigned> shAttrsLoc;
+                std::unordered_map<std::string, std::shared_ptr<CR::Gfx::ShaderAttr>> shAttrsVal;
 				Transform(){
 					this->model = CR::MAT4Identity;
 					this->matMode = 0;
 					enMatMode(Gfx::MaterialMode::DIFFUSE);
-					enMatMode(Gfx::MaterialMode::SPECULAR);
-					enMatMode(Gfx::MaterialMode::NORMAL);
-					enMatMode(Gfx::MaterialMode::HEIGHT);
+					disMatMode(Gfx::MaterialMode::SPECULAR);
+					disMatMode(Gfx::MaterialMode::NORMAL);
+					disMatMode(Gfx::MaterialMode::HEIGHT);
 				}
 				void enMatMode(int mode){
 					this->matMode = this->matMode | (1 << mode);
@@ -223,7 +229,8 @@
             };
 
             struct Renderable3D : Renderable {
-                CR::Gfx::Transform transform;
+                std::shared_ptr<CR::Gfx::Transform> transform;
+                std::shared_ptr<CR::Gfx::Shader> shader;
                 CR::Gfx::MeshData md;
             };            
 
@@ -288,12 +295,11 @@
             std::shared_ptr<RenderLayer> getRenderLayer(int id, bool isSystemLayer = true);
             std::shared_ptr<RenderLayer> getRenderLayer(const std::string &tag, bool isSystemLayer = true);
 
-            // 2D default render methods (mainly for debugging, or specific internal usage)
-            struct Texture;
             namespace Draw {
                 CR::Gfx::Renderable *RenderLayer(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle);        
                 CR::Gfx::Renderable *Texture(const std::shared_ptr<CR::Gfx::Texture> &tex, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle); 
                 CR::Gfx::Renderable *PrimMesh(CR::Gfx::MeshData &md, unsigned nverts, unsigned textureId, const CR::Vec3<float> &position, const CR::Vec3<float> &scale, const CR::Vec4<float> &rotation); 
+                CR::Gfx::Renderable *Mesh(CR::Gfx::MeshData &md, const std::shared_ptr<CR::Gfx::Transform> &transform, const std::shared_ptr<CR::Gfx::Shader> &shader);
 
             } 
 
