@@ -1,3 +1,4 @@
+#include <cmath>
 #include <string.h>
 
 #include <assimp/Importer.hpp>
@@ -114,8 +115,10 @@ static void initTexture(const aiScene* pScene, const aiMesh *mesh, std::vector<C
             mat->GetTexture(type, i, &str);
             CR::Gfx::TextureDependency dep;
             dep.role = rtypeName;
-            if(!dep.texture->load(str.C_Str())){
-                CR::log("[GFX] Model::load: failed to load texture dependency '%s'", str.C_Str());
+            std::string filename = CR::File::filename(str.C_Str());
+            std::string path = CR::String::format("data/texture/%s", filename.c_str());
+            if(!dep.texture->load(path)){
+                CR::log("[GFX] Model::load: failed to load texture dependency [%s] '%s'\n\n", CR::Gfx::TextureRole::str(rtypeName).c_str(), filename.c_str());
             }
             textures.push_back(dep);
         }            
@@ -296,6 +299,10 @@ static void initAnimation(const aiScene* scene, CR::Gfx::ModelResource *model){
 
 
 
+static void loadObj(const std::string &path, CR::Gfx::ModelResource *model){
+
+}
+
 
 
 void CR::Gfx::ModelResource::unload(){
@@ -346,7 +353,7 @@ bool CR::Gfx::Model::load(const std::string &path){
             aiProcess_LimitBoneWeights);	
 
     if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode){
-        CR::log("[GFX] Model::load: failed to load model '%s': %s\n", path.c_str(), import.GetErrorString());
+        CR::log("[GFX] Model::load: failed to load model '%s': assimp: '%s'\n", path.c_str(), import.GetErrorString());
         return false;
     }
 
@@ -354,8 +361,11 @@ bool CR::Gfx::Model::load(const std::string &path){
     initScene(scene, rsc.get());
 
     // Load mesh data into GPU
+    unsigned totalTris = 0;
     for(int i = 0; i < rsc->meshes.size(); ++i){
         rsc->meshes[i]->md = CR::Gfx::createMesh(rsc->meshes[i]->vertices, rsc->meshes[i]->indices);
+        totalTris += rsc->meshes[i]->md.vertn;
+        break;
         // auto meshres = ren->generateMesh(meshes[i]->vertices, meshes[i]->indices, this->transform->useBones);
         // meshres->payload->reset();
         // meshres->payload->read(&meshes[i]->vao, sizeof(meshes[i]->vao));
@@ -363,6 +373,7 @@ bool CR::Gfx::Model::load(const std::string &path){
         // meshres->payload->read(&meshes[i]->ebo, sizeof(meshes[i]->ebo));
     }
 
+    CR::log("[GFX] Loaded Model '%s' Tris: %i\n", path.c_str(), totalTris);
 
     return true;
 }

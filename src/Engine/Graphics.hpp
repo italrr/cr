@@ -87,6 +87,15 @@
 					HEIGHT,
                     NONE
                 };
+                static std::string str(int t){
+                    switch(t){
+                        case DIFFUSE: return "DIFFUSE";
+                        case SPECULAR: return "SPECULAR";
+                        case NORMAL: return "NORMAL";
+                        case HEIGHT: return "HEIGHT";
+                        default: return "NONE";
+                    }
+                }
             }
 
             struct BindTexture {
@@ -323,7 +332,7 @@
             bool deleteMesh(MeshData &md);
 
             unsigned createShader(const std::string &vert, const std::string &frag);
-            unsigned findShaderAttr(unsigned shaderId, const std::string &name);
+            int findShaderAttr(unsigned shaderId, const std::string &name);
             struct ShaderAttr;
             bool applyShader(unsigned shaderId, const std::unordered_map<std::string, unsigned> &loc, const std::unordered_map<std::string, std::shared_ptr<CR::Gfx::ShaderAttr>> &attrs);
             bool deleteShader(unsigned id);

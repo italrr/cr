@@ -26,11 +26,10 @@ bool CR::Gfx::Texture::load(const std::string &path){
     }
 
     auto rscTexture = std::make_shared<CR::Gfx::TextureResource>(CR::Gfx::TextureResource());
-    auto rsc = std::static_pointer_cast<CR::Gfx::TextureResource>(rscTexture);
 
     allocate(rscTexture);
 
-    rsc->file->read(path);
+    rscTexture->file->read(path);
 
     int width, height, nrChannels;
     unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0); 
@@ -48,13 +47,13 @@ bool CR::Gfx::Texture::load(const std::string &path){
     else if (nrChannels == 4)
         format = ImageFormat::RGBA;
 
-    rsc->size.set(width, height);
-    rsc->channels = nrChannels;
+    rscTexture->size.set(width, height);
+    rscTexture->channels = nrChannels;
 
     auto r = CR::Gfx::createTexture2D(data, width, height, format);
 
-    rsc->textureId = r;
-    rsc->rscLoaded = true;
+    rscTexture->textureId = r;
+    rscTexture->rscLoaded = true;
     CR::log("[GFX] Loaded Texture %s | Size %ix%i | Channels %i\n", path.c_str(), width, height, nrChannels);
 
     return true;    

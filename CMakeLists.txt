@@ -35,7 +35,7 @@ IF(LINUX)
 ENDIF(LINUX)
 
 IF(MINGW)
-	target_link_libraries(cr_bin -m64 -lglfw3 -pthread -lgdi32 -lopengl32 -lassimp -lIrrXML -lzlib)
+	target_link_libraries(cr_bin -m64 -lglfw3 -pthread -lgdi32 -lopengl32 -lassimp -lz)
 ENDIF(MINGW)
 
 # Apple most likely won't work

@@ -31,7 +31,12 @@ void CR::Gfx::Shader::findAttrs(const std::vector<std::string> &list){
     
 
     for(unsigned i = 0; i < list.size(); ++i){
-        this->shAttrs[list[i]] = CR::Gfx::findShaderAttr(rsc->shaderId, list[i].c_str());
+        int loc = CR::Gfx::findShaderAttr(rsc->shaderId, list[i].c_str());
+        if(loc == -1){
+            CR::log("[GFX] Shader::findAttrs: failed to find shader location '%s'\n", list[i].c_str());
+        }else{
+            this->shAttrs[list[i]] = loc;
+        }
     }
 }
 

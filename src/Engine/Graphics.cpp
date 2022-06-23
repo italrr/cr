@@ -680,19 +680,34 @@ CR::Gfx::Renderable *CR::Gfx::Draw::Mesh(CR::Gfx::MeshData &md, const std::share
     self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
         auto *obj = static_cast<CR::Gfx::Renderable3D*>(renobj);
         
+        //
         // Setup shader attributes
+        //
+
+
+        // values
         std::unordered_map<std::string, std::shared_ptr<CR::Gfx::ShaderAttr>> fShAttrs;
         fShAttrs.insert(obj->transform->shAttrsVal.begin(), obj->transform->shAttrsVal.end());
+        fShAttrs["model"] = std::make_shared<CR::Gfx::ShaderAttrMat4>(obj->transform->model);
         fShAttrs["view"] = std::make_shared<CR::Gfx::ShaderAttrMat4>(rl->camera.getView());
         fShAttrs["projection"] = std::make_shared<CR::Gfx::ShaderAttrMat4>(rl->projection);
+        
+        // locations
+        // std::unordered_map<std::string, unsigned> fShAttrsLoc;
+        // fShAttrsLoc.insert(obj->transform->shAttrsLoc.begin(), obj->transform->shAttrsLoc.end());
+        // fShAttrsLoc.insert(obj->shader->shAttrs.begin(), obj->shader->shAttrs.begin());
+
         // TODO: attend lighting
 
         // Apply shader
-        CR::Gfx::applyShader(obj->shader->getRsc()->shaderId, obj->transform->shAttrsLoc, fShAttrs);
+        CR::Gfx::applyShader(obj->shader->getRsc()->shaderId, obj->shader->shAttrs, fShAttrs);
 
-        // Draw Triangle
+
+        // Bind DIFFUSE for now
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, obj->transform->textures[CR::Gfx::TextureRole::DIFFUSE]);
+        glBindTexture(GL_TEXTURE_2D, dummyTexture->getRsc()->textureId);
+
+        // Draw Triangles
         glBindVertexArray(obj->md.vao);
         glDrawArrays(GL_TRIANGLES, 0, obj->md.vertn);
 
@@ -704,6 +719,7 @@ CR::Gfx::Renderable *CR::Gfx::Draw::Mesh(CR::Gfx::MeshData &md, const std::share
 
     return self;
 }
+
 
 
 void CR::Gfx::render(){
@@ -726,15 +742,26 @@ void CR::Gfx::render(){
     static bool yes = false;
     static float add = 0.0f;
     static std::shared_ptr<RenderLayer> dummyLayer;
-    static std::shared_ptr<CR::Gfx::Model> model;
+    static std::shared_ptr<CR::Gfx::Model> model = std::make_shared<CR::Gfx::Model>(CR::Gfx::Model());
+
+    static std::shared_ptr<CR::Gfx::Transform> transform = std::make_shared<CR::Gfx::Transform>(CR::Gfx::Transform());
+    static std::shared_ptr<CR::Gfx::Shader> shader = std::make_shared<CR::Gfx::Shader>(CR::Gfx::Shader());
+
 
     add += 360.0f * currentDelta;
 
     if(!yes){
         yes = true;
         dummyLayer = CR::Gfx::createRenderLayer(CR::Vec2<int>(1000, 1000), CR::Gfx::RenderLayerType::T_2D);
-        model = std::make_shared<CR::Gfx::Model>(CR::Gfx::Model());
-        model->load("data/model/cube-tex.dae");
+
+        model->load("data/model/nathan.fbx");
+        transform->textures[CR::Gfx::TextureRole::DIFFUSE] = model->getRsc()->texDeps.begin()->texture->getRsc()->textureId;
+        transform->shAttrsVal["material.diffuse"] = std::make_shared<CR::Gfx::ShaderAttrInt>(0);
+        transform->shAttrsVal["material.color"] = std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f));
+        transform->model = CR::MAT4Identity.translate(CR::Vec3<float>(0.0f)).rotate(CR::Math::rads(add), CR::Vec3<float>(0.5f, 1.0f, 0.0f)).scale(CR::Vec3<float>(1.0f));
+
+        shader->load("data/shader/b_generic_simple_light_f.glsl", "data/shader/b_generic_simple_light_v.glsl");
+        shader->findAttrs({"model", "projection", "view", "material.diffuse", "material.color"});
     }
 
     dummyLayer->renderOn([](CR::Gfx::RenderLayer *layer){
@@ -749,9 +776,18 @@ void CR::Gfx::render(){
     static std::shared_ptr<CR::Gfx::RenderLayer> wL = CR::Gfx::getRenderLayer("world");
     
 
+
+
     wL->renderOn([&](CR::Gfx::RenderLayer *layer){    
         // layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->size, CR::Vec2<float>(0.5f), CR::Math::rads(0)));
-        layer->add(CR::Gfx::Draw::PrimMesh(mBCube, 36, dummyTexture->getRsc()->textureId, CR::Vec3<float>(0.0f), CR::Vec3<float>(1.0f), CR::Vec4<float>(0.5f, 1.0f, 0.0f, CR::Math::rads(add)))) ;
+        // layer->add(CR::Gfx::Draw::PrimMesh(mBCube, 36, dummyTexture->getRsc()->textureId, CR::Vec3<float>(0.0f), CR::Vec3<float>(1.0f), CR::Vec4<float>(0.5f, 1.0f, 0.0f, CR::Math::rads(add)))) ;
+
+        
+        auto rscmodel = model->getRsc();
+        for(int i = 0; i < rscmodel->meshes.size(); ++i){
+            auto &mesh = rscmodel->meshes[i];
+            layer->add(CR::Gfx::Draw::Mesh(mesh->md, transform, shader));
+        }
     });
 
 
@@ -848,7 +884,7 @@ unsigned CR::Gfx::createTexture2D(unsigned char *data, unsigned w, unsigned h, u
             glformat = GL_RGBA;
         } break;                
     }
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, glformat, w, h, 0, glformat, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
     texLock.unlock();
@@ -1089,7 +1125,7 @@ bool CR::Gfx::deleteShader(unsigned id){
     return false;    
 }
 
-unsigned CR::Gfx::findShaderAttr(unsigned shaderId, const std::string &name){
+int CR::Gfx::findShaderAttr(unsigned shaderId, const std::string &name){
     int locId = 0;
     std::unique_lock<std::mutex> lock(shaderUseMutex);
     glUseProgram(shaderId);
@@ -1099,7 +1135,7 @@ unsigned CR::Gfx::findShaderAttr(unsigned shaderId, const std::string &name){
     if(locId == -1){
         CR::log("CR::Gfx::findShaderAttr: Failed to find attribute '%s'\n", name.c_str());
     }
-    return locId == -1 ? 0 : locId;
+    return locId;
 }
 
 bool CR::Gfx::applyShader(unsigned shaderId, const std::unordered_map<std::string, unsigned> &loc, const std::unordered_map<std::string, std::shared_ptr<CR::Gfx::ShaderAttr>> &attrs){
@@ -1109,7 +1145,11 @@ bool CR::Gfx::applyShader(unsigned shaderId, const std::unordered_map<std::strin
     }
     
     for(auto &it : attrs){
-        unsigned attrLoc = loc.find(it.first)->second;
+        auto lit = loc.find(it.first);
+        if(lit == loc.end()){
+            CR::log("[GFX] applyShader: failed to find location for %s\n", it.first.c_str());
+        }
+        unsigned attrLoc = lit->second;
         switch(it.second->type){
             case CR::Gfx::ShaderAttrType::FLOAT: {
                 auto attrf = std::static_pointer_cast<CR::Gfx::ShaderAttrFloat>(it.second);

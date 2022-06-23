@@ -75,6 +75,9 @@
             struct TextureDependency {
                 std::shared_ptr<CR::Gfx::Texture> texture;
                 int role;
+                TextureDependency(){
+                    texture = std::make_shared<CR::Gfx::Texture>(CR::Gfx::Texture());
+                }
             };
 
             struct ModelResource : CR::Rsc::Resource {
@@ -89,9 +92,9 @@
             };     
 
             struct Model : CR::Rsc::Proxy {
-
+                
                 Model(const std::string &path);
-                Model(); 
+                Model();
 
                 bool load(const std::string &file);
                 void unload();
