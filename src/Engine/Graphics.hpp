@@ -307,8 +307,7 @@
             namespace Draw {
                 CR::Gfx::Renderable *RenderLayer(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle);        
                 CR::Gfx::Renderable *Texture(const std::shared_ptr<CR::Gfx::Texture> &tex, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle); 
-                CR::Gfx::Renderable *PrimMesh(CR::Gfx::MeshData &md, unsigned nverts, unsigned textureId, const CR::Vec3<float> &position, const CR::Vec3<float> &scale, const CR::Vec4<float> &rotation); 
-                CR::Gfx::Renderable *Mesh(CR::Gfx::MeshData &md, const std::shared_ptr<CR::Gfx::Transform> &transform, const std::shared_ptr<CR::Gfx::Shader> &shader);
+                CR::Gfx::Renderable *Mesh(CR::Gfx::MeshData &md, unsigned nverts, unsigned textureId, const CR::Vec3<float> &position, const CR::Vec3<float> &scale, const CR::Vec4<float> &rotation); 
 
             } 
 
@@ -327,9 +326,7 @@
             std::shared_ptr<FramebufferObj> createFramebuffer(unsigned w, unsigned h);
             bool deleteFramebuffer(unsigned id);
             
-            CR::Gfx::MeshData createPrimMesh(const std::vector<float> &vertices);
-            CR::Gfx::MeshData createMesh(const std::vector<CR::Gfx::Vertex> &vertices, const std::vector<unsigned int> &indices);
-            bool deleteMesh(MeshData &md);
+            CR::Gfx::MeshData createMesh(const std::vector<float> &vertices);
 
             unsigned createShader(const std::string &vert, const std::string &frag);
             int findShaderAttr(unsigned shaderId, const std::string &name);

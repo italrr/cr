@@ -13,7 +13,6 @@
 #include "Log.hpp"
 #include "Shader.hpp"
 #include "Texture.hpp"
-#include "Model.hpp"
 
 static GLFWwindow *window = NULL;
 static bool running = true;
@@ -573,7 +572,7 @@ bool CR::Gfx::init(){
     shBRect->findAttrs({"color", "model", "projection", "image"});
     shBCube->findAttrs({"color", "model", "projection", "image", "view"});
 
-    mBRect = createPrimMesh({ 
+    mBRect = createMesh({ 
         // pos              // tex
         0.0f, 1.0f, 0.0f,   0.0f, 1.0f,
         1.0f, 0.0f, 0.0f,   1.0f, 0.0f,
@@ -584,7 +583,7 @@ bool CR::Gfx::init(){
         1.0f, 0.0f, 0.0f,   1.0f, 0.0f
     });
 
-    mBCube = createPrimMesh({ 
+    mBCube = createMesh({ 
         // pos                  // tex
         -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,
          0.5f, -0.5f, -0.5f,    1.0f, 0.0f,
@@ -638,7 +637,7 @@ bool CR::Gfx::init(){
 
 static float add = 0.0f;
 
-CR::Gfx::Renderable *CR::Gfx::Draw::PrimMesh(CR::Gfx::MeshData &md, unsigned nverts, unsigned textureId, const CR::Vec3<float> &position, const CR::Vec3<float> &scale, const CR::Vec4<float> &rotation){
+CR::Gfx::Renderable *CR::Gfx::Draw::Mesh(CR::Gfx::MeshData &md, unsigned nverts, unsigned textureId, const CR::Vec3<float> &position, const CR::Vec3<float> &scale, const CR::Vec4<float> &rotation){
     CR::Gfx::Renderable3D *self = new CR::Gfx::Renderable3D(); // layer's flush is in charge of deleting this
 
     self->transform = std::make_shared<CR::Gfx::Transform>(CR::Gfx::Transform());
@@ -670,57 +669,6 @@ CR::Gfx::Renderable *CR::Gfx::Draw::PrimMesh(CR::Gfx::MeshData &md, unsigned nve
 
 }
 
-CR::Gfx::Renderable *CR::Gfx::Draw::Mesh(CR::Gfx::MeshData &md, const std::shared_ptr<CR::Gfx::Transform> &transform, const std::shared_ptr<CR::Gfx::Shader> &shader){
-    CR::Gfx::Renderable3D *self = new CR::Gfx::Renderable3D(); // layer's flush is in charge of deleting this
-
-    self->transform = transform;
-    self->shader = shader;
-    self->md = md;
-
-    self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
-        auto *obj = static_cast<CR::Gfx::Renderable3D*>(renobj);
-        
-        //
-        // Setup shader attributes
-        //
-
-
-        // values
-        std::unordered_map<std::string, std::shared_ptr<CR::Gfx::ShaderAttr>> fShAttrs;
-        fShAttrs.insert(obj->transform->shAttrsVal.begin(), obj->transform->shAttrsVal.end());
-        fShAttrs["model"] = std::make_shared<CR::Gfx::ShaderAttrMat4>(obj->transform->model);
-        fShAttrs["view"] = std::make_shared<CR::Gfx::ShaderAttrMat4>(rl->camera.getView());
-        fShAttrs["projection"] = std::make_shared<CR::Gfx::ShaderAttrMat4>(rl->projection);
-        
-        // locations
-        // std::unordered_map<std::string, unsigned> fShAttrsLoc;
-        // fShAttrsLoc.insert(obj->transform->shAttrsLoc.begin(), obj->transform->shAttrsLoc.end());
-        // fShAttrsLoc.insert(obj->shader->shAttrs.begin(), obj->shader->shAttrs.begin());
-
-        // TODO: attend lighting
-
-        // Apply shader
-        CR::Gfx::applyShader(obj->shader->getRsc()->shaderId, obj->shader->shAttrs, fShAttrs);
-
-
-        // Bind DIFFUSE for now
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, dummyTexture->getRsc()->textureId);
-
-        // Draw Triangles
-        glBindVertexArray(obj->md.vao);
-        glDrawArrays(GL_TRIANGLES, 0, obj->md.vertn);
-
-        // Clean up
-        // TODO: optimize program for the same shader
-        glBindVertexArray(0);       
-        glUseProgram(0);      
-    };
-
-    return self;
-}
-
-
 
 void CR::Gfx::render(){
     if(!running){
@@ -742,10 +690,7 @@ void CR::Gfx::render(){
     static bool yes = false;
     static float add = 0.0f;
     static std::shared_ptr<RenderLayer> dummyLayer;
-    static std::shared_ptr<CR::Gfx::Model> model = std::make_shared<CR::Gfx::Model>(CR::Gfx::Model());
 
-    static std::shared_ptr<CR::Gfx::Transform> transform = std::make_shared<CR::Gfx::Transform>(CR::Gfx::Transform());
-    static std::shared_ptr<CR::Gfx::Shader> shader = std::make_shared<CR::Gfx::Shader>(CR::Gfx::Shader());
 
 
     add += 360.0f * currentDelta;
@@ -753,15 +698,6 @@ void CR::Gfx::render(){
     if(!yes){
         yes = true;
         dummyLayer = CR::Gfx::createRenderLayer(CR::Vec2<int>(1000, 1000), CR::Gfx::RenderLayerType::T_2D);
-
-        model->load("data/model/nathan.fbx");
-        transform->textures[CR::Gfx::TextureRole::DIFFUSE] = model->getRsc()->texDeps.begin()->texture->getRsc()->textureId;
-        transform->shAttrsVal["material.diffuse"] = std::make_shared<CR::Gfx::ShaderAttrInt>(0);
-        transform->shAttrsVal["material.color"] = std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f));
-        transform->model = CR::MAT4Identity.translate(CR::Vec3<float>(0.0f)).rotate(CR::Math::rads(add), CR::Vec3<float>(0.5f, 1.0f, 0.0f)).scale(CR::Vec3<float>(1.0f));
-
-        shader->load("data/shader/b_generic_simple_light_f.glsl", "data/shader/b_generic_simple_light_v.glsl");
-        shader->findAttrs({"model", "projection", "view", "material.diffuse", "material.color"});
     }
 
     dummyLayer->renderOn([](CR::Gfx::RenderLayer *layer){
@@ -780,14 +716,9 @@ void CR::Gfx::render(){
 
     wL->renderOn([&](CR::Gfx::RenderLayer *layer){    
         // layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->size, CR::Vec2<float>(0.5f), CR::Math::rads(0)));
-        // layer->add(CR::Gfx::Draw::PrimMesh(mBCube, 36, dummyTexture->getRsc()->textureId, CR::Vec3<float>(0.0f), CR::Vec3<float>(1.0f), CR::Vec4<float>(0.5f, 1.0f, 0.0f, CR::Math::rads(add)))) ;
+        layer->add(CR::Gfx::Draw::Mesh(mBCube, 36, dummyTexture->getRsc()->textureId, CR::Vec3<float>(0.0f), CR::Vec3<float>(1.0f), CR::Vec4<float>(0.5f, 1.0f, 0.0f, CR::Math::rads(add)))) ;
 
-        
-        auto rscmodel = model->getRsc();
-        for(int i = 0; i < rscmodel->meshes.size(); ++i){
-            auto &mesh = rscmodel->meshes[i];
-            layer->add(CR::Gfx::Draw::Mesh(mesh->md, transform, shader));
-        }
+
     });
 
 
@@ -962,7 +893,7 @@ bool CR::Gfx::deleteFramebuffer(unsigned id){
 }
 
 
-CR::Gfx::MeshData CR::Gfx::createPrimMesh(const std::vector<float> &vertices){
+CR::Gfx::MeshData CR::Gfx::createMesh(const std::vector<float> &vertices){
 
     unsigned vbo, vao;
 
@@ -991,57 +922,6 @@ CR::Gfx::MeshData CR::Gfx::createPrimMesh(const std::vector<float> &vertices){
     md.vao = vao;
     md.vbo = vbo;
     return md;
-}
-
-CR::Gfx::MeshData CR::Gfx::createMesh(const std::vector<CR::Gfx::Vertex> &vertices, const std::vector<unsigned int> &indices){
-    unsigned int vao, vbo, ebo;
-
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-    glGenBuffers(1, &ebo);
-  
-    glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);  
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
-
-    // positions
-    glEnableVertexAttribArray(0);	
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-    // normals
-    glEnableVertexAttribArray(1);	
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
-    // texture coords
-    glEnableVertexAttribArray(2);	
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
-    // tangent
-    glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tangent));
-    // bitangent
-    glEnableVertexAttribArray(4);
-    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bitangent));
-    // ids
-    glEnableVertexAttribArray(5);
-    glVertexAttribIPointer(5, 4, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, id));
-    // weights
-    glEnableVertexAttribArray(6);
-    glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, weight));
-
-    glBindVertexArray(0);        
-
-    MeshData md;
-    md.vao = vao;
-    md.vbo = vbo;
-    md.ebo = ebo;
-    md.vertn = indices.size();
-    return md;
-}
-
-bool CR::Gfx::deleteMesh(CR::Gfx::MeshData &md){
-    return true;
 }
 
 unsigned CR::Gfx::createShader(const std::string &vert, const std::string &frag){
