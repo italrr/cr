@@ -21,6 +21,9 @@ set (cr_src
     src/Engine/3rdparty/glad.c
     src/Engine/3rdparty/Jzon.cpp
     src/Engine/3rdparty/MD5.cpp
+    src/Map.cpp
+    src/Network.cpp
+
 )
 
 add_library(cr_bin ${cr_src})
