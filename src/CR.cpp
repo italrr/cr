@@ -19,6 +19,8 @@ int main(int argc, char* argv[]){
     gameL->camera.setTarget(CR::Vec3<float>(-70.0f, -70.0f, -70.0f));
     gameL->camera.setUp(CR::Vec3<float>(0.0f, 1.0f, 0.0f));
 
+    // gameL->camera.biasAngle = 
+
     while(CR::Gfx::isRunning()){
 
 		// float cameraSpeed = CR::getDelta(); 

@@ -591,7 +591,7 @@ bool CR::Gfx::init(){
     });
 
 
-    static const float cubeScale = 100.0f;
+    static const float cubeScale = 50.0f;
     mBCube = createMesh({ 
         // pos                                 // tex
         -cubeScale, -cubeScale, -cubeScale,    0.0f, 0.0f,
@@ -635,7 +635,51 @@ bool CR::Gfx::init(){
          cubeScale,  cubeScale,  cubeScale,    1.0f, 0.0f,
         -cubeScale,  cubeScale,  cubeScale,    0.0f, 0.0f,
         -cubeScale,  cubeScale, -cubeScale,    0.0f, 1.0f
-    });
+    });    
+    // mBCube = createMesh({ 
+    //     // pos                                 // tex
+    //     -cubeScale, -cubeScale, -cubeScale,    0.0f, 0.0f,
+    //      cubeScale, -cubeScale, -cubeScale,    1.0f, 0.0f,
+    //      cubeScale,  cubeScale, -cubeScale,    1.0f, 1.0f,
+    //      cubeScale,  cubeScale, -cubeScale,    1.0f, 1.0f,
+    //     -cubeScale,  cubeScale, -cubeScale,    0.0f, 1.0f,
+    //     -cubeScale, -cubeScale, -cubeScale,    0.0f, 0.0f,
+
+    //     -cubeScale, -cubeScale,  cubeScale,    0.0f, 0.0f,
+    //      cubeScale, -cubeScale,  cubeScale,    1.0f, 0.0f,
+    //      cubeScale,  cubeScale,  cubeScale,    1.0f, 1.0f,
+    //      cubeScale,  cubeScale,  cubeScale,    1.0f, 1.0f,
+    //     -cubeScale,  cubeScale,  cubeScale,    0.0f, 1.0f,
+    //     -cubeScale, -cubeScale,  cubeScale,    0.0f, 0.0f,
+
+    //     -cubeScale,  cubeScale,  cubeScale,    1.0f, 0.0f,
+    //     -cubeScale,  cubeScale, -cubeScale,    1.0f, 1.0f,
+    //     -cubeScale, -cubeScale, -cubeScale,    0.0f, 1.0f,
+    //     -cubeScale, -cubeScale, -cubeScale,    0.0f, 1.0f,
+    //     -cubeScale, -cubeScale,  cubeScale,    0.0f, 0.0f,
+    //     -cubeScale,  cubeScale,  cubeScale,    1.0f, 0.0f,
+
+    //      cubeScale,  cubeScale,  cubeScale,    1.0f, 0.0f,
+    //      cubeScale,  cubeScale, -cubeScale,    1.0f, 1.0f,
+    //      cubeScale, -cubeScale, -cubeScale,    0.0f, 1.0f,
+    //      cubeScale, -cubeScale, -cubeScale,    0.0f, 1.0f,
+    //      cubeScale, -cubeScale,  cubeScale,    0.0f, 0.0f,
+    //      cubeScale,  cubeScale,  cubeScale,    1.0f, 0.0f,
+
+    //     -cubeScale, -cubeScale, -cubeScale,    0.0f, 1.0f,
+    //      cubeScale, -cubeScale, -cubeScale,    1.0f, 1.0f,
+    //      cubeScale, -cubeScale,  cubeScale,    1.0f, 0.0f,
+    //      cubeScale, -cubeScale,  cubeScale,    1.0f, 0.0f,
+    //     -cubeScale, -cubeScale,  cubeScale,    0.0f, 0.0f,
+    //     -cubeScale, -cubeScale, -cubeScale,    0.0f, 1.0f,
+
+    //     -cubeScale,  cubeScale, -cubeScale,    0.0f, 1.0f,
+    //      cubeScale,  cubeScale, -cubeScale,    1.0f, 1.0f,
+    //      cubeScale,  cubeScale,  cubeScale,    1.0f, 0.0f,
+    //      cubeScale,  cubeScale,  cubeScale,    1.0f, 0.0f,
+    //     -cubeScale,  cubeScale,  cubeScale,    0.0f, 0.0f,
+    //     -cubeScale,  cubeScale, -cubeScale,    0.0f, 1.0f
+    // });
     mBCube.vertn = 36;
 
     dummyTexture->load("data/texture/container.png");
