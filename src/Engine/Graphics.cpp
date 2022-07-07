@@ -165,7 +165,7 @@ bool CR::Gfx::RenderLayer::init(unsigned type, int width, int height){
     switch(this->type){
         case RenderLayerType::T_3D: {
             this->projection = CR::Math::orthogonal(0, size.x, 0.0f, size.y, -100.0f, 10000.0f);
-            this->camera.setPosition(CR::Vec3<float>(0.0f, 0.0f, 100.0f));
+            this->camera.setPosition(CR::Vec3<float>(0.0f, 0.0f, 50.0f));
             this->camera.setTarget(CR::Vec3<float>(0.0f, 0.0f, 0.0f));
             this->camera.setUp(CR::Vec3<float>(0.0f, 1.0f, 0.0f));
         } break;
@@ -716,7 +716,7 @@ void CR::Gfx::render(){
 
     // static float massive = 1.0f;
     static float camSpeed = 300.0f;
-    static CR::Vec3<float> pos = CR::Vec3<float>(0, wL->size.y * 0.5f, 350.0f);
+    static CR::Vec3<float> pos = CR::Vec3<float>(wL->size.x * 0.5f, wL->size.y * 0.5f, 350.0f);
 
     
     // if(CR::Input::keyboardCheck(CR::Input::Key::UP)){
