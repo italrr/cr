@@ -15,6 +15,9 @@ int main(int argc, char* argv[]){
     auto gameL = CR::Gfx::createRenderLayer(CR::Gfx::getSize(), CR::Gfx::RenderLayerType::T_3D, "world", true, 0);
     auto uiL = CR::Gfx::createRenderLayer(CR::Gfx::getSize(), CR::Gfx::RenderLayerType::T_2D, "ui", true, 1);
 
+    gameL->camera.setPosition(CR::Vec3<float>(CR::Vec3<float>(35.0f, 35.0f, 35.0f)));
+    gameL->camera.setTarget(CR::Vec3<float>(-70.0f, -70.0f, -70.0f));
+    gameL->camera.setUp(CR::Vec3<float>(0.0f, 1.0f, 0.0f));
 
     while(CR::Gfx::isRunning()){
 

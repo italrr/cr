@@ -70,6 +70,12 @@ static CR::Gfx::MeshData mBCube;
 static std::shared_ptr<CR::Gfx::Mesh> mBCubeMesh = std::shared_ptr<CR::Gfx::Mesh>(new CR::Gfx::Mesh());
 
 
+
+
+static std::shared_ptr<CR::Gfx::Texture> atlasTexture = std::make_shared<CR::Gfx::Texture>(CR::Gfx::Texture());
+
+
+
 double CR::getDelta(){
     return currentDelta;
 }
@@ -585,9 +591,9 @@ bool CR::Gfx::init(){
     });
 
 
-    static const float cubeScale = 250.0f;
+    static const float cubeScale = 100.0f;
     mBCube = createMesh({ 
-        // pos                  // tex
+        // pos                                 // tex
         -cubeScale, -cubeScale, -cubeScale,    0.0f, 0.0f,
          cubeScale, -cubeScale, -cubeScale,    1.0f, 0.0f,
          cubeScale,  cubeScale, -cubeScale,    1.0f, 1.0f,
@@ -633,6 +639,7 @@ bool CR::Gfx::init(){
     mBCube.vertn = 36;
 
     dummyTexture->load("data/texture/container.png");
+    atlasTexture->load("data/texture/32x32.bmp");
 
     return true;
 }
@@ -696,7 +703,7 @@ void CR::Gfx::render(){
 
 
 
-    add += 360.0f * currentDelta;
+    add += 0; //360.0f * currentDelta;
 
     if(!yes){
         yes = true;

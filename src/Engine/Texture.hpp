@@ -24,6 +24,7 @@
                 Texture(const std::string &path);
                 Texture();                
                 bool load(const std::string &path);
+                bool load(const std::string &path, const std::string &mask);
                 void unload();
                 std::shared_ptr<CR::Gfx::TextureResource> getRsc(){
                     return std::static_pointer_cast<CR::Gfx::TextureResource>(rsc);

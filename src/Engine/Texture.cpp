@@ -14,6 +14,10 @@ void CR::Gfx::TextureResource::unload(){
     }
 }
 
+bool CR::Gfx::Texture::load(const std::string &path, const std::string &mask){
+    return false;
+}
+
 bool CR::Gfx::Texture::load(const std::string &path){
     auto result = this->findAllocByPath(path);
     if(result == CR::Rsc::AllocationResult::PROXY){
