@@ -353,7 +353,7 @@ namespace CR {
 
 			return out;
 		}
-		Mat<4, 4, float> orthogonal(float left, float right, float bottom, float top){
+		Mat<4, 4, float> orthogonal(float left, float right, float bottom, float top, float zNear, float zFar){
 			auto out = MAT4Identity;
 			// out.mat[0] = 2 / (right - left);
 			// out.mat[5] = 2 / (top - bottom);
@@ -362,24 +362,32 @@ namespace CR {
 			// out.mat[13] = - (top + bottom) / (top - bottom);
 
 
-			static float zFar = -1.0f;
-			static float zNear = 1.0f;
+			// static float zFar = -1.0f;
+			// static float zNear = 1.0f;
 
 
-			out.mat[0] = static_cast<float>(2) / (right - left);
-			out.mat[5] = static_cast<float>(2) / (top - bottom);
-			out.mat[10] = static_cast<float>(1) / (zFar - zNear);
-			out.mat[12] = - (right + left) / (right - left);
-			out.mat[13] = - (top + bottom) / (top - bottom);
-			out.mat[14] = - zNear / (zFar - zNear);
+			// out.mat[0*4 + 0] = static_cast<float>(2) / (right - left);
+			// out.mat[1*4 + 1] = static_cast<float>(2) / (top - bottom);
+			// out.mat[2*4 + 2] = static_cast<float>(1) / (zFar - zNear);
+			// out.mat[3*4 + 0] = - (right + left) / (right - left);
+			// out.mat[3*4 + 1] = - (top + bottom) / (top - bottom);
+			// out.mat[3*4 + 2] = - zNear / (zFar - zNear);
+
+			out.mat[0*4+0] = static_cast<float>(2) / (right - left);
+			out.mat[1*4+1] = static_cast<float>(2) / (top - bottom);
+			out.mat[2*4+2] = static_cast<float>(2) / (zFar - zNear);
+			out.mat[3*4+0] = - (right + left) / (right - left);
+			out.mat[3*4+1] = - (top + bottom) / (top - bottom);
+			out.mat[3*4+2] = - (zFar + zNear) / (zFar - zNear);
 
 
 			return out;
 		}
 		Mat<4, 4, float> lookAt(const CR::Vec3<float> &pos, const CR::Vec3<float> &dir, const Vec3<float> &up){
 			CR::Vec3<float> const f((dir - pos).normalize());
-			CR::Vec3<float> const s(up.cross(f).normalize());
-			CR::Vec3<float> const u(f.cross(s));
+			CR::Vec3<float> const s(f.cross(up).normalize());
+			CR::Vec3<float> const u(s.cross(f));
+
 			CR::Mat<4, 4, float> out = MAT4Identity;
 			out.mat[0] = s.x;
 			out.mat[4] = s.y;

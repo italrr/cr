@@ -18,16 +18,16 @@ int main(int argc, char* argv[]){
 
     while(CR::Gfx::isRunning()){
 
-		float cameraSpeed = CR::getDelta(); 
-		if (CR::Input::keyboardCheck(CR::Input::Key::W))
-			gameL->camera.setPosition(gameL->camera.position - CR::Vec3<float>(0.0f, 0.0f, 1.0f) * cameraSpeed);
-		if (CR::Input::keyboardCheck(CR::Input::Key::S))
-			gameL->camera.setPosition(gameL->camera.position + CR::Vec3<float>(0.0f, 0.0f, 1.0f) * cameraSpeed);
+		// float cameraSpeed = CR::getDelta(); 
+		// if (CR::Input::keyboardCheck(CR::Input::Key::W))
+		// 	gameL->camera.setPosition(gameL->camera.position - CR::Vec3<float>(0.0f, 0.0f, 1.0f) * cameraSpeed);
+		// if (CR::Input::keyboardCheck(CR::Input::Key::S))
+		// 	gameL->camera.setPosition(gameL->camera.position + CR::Vec3<float>(0.0f, 0.0f, 1.0f) * cameraSpeed);
 
-		if (CR::Input::keyboardCheck(CR::Input::Key::A))
-			gameL->camera.setPosition(gameL->camera.position + CR::Vec3<float>(1.0f, 0.0f, 0.0f) * cameraSpeed);
-		if (CR::Input::keyboardCheck(CR::Input::Key::D))
-			gameL->camera.setPosition(gameL->camera.position - CR::Vec3<float>(1.0f, 0.0f, 0.0f) * cameraSpeed);			
+		// if (CR::Input::keyboardCheck(CR::Input::Key::A))
+		// 	gameL->camera.setPosition(gameL->camera.position + CR::Vec3<float>(1.0f, 0.0f, 0.0f) * cameraSpeed);
+		// if (CR::Input::keyboardCheck(CR::Input::Key::D))
+		// 	gameL->camera.setPosition(gameL->camera.position - CR::Vec3<float>(1.0f, 0.0f, 0.0f) * cameraSpeed);			
 
 
 

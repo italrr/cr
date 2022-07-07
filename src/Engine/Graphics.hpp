@@ -262,18 +262,14 @@
 
             struct Camera {
 				CR::Vec3<float> position;
-				CR::Vec3<float> front;
+				CR::Vec3<float> target;
 				CR::Vec3<float> up;
-				CR::Vec3<float> right;
-				CR::Vec3<float> worldUp;
-				float yaw;
-				float pitch;
 				void setPosition(const CR::Vec3<float> &pos);
-				void setFront(const CR::Vec3<float> &front);
-				void update();
 				void setUp(const CR::Vec3<float> &up);
-				void init();
+                void update();
+                void setTarget(const CR::Vec3<float> &up);
 				CR::Mat<4, 4, float> getView();
+                Camera();
             };
 
             struct RenderLayer {

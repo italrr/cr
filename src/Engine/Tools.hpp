@@ -186,7 +186,7 @@
             float degs(float rads);
             CR::Mat<4, 4, float> scale(const CR::Vec3<float> &dir);
             CR::Mat<4, 4, float> perspective(float fovy, float aspRatio, float nearPlane, float farPlane);
-            CR::Mat<4, 4, float> orthogonal(float left, float right, float bottom, float top);
+            CR::Mat<4, 4, float> orthogonal(float left, float right, float bottom, float top, float zNear, float zFar);
             CR::Mat<4, 4, float> lookAt(const CR::Vec3<float> &to, const CR::Vec3<float> &dir, const Vec3<float> &up);  
 
 

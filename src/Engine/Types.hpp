@@ -172,6 +172,9 @@
 				return out;
 			}
 
+			std::string str() const{
+				return "["+std::to_string(this->x)+", "+std::to_string(this->y)+", "+std::to_string(this->z)+"]";
+			}	
 
         };     
 

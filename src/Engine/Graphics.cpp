@@ -164,11 +164,13 @@ bool CR::Gfx::RenderLayer::init(unsigned type, int width, int height){
 
     switch(this->type){
         case RenderLayerType::T_3D: {
-            this->projection = CR::Math::perspective(45.0f, static_cast<float>(this->size.x) /  static_cast<float>(this->size.y), 0.1f, 100.0f);
-            this->camera.init();
+            this->projection = CR::Math::orthogonal(0, size.x, 0.0f, size.y, -100.0f, 10000.0f);
+            this->camera.setPosition(CR::Vec3<float>(0.0f, 0.0f, 100.0f));
+            this->camera.setTarget(CR::Vec3<float>(0.0f, 0.0f, 0.0f));
+            this->camera.setUp(CR::Vec3<float>(0.0f, 1.0f, 0.0f));
         } break;
         case RenderLayerType::T_2D: {
-            this->projection = CR::Math::orthogonal(0, size.x, 0, size.y);
+            this->projection = CR::Math::orthogonal(0, size.x, 0, size.y, -1.0f, 1.0f);
         } break;
     }
 
@@ -276,7 +278,7 @@ void CR::Gfx::RenderLayer::flush(){
 
 static void drawRLImmediate(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle){
 
-    const auto projection = CR::Math::orthogonal(0, rl->size.x, rl->size.y, 0); // draw from top to bottom
+    const auto projection = CR::Math::orthogonal(0, rl->size.x, rl->size.y, 0, 1.0f, -1.0f); // draw from top to bottom
 
     // std::unique_lock<std::mutex> lock(rl->accesMutex);
 
@@ -333,7 +335,6 @@ CR::Gfx::Renderable *CR::Gfx::Draw::RenderLayer(const std::shared_ptr<CR::Gfx::R
     self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
         auto *obj = static_cast<Renderable2D*>(renobj);
 
-        const auto projection = CR::Math::orthogonal(0, rl->size.x, rl->size.y, 0);
 
         auto &position = obj->position;
         auto &size = obj->size;
@@ -583,49 +584,51 @@ bool CR::Gfx::init(){
         1.0f, 0.0f, 0.0f,   1.0f, 0.0f
     });
 
+
+    static const float cubeScale = 250.0f;
     mBCube = createMesh({ 
         // pos                  // tex
-        -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,    1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,    0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,
+        -cubeScale, -cubeScale, -cubeScale,    0.0f, 0.0f,
+         cubeScale, -cubeScale, -cubeScale,    1.0f, 0.0f,
+         cubeScale,  cubeScale, -cubeScale,    1.0f, 1.0f,
+         cubeScale,  cubeScale, -cubeScale,    1.0f, 1.0f,
+        -cubeScale,  cubeScale, -cubeScale,    0.0f, 1.0f,
+        -cubeScale, -cubeScale, -cubeScale,    0.0f, 0.0f,
 
-        -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,    1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,    1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,    1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,    0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+        -cubeScale, -cubeScale,  cubeScale,    0.0f, 0.0f,
+         cubeScale, -cubeScale,  cubeScale,    1.0f, 0.0f,
+         cubeScale,  cubeScale,  cubeScale,    1.0f, 1.0f,
+         cubeScale,  cubeScale,  cubeScale,    1.0f, 1.0f,
+        -cubeScale,  cubeScale,  cubeScale,    0.0f, 1.0f,
+        -cubeScale, -cubeScale,  cubeScale,    0.0f, 0.0f,
 
-        -0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+        -cubeScale,  cubeScale,  cubeScale,    1.0f, 0.0f,
+        -cubeScale,  cubeScale, -cubeScale,    1.0f, 1.0f,
+        -cubeScale, -cubeScale, -cubeScale,    0.0f, 1.0f,
+        -cubeScale, -cubeScale, -cubeScale,    0.0f, 1.0f,
+        -cubeScale, -cubeScale,  cubeScale,    0.0f, 0.0f,
+        -cubeScale,  cubeScale,  cubeScale,    1.0f, 0.0f,
 
-         0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+         cubeScale,  cubeScale,  cubeScale,    1.0f, 0.0f,
+         cubeScale,  cubeScale, -cubeScale,    1.0f, 1.0f,
+         cubeScale, -cubeScale, -cubeScale,    0.0f, 1.0f,
+         cubeScale, -cubeScale, -cubeScale,    0.0f, 1.0f,
+         cubeScale, -cubeScale,  cubeScale,    0.0f, 0.0f,
+         cubeScale,  cubeScale,  cubeScale,    1.0f, 0.0f,
 
-        -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,    1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,    1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,    1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+        -cubeScale, -cubeScale, -cubeScale,    0.0f, 1.0f,
+         cubeScale, -cubeScale, -cubeScale,    1.0f, 1.0f,
+         cubeScale, -cubeScale,  cubeScale,    1.0f, 0.0f,
+         cubeScale, -cubeScale,  cubeScale,    1.0f, 0.0f,
+        -cubeScale, -cubeScale,  cubeScale,    0.0f, 0.0f,
+        -cubeScale, -cubeScale, -cubeScale,    0.0f, 1.0f,
 
-        -0.5f,  0.5f, -0.5f,    0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,    0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,    0.0f, 1.0f
+        -cubeScale,  cubeScale, -cubeScale,    0.0f, 1.0f,
+         cubeScale,  cubeScale, -cubeScale,    1.0f, 1.0f,
+         cubeScale,  cubeScale,  cubeScale,    1.0f, 0.0f,
+         cubeScale,  cubeScale,  cubeScale,    1.0f, 0.0f,
+        -cubeScale,  cubeScale,  cubeScale,    0.0f, 0.0f,
+        -cubeScale,  cubeScale, -cubeScale,    0.0f, 1.0f
     });
     mBCube.vertn = 36;
 
@@ -669,7 +672,7 @@ CR::Gfx::Renderable *CR::Gfx::Draw::Mesh(CR::Gfx::MeshData &md, unsigned nverts,
 
 }
 
-
+#include "Input.hpp"
 void CR::Gfx::render(){
     if(!running){
         return;
@@ -697,11 +700,11 @@ void CR::Gfx::render(){
 
     if(!yes){
         yes = true;
-        dummyLayer = CR::Gfx::createRenderLayer(CR::Vec2<int>(1000, 1000), CR::Gfx::RenderLayerType::T_2D);
+        dummyLayer = CR::Gfx::createRenderLayer(CR::Vec2<int>(dummyTexture->getRsc()->size), CR::Gfx::RenderLayerType::T_2D);
     }
 
-    dummyLayer->renderOn([](CR::Gfx::RenderLayer *layer){
-        layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->getRsc()->size, CR::Vec2<float>(0.0f), CR::Math::rads(0)));
+    dummyLayer->renderOn([](CR::Gfx::RenderLayer *lyr){
+        lyr->add(Draw::Texture(dummyTexture, CR::Vec2<float>(), dummyTexture->getRsc()->size, CR::Vec2<float>(0.0f), CR::Math::rads(0)));
     });
     dummyLayer->clear();
     dummyLayer->flush();
@@ -710,13 +713,54 @@ void CR::Gfx::render(){
 
     static std::shared_ptr<CR::Gfx::RenderLayer> uiL = CR::Gfx::getRenderLayer("ui");
     static std::shared_ptr<CR::Gfx::RenderLayer> wL = CR::Gfx::getRenderLayer("world");
-    
 
+    // static float massive = 1.0f;
+    static float camSpeed = 300.0f;
+    static CR::Vec3<float> pos = CR::Vec3<float>(0, wL->size.y * 0.5f, 350.0f);
+
+    
+    // if(CR::Input::keyboardCheck(CR::Input::Key::UP)){
+    //     massive += currentDelta * camSpeed;
+    //     // CR::log("%s\n", pos.str().c_str());
+    // }else
+    // if(CR::Input::keyboardCheck(CR::Input::Key::DOWN)){
+    //     massive -= currentDelta * camSpeed;
+    //     // CR::log("%s\n", pos.str().c_str());
+    // }
+
+    if(CR::Input::keyboardCheck(CR::Input::Key::UP)){
+        pos.y -= currentDelta * camSpeed;
+        CR::log("%s\n", pos.str().c_str());
+
+    }
+    if(CR::Input::keyboardCheck(CR::Input::Key::DOWN)){
+        pos.y += currentDelta * camSpeed;
+        CR::log("%s\n", pos.str().c_str());
+
+    }
+    if(CR::Input::keyboardCheck(CR::Input::Key::LEFT)){
+        pos.x -= currentDelta * camSpeed;
+        CR::log("%s\n", pos.str().c_str());
+
+    }
+    if(CR::Input::keyboardCheck(CR::Input::Key::RIGHT)){
+        pos.x += currentDelta * camSpeed;
+        CR::log("%s\n", pos.str().c_str());
+
+    }    
+    if(CR::Input::keyboardCheck(CR::Input::Key::W)){
+        pos.z += currentDelta * camSpeed;
+        CR::log("%s\n", pos.str().c_str());
+    }
+    if(CR::Input::keyboardCheck(CR::Input::Key::S)){
+        pos.z -= currentDelta * camSpeed;
+        CR::log("%s\n", pos.str().c_str());
+    }        
 
 
     wL->renderOn([&](CR::Gfx::RenderLayer *layer){    
         // layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->size, CR::Vec2<float>(0.5f), CR::Math::rads(0)));
-        layer->add(CR::Gfx::Draw::Mesh(mBCube, 36, dummyTexture->getRsc()->textureId, CR::Vec3<float>(0.0f), CR::Vec3<float>(1.0f), CR::Vec4<float>(0.5f, 1.0f, 0.0f, CR::Math::rads(add)))) ;
+        layer->add(CR::Gfx::Draw::Mesh(mBCube, 36, dummyTexture->getRsc()->textureId, pos, CR::Vec3<float>(1.0f), CR::Vec4<float>(0.5f, 1.0f, 0.0f, CR::Math::rads(add)))) ;
 
 
     });
@@ -724,7 +768,7 @@ void CR::Gfx::render(){
 
     uiL->renderOn([](CR::Gfx::RenderLayer *layer){    
         // layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->size, CR::Vec2<float>(0.5f), CR::Math::rads(0)));
-        layer->add(CR::Gfx::Draw::RenderLayer(dummyLayer, CR::Vec2<float>(0), CR::Vec2<int>(1000, 1000), CR::Vec2<float>(0.0f), 0.0f));
+        layer->add(CR::Gfx::Draw::RenderLayer(dummyLayer, CR::Vec2<float>(layer->size.x - dummyLayer->size.x,0), CR::Vec2<int>(dummyLayer->size), CR::Vec2<float>(0.0f), 0.0f));
     });
 
     
@@ -1069,39 +1113,65 @@ bool CR::Gfx::applyShader(unsigned shaderId, const std::unordered_map<std::strin
 
 
 
+
+
+
+
+CR::Gfx::Camera::Camera(){
+    this->position.set(0.0f, 0.0f, 0.0f);
+    this->up.set(0.0f, 0.0f, 0.0f);
+    this->target.set(0.0f, 0.0f, 0.0f);
+}
+
+
 void CR::Gfx::Camera::setPosition(const CR::Vec3<float> &pos){
     this->position = pos;    
 }
 
-void CR::Gfx::Camera::setFront(const CR::Vec3<float> &front){
-    this->front = front;
-    this->update();
-}
-
 void CR::Gfx::Camera::update(){
-    front.x = Math::cos(Math::rads(yaw)) * Math::cos(Math::rads(pitch));
-    front.y = Math::sin(Math::rads(pitch));
-    front.z = Math::sin(Math::rads(yaw)) * Math::cos(Math::rads(pitch));
-    front = front.normalize();
-    right = front.cross(this->worldUp).normalize();  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
-    up = right.cross(front).normalize();
+
 }
 
 void CR::Gfx::Camera::setUp(const CR::Vec3<float> &up){
-    this->worldUp = up;
-    this->update();
+    this->up = up;
 }
 
-void CR::Gfx::Camera::init(){
-    this->yaw = -90.0f;
-    this->pitch = 0.0f;
-    this->up = CR::Vec3<float>(0.0f, 1.0f, 0.0f);
-    this->worldUp = this->up;
-    this->position = CR::Vec3<float>(0.0f, 0.0f, 0.0f);
-    this->front = CR::Vec3<float>(0.0f, 0.0f, -1.0f);
-    update();
+void CR::Gfx::Camera::setTarget(const CR::Vec3<float> &target){
+    this->target = target;
 }
+
 
 CR::Mat<4, 4, float> CR::Gfx::Camera::getView(){
-    return Math::lookAt(position, position + front, up);
+
+// UP
+    if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD8)){
+        this->position.z -= getDelta() * 100.0f;
+        CR::log("%s\n", this->position.str().c_str());
+
+
+    }
+//DOWN
+    if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD2)){
+this->position.z += getDelta() * 100.0f;
+        CR::log("%s\n", this->position.str().c_str());
+
+    }
+// LEFT    
+    if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD4)){
+this->position.x -= getDelta() * 100.0f;
+        CR::log("%s\n", this->position.str().c_str());
+
+
+    }
+// RIGHT
+    if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD6)){
+this->position.x += getDelta() * 100.0f;
+        CR::log("%s\n", this->position.str().c_str());
+
+
+    }    
+
+    return Math::lookAt(this->position, target, CR::Vec3<float>(0.0f, 1.0f, 0.0f));
+
+    // return Math::lookAt(CR::Vec3<float>(0.0f, 0.0f, 100.0f), CR::Vec3<float>(0.0f, 0.0f, 0.0f), CR::Vec3<float>(0.0f, 1.0f, 0.0f));
 }
