@@ -98,41 +98,6 @@
                 }
             }
 
-            struct BindTexture {
-                unsigned textureId;
-                int role;
-				BindTexture(unsigned textureId, int role){
-					this->textureId = textureId;
-					this->role = role;
-				}
-                BindTexture(){
-                    this->role = TextureRole::NONE;
-                }
-            };
-
-			namespace MaterialMode {
-				enum MaterialMode : int {
-					DIFFUSE = 1,
-					SPECULAR = 2,
-					NORMAL = 4,
-					HEIGHT = 8,
-				};
-			}
-
-			struct Material {
-				int diffuse;
-				int specular;
-				float shininess;
-				Material(){
-
-				}
-				Material(int diffuse, int specular, float shininess){
-					this->diffuse = diffuse;
-					this->specular = specular;
-					this->shininess = shininess;
-				}
-			};
-
             struct MeshData {
                 unsigned vbo;
                 unsigned vao;
@@ -146,73 +111,44 @@
                 }
             };
             
+
+            struct Mesh {
+                CR::Gfx::MeshData md;             
+                Mesh(){
+                    
+                }
+            };
+                        
             struct ShaderAttr;
             struct Texture;
             struct Shader;
 
             struct Transform {
-				int matMode;
-				CR::Gfx::Material material;
 				CR::Mat<4, 4, float> model;
-				CR::Vec3<float> position;
-				CR::Color color;
-                std::unordered_map<int, unsigned> textures; // ROLE -> textureId
+				// CR::Vec3<float> position;
+				// CR::Color color;
+                std::vector<unsigned> textures;
+
                 std::unordered_map<std::string, unsigned> shAttrsLoc;
                 std::unordered_map<std::string, std::shared_ptr<CR::Gfx::ShaderAttr>> shAttrsVal;
-				Transform(){
+				
+                std::vector<CR::Gfx::ShaderAttr*> shAttrsValVec;
+                std::vector<unsigned> shAttrsLocVec;
+
+                Transform(){
+                    this->textures = {0, 0, 0, 0};
 					this->model = CR::MAT4Identity;
-					this->matMode = 0;
-					enMatMode(Gfx::MaterialMode::DIFFUSE);
-					disMatMode(Gfx::MaterialMode::SPECULAR);
-					disMatMode(Gfx::MaterialMode::NORMAL);
-					disMatMode(Gfx::MaterialMode::HEIGHT);
 				}
-				void enMatMode(int mode){
-					this->matMode = this->matMode | (1 << mode);
-				}
-				void disMatMode(int mode){
-					this->matMode = this->matMode & (~mode);
-				}
-				void resetMatMode(){
-					this->matMode = 0;
-				}
-				bool hasMatMode(int mode){
-					return this->matMode & (1 << mode); 
-				}
-            };
 
-            struct Vertex {
-                CR::Vec3<float> position;
-                CR::Vec2<float> texCoords;
-                CR::Vec3<float> normal;
-				CR::Vec3<float> tangent;
-				CR::Vec3<float> bitangent;
-				// bone data
-				unsigned int id[4];
-				float weight[4];
-				Vertex();
-				void setBoneData(unsigned int bId, float weight){
-                    for(unsigned int i = 0; i < 4; ++i){ 
-                        if(this->weight[i] == 0.0f){
-                            this->id[i] = bId;
-                            this->weight[i] = weight;
-                            return;
-                        }
-                    }                    
-                }           
-            };
-
-            struct Mesh {
-                CR::Gfx::MeshData md;
-                std::vector<CR::Gfx::Vertex> vertices;
-                std::vector<unsigned int> indices; 
-                unsigned textureId;
-                unsigned int mIndex;
-                unsigned int nIndices;
-                unsigned int bVertex;
-                unsigned int bIndex;                
-                Mesh(){
-                    
+                void fixShaderAttributes(const std::vector<std::string> &locOrder){
+                    shAttrsLocVec.clear();
+                    shAttrsValVec.clear();
+                    for(unsigned i = 0; i < locOrder.size(); ++i){
+                        auto &attr = shAttrsVal[locOrder[i]];
+                        auto &loc = shAttrsLoc[locOrder[i]];
+                        shAttrsLocVec.push_back(loc);
+                        shAttrsValVec.push_back(attr.get());
+                    }
                 }
             };
 
@@ -238,7 +174,7 @@
             };
 
             struct Renderable3D : Renderable {
-                std::shared_ptr<CR::Gfx::Transform> transform;
+                CR::Gfx::Transform *transform;
                 std::shared_ptr<CR::Gfx::Shader> shader;
                 CR::Gfx::MeshData md;
             };            
@@ -277,6 +213,7 @@
             struct RenderLayer {
                 unsigned id;
                 unsigned type;
+                std::shared_ptr<CR::Gfx::Transform> transform;
                 std::shared_ptr<FramebufferObj> fb;
                 int order;
                 int depth; // current depth (doesn't work in T_3D)
@@ -305,7 +242,7 @@
             namespace Draw {
                 CR::Gfx::Renderable *RenderLayer(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle);        
                 CR::Gfx::Renderable *Texture(const std::shared_ptr<CR::Gfx::Texture> &tex, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle); 
-                CR::Gfx::Renderable *Mesh(CR::Gfx::MeshData &md, unsigned nverts, unsigned textureId, const CR::Vec3<float> &position, const CR::Vec3<float> &scale, const CR::Vec4<float> &rotation); 
+                CR::Gfx::Renderable *Mesh(CR::Gfx::MeshData &md, CR::Gfx::Transform *transform); 
 
             } 
 
@@ -329,7 +266,7 @@
             unsigned createShader(const std::string &vert, const std::string &frag);
             int findShaderAttr(unsigned shaderId, const std::string &name);
             struct ShaderAttr;
-            bool applyShader(unsigned shaderId, const std::unordered_map<std::string, unsigned> &loc, const std::unordered_map<std::string, std::shared_ptr<CR::Gfx::ShaderAttr>> &attrs);
+            bool applyShader(unsigned shaderId, const std::vector<unsigned> &loc, const std::vector<CR::Gfx::ShaderAttr*> &attributes);
             bool deleteShader(unsigned id);
 
         }

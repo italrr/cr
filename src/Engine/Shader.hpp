@@ -35,32 +35,38 @@
             };
 
             struct ShaderAttrVec2 : ShaderAttr {
-                CR::Vec2<float> vec;
+                float vec[2];
                 ShaderAttrVec2(){
                     this->type = ShaderAttrType::VEC2;
                 }
                 ShaderAttrVec2(const CR::Vec2<float> &vec, const std::string &name = ""){
                     this->type = ShaderAttrType::VEC2;
-                    this->vec = vec;
+                    this->vec[0] = vec.x;
+                    this->vec[1] = vec.y;
                     if(name.length() > 0) this->name = name;
                 }                
                 void set(const CR::Vec2<float> &vec){
-                    this->vec = vec;
+                    this->vec[0] = vec.x;
+                    this->vec[1] = vec.y;
                 }
             };
 
             struct ShaderAttrVec3 : ShaderAttr {
-                CR::Vec3<float> vec;
+                float vec[3];
                 ShaderAttrVec3(){
                     this->type = ShaderAttrType::VEC3;
                 }
                 ShaderAttrVec3(const CR::Vec3<float> &vec, const std::string &name = ""){
                     this->type = ShaderAttrType::VEC3;
-                    this->vec = vec;
+                    this->vec[0] = vec.x;
+                    this->vec[1] = vec.y;
+                    this->vec[2] = vec.z;
                     if(name.length() > 0) this->name = name;
                 }                
                 void set(const CR::Vec3<float> &vec){
-                    this->vec = vec;
+                    this->vec[0] = vec.x;
+                    this->vec[1] = vec.y;
+                    this->vec[2] = vec.z;
                 }
             };                    
 
@@ -96,17 +102,21 @@
             };   
 
             struct ShaderAttrColor : ShaderAttr {
-                CR::Color color;
+                float color[3];
                 ShaderAttrColor(){
                     this->type = ShaderAttrType::COLOR;
                 }
                 ShaderAttrColor(const CR::Color &color, const std::string &name = ""){
                     this->type = ShaderAttrType::COLOR;
-                    this->color = color;
+                    this->color[0] = color.r;
+                    this->color[1] = color.g;
+                    this->color[2] = color.b;
                     if(name.length() > 0) this->name = name;
                 }                
                 void set(const CR::Color &color){
-                    this->color = color;
+                    this->color[0] = color.r;
+                    this->color[1] = color.g;
+                    this->color[2] = color.b;
                 }
             };   
 
@@ -145,8 +155,8 @@
                 bool load(const std::string &frag, const std::string &vert);
                 Shader();
                 void unload();
-                std::shared_ptr<CR::Gfx::ShaderResource> getRsc(){
-                    return std::static_pointer_cast<CR::Gfx::ShaderResource>(rsc);
+                CR::Gfx::ShaderResource *getRsc(){
+                    return static_cast<CR::Gfx::ShaderResource*>(rsc.get());
                 }
             };                   
 

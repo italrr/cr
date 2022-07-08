@@ -2,6 +2,7 @@
     #define CR_MAP_HPP
 
     #include "Engine/Types.hpp"
+    #include "Engine/Graphics.hpp"
 
     namespace CR {
 

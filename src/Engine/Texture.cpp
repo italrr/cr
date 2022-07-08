@@ -30,6 +30,7 @@ bool CR::Gfx::Texture::load(const std::string &path){
     }
 
     auto rscTexture = std::make_shared<CR::Gfx::TextureResource>(CR::Gfx::TextureResource());
+    auto rsc = std::static_pointer_cast<CR::Gfx::TextureResource>(rscTexture);
 
     allocate(rscTexture);
 
@@ -58,7 +59,7 @@ bool CR::Gfx::Texture::load(const std::string &path){
 
     rscTexture->textureId = r;
     rscTexture->rscLoaded = true;
-    CR::log("[GFX] Loaded Texture %s | Size %ix%i | Channels %i\n", path.c_str(), width, height, nrChannels);
+    CR::log("[GFX] Loaded Texture %s | Size %ix%i | Channels %i\n", path.c_str(), rscTexture->size.x, rscTexture->size.y, nrChannels);
 
     return true;    
 
