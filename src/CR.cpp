@@ -19,7 +19,8 @@ int main(int argc, char* argv[]){
     gameL->camera.setPosition(CR::Vec3<float>(CR::Vec3<float>(-106.964981, -500.000000, 405.812775)));    
     gameL->camera.setTarget(CR::Vec3<float>(0, 0, 0));
     gameL->camera.setUp(CR::Vec3<float>(0.0f, 1.0f, 0.0f));
-    gameL->camera.targetBias = CR::Vec3<float>(-70.0f, -70.0f, -70.0f);
+    gameL->camera.targetBias = CR::Vec3<float>(-55.0f, -35.0f, -75.0f);
+    // gameL->camera.targetBias = CR::Vec3<float>(-55.0f, -55.0f, -75.0f);
 
     std::shared_ptr<CR::Map::Map> map = std::make_shared<CR::Map::Map>(CR::Map::Map()); 
 
@@ -27,17 +28,23 @@ int main(int argc, char* argv[]){
 
     while(CR::Gfx::isRunning()){
 
-		// float cameraSpeed = CR::getDelta(); 
-		// if (CR::Input::keyboardCheck(CR::Input::Key::W))
-		// 	gameL->camera.setPosition(gameL->camera.position - CR::Vec3<float>(0.0f, 0.0f, 1.0f) * cameraSpeed);
-		// if (CR::Input::keyboardCheck(CR::Input::Key::S))
-		// 	gameL->camera.setPosition(gameL->camera.position + CR::Vec3<float>(0.0f, 0.0f, 1.0f) * cameraSpeed);
-
-		// if (CR::Input::keyboardCheck(CR::Input::Key::A))
-		// 	gameL->camera.setPosition(gameL->camera.position + CR::Vec3<float>(1.0f, 0.0f, 0.0f) * cameraSpeed);
-		// if (CR::Input::keyboardCheck(CR::Input::Key::D))
-		// 	gameL->camera.setPosition(gameL->camera.position - CR::Vec3<float>(1.0f, 0.0f, 0.0f) * cameraSpeed);			
-
+        // CR::log("%f\n", CR::getDelta());
+        // UP
+        if(CR::Input::keyboardCheck(CR::Input::Key::W)){
+            gameL->camera.position.z += CR::getDelta() * 2000;
+        }
+        //DOWN
+        if(CR::Input::keyboardCheck(CR::Input::Key::S)){
+            gameL->camera.position.z -= CR::getDelta() * 2000;
+        }
+        // LEFT    
+        if(CR::Input::keyboardCheck(CR::Input::Key::A)){
+            gameL->camera.position.x -= CR::getDelta() * 2000;
+        }
+        // RIGHT
+        if(CR::Input::keyboardCheck(CR::Input::Key::D)){
+            gameL->camera.position.x += CR::getDelta() * 2000;
+        }    
 
         map->render();
         CR::Gfx::render();
