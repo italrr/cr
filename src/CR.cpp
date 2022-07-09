@@ -3,7 +3,7 @@
 #include "Engine/Texture.hpp"
 #include "Engine/Job.hpp"
 #include "Engine/Input.hpp"
-
+#include "Map.hpp"
 
 int main(int argc, char* argv[]){
     
@@ -15,11 +15,15 @@ int main(int argc, char* argv[]){
     auto gameL = CR::Gfx::createRenderLayer(CR::Gfx::getSize(), CR::Gfx::RenderLayerType::T_3D, "world", true, 0);
     auto uiL = CR::Gfx::createRenderLayer(CR::Gfx::getSize(), CR::Gfx::RenderLayerType::T_2D, "ui", true, 1);
 
-    gameL->camera.setPosition(CR::Vec3<float>(CR::Vec3<float>(-106.964981, -500.000000, 405.812775)));
+    // setup camera
+    gameL->camera.setPosition(CR::Vec3<float>(CR::Vec3<float>(-106.964981, -500.000000, 405.812775)));    
     gameL->camera.setTarget(CR::Vec3<float>(0, 0, 0));
     gameL->camera.setUp(CR::Vec3<float>(0.0f, 1.0f, 0.0f));
-
     gameL->camera.targetBias = CR::Vec3<float>(-70.0f, -70.0f, -70.0f);
+
+    std::shared_ptr<CR::Map::Map> map = std::make_shared<CR::Map::Map>(CR::Map::Map()); 
+
+    map->build(CR::Vec2<int>(4, 4), CR::Map::UnitSize(50, 50));
 
     while(CR::Gfx::isRunning()){
 
@@ -35,9 +39,11 @@ int main(int argc, char* argv[]){
 		// 	gameL->camera.setPosition(gameL->camera.position - CR::Vec3<float>(1.0f, 0.0f, 0.0f) * cameraSpeed);			
 
 
-
+        map->render();
         CR::Gfx::render();
     }
+
+    map->clear();
 
     CR::Gfx::onEnd();
 

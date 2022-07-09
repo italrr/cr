@@ -389,21 +389,22 @@ namespace CR {
 			CR::Vec3<float> const u(s.cross(f));
 
 			CR::Mat<4, 4, float> out = MAT4Identity;
-			out.mat[0] = s.x;
-			out.mat[4] = s.y;
-			out.mat[8] = s.z;
+			out.mat[0*4 + 0] = s.x;
+			out.mat[1*4 + 0] = s.y;
+			out.mat[2*4 + 0] = s.z;
 
-			out.mat[1] = u.x;
-			out.mat[5] = u.y;
-			out.mat[9] = u.z;
+			out.mat[0*4 + 1] = u.x;
+			out.mat[1*4 + 1] = u.y;
+			out.mat[2*4 + 1] = u.z;
 
-			out.mat[2] = -f.x;
-			out.mat[6] = -f.y;
-			out.mat[10] = -f.z;
+			out.mat[0*4 + 2] = -f.x;
+			out.mat[1*4 + 2] = -f.y;
+			out.mat[2*4 + 2] = -f.z;
 			
-			out.mat[12] = -s.dot(pos);
-			out.mat[13] = -u.dot(pos);
-			out.mat[14] = f.dot(pos);
+			out.mat[3*4 + 0] = -s.dot(pos);
+			out.mat[3*4 + 1] = -u.dot(pos);
+			out.mat[3*4 + 2] = f.dot(pos);
+
 			return out;
 		}
 	}

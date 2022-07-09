@@ -69,8 +69,7 @@ static CR::Gfx::MeshData mBRect;
 static CR::Gfx::MeshData mBCube;
 static std::shared_ptr<CR::Gfx::Mesh> mBCubeMesh = std::shared_ptr<CR::Gfx::Mesh>(new CR::Gfx::Mesh());
 
-
-
+static CR::Gfx::Transform trans2DTexture;
 
 static std::shared_ptr<CR::Gfx::Texture> atlasTexture = std::make_shared<CR::Gfx::Texture>(CR::Gfx::Texture());
 
@@ -164,25 +163,25 @@ bool CR::Gfx::RenderLayer::init(unsigned type, int width, int height){
 
     switch(this->type){
         case RenderLayerType::T_3D: {
-            this->projection = CR::Math::orthogonal(0, size.x, 0.0f, size.y, 0.1f, 1000.0f);
-            this->camera.setPosition(CR::Vec3<float>(0.0f, 0.0f, 50.0f));
-            this->camera.setTarget(CR::Vec3<float>(0.0f, 0.0f, 0.0f));
-            this->camera.setUp(CR::Vec3<float>(0.0f, 1.0f, 0.0f));
+            this->projection = CR::Math::orthogonal(0, size.x, 0.0f, size.y, -1000.0f, 1000.0f);
+            // this->camera.setPosition(CR::Vec3<float>(0.0f, 0.0f, 50.0f));
+            // this->camera.setTarget(CR::Vec3<float>(0.0f, 0.0f, 0.0f));
+            // this->camera.setUp(CR::Vec3<float>(0.0f, 1.0f, 0.0f));
         } break;
         case RenderLayerType::T_2D: {
             this->projection = CR::Math::orthogonal(0, size.x, 0, size.y, -1.0f, 1.0f);
         } break;
     }
 
-    this->transform = std::make_shared<CR::Gfx::Transform>(CR::Gfx::Transform());
-    transform->shAttrsLoc = shBRect->shAttrs;
-    transform->shAttrsVal = {
-        {"image", std::make_shared<ShaderAttrInt>(0)},
-        {"model", std::make_shared<ShaderAttrMat4>(CR::MAT4Identity)},
-        {"projection", std::make_shared<ShaderAttrMat4>(CR::MAT4Identity)},
-        {"color", std::make_shared<ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))}
-    };
-    transform->fixShaderAttributes({"image", "model", "projection", "color"});
+    // this->transform = std::make_shared<CR::Gfx::Transform>(CR::Gfx::Transform());
+    // transform->shAttrsLoc = shBRect->shAttrs;
+    // transform->shAttrsVal = {
+    //     {"image", std::make_shared<ShaderAttrInt>(0)},
+    //     {"model", std::make_shared<ShaderAttrMat4>(CR::MAT4Identity)},
+    //     {"projection", std::make_shared<ShaderAttrMat4>(CR::MAT4Identity)},
+    //     {"color", std::make_shared<ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))}
+    // };
+    // transform->fixShaderAttributes({"image", "model", "projection", "color"});
 
     this->objects.reserve(2000);
 
@@ -287,40 +286,29 @@ void CR::Gfx::RenderLayer::flush(){
     fblock.unlock();
 }
 
+
+
 static void drawRLImmediate(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle){
 
     const auto projection = CR::Math::orthogonal(0, rl->size.x, rl->size.y, 0, 1.0f, -1.0f); // draw from top to bottom (TODO: remake this if rl->size doesn't match)
-
-    // std::unique_lock<std::mutex> lock(rl->accesMutex);
 
     const auto &position = pos;
 
     glEnable(GL_BLEND);
     glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
-    static bool init = false;
-    static CR::Gfx::Transform transform;
-    if(!init){
-        transform.shAttrsLoc = shBRect->shAttrs;
-        transform.shAttrsVal = {
-            {"image", std::make_shared<CR::Gfx::ShaderAttrInt>(0)},
-            {"model", std::make_shared<CR::Gfx::ShaderAttrMat4>(CR::MAT4Identity)},
-            {"projection", std::make_shared<CR::Gfx::ShaderAttrMat4>(projection)},
-            {"color", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))}
-        };
-        transform.fixShaderAttributes({"image", "model", "projection", "color"});
-        init = true;
-    }
     
-    // Remembering second val in the vector is the model matrix
-    static_cast<CR::Gfx::ShaderAttrMat4*>(transform.shAttrsValVec[1])->mat = CR::MAT4Identity
+    // Apply transformations to model
+    static_cast<CR::Gfx::ShaderAttrMat4*>(trans2DTexture.shAttrsValVec[1])->mat = CR::MAT4Identity
                 .translate(CR::Vec3<float>(position.x - origin.x * static_cast<float>(size.x), position.y - origin.y * static_cast<float>(size.y), 0.0f))
                 .translate(CR::Vec3<float>(origin.x * static_cast<float>(size.x), origin.y * static_cast<float>(size.y), 0.0f))
                 .rotate(angle, CR::Vec3<float>(0.0f, 0.0f, 1.0f))
                 .translate(CR::Vec3<float>(-origin.x * static_cast<float>(size.x), -origin.y * static_cast<float>(size.y), 0.0f))
                 .scale(CR::Vec3<float>(size.x, size.y, 1.0f));
 
-    CR::Gfx::applyShader(shBRect->getRsc()->shaderId, transform.shAttrsLocVec, transform.shAttrsValVec);
+    // Use generic projection
+    static_cast<CR::Gfx::ShaderAttrMat4*>(trans2DTexture.shAttrsValVec[2])->mat = projection;
+
+    CR::Gfx::applyShader(trans2DTexture.shader->getRsc()->shaderId, trans2DTexture.shAttrsLocVec, trans2DTexture.shAttrsValVec);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, rl->fb->textureId);
@@ -330,15 +318,11 @@ static void drawRLImmediate(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, con
     glBindVertexArray(0);  
     glUseProgram(0);
 
-    glDisable(GL_BLEND);
-    
-    // lock.unlock();
+    glDisable(GL_BLEND);    
 }
 
 CR::Gfx::Renderable *CR::Gfx::Draw::RenderLayer(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle){
     CR::Gfx::Renderable2D *self = new CR::Gfx::Renderable2D(); // layer's flush is in charge of deleting this
-
-    // std::unique_lock<std::mutex> lock(rl->accesMutex);
 
     self->position = pos;
     self->size = size;
@@ -348,8 +332,6 @@ CR::Gfx::Renderable *CR::Gfx::Draw::RenderLayer(const std::shared_ptr<CR::Gfx::R
     self->region = CR::Rect<float>(0, 0, rl->size.x, rl->size.y);
     self->type = RenderableType::TEXTURE;
     self->handleId = rl->fb->textureId;
-
-    // lock.unlock();
 
     self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
         auto *obj = static_cast<Renderable2D*>(renobj);
@@ -363,7 +345,7 @@ CR::Gfx::Renderable *CR::Gfx::Draw::RenderLayer(const std::shared_ptr<CR::Gfx::R
         auto &angle = obj->angle;
         auto &fbId = obj->handleId;
 
-        static_cast<CR::Gfx::ShaderAttrMat4*>(rl->transform->shAttrsValVec[1])->mat = CR::MAT4Identity
+        static_cast<CR::Gfx::ShaderAttrMat4*>(trans2DTexture.shAttrsValVec[1])->mat = CR::MAT4Identity
                 .translate(CR::Vec3<float>(position.x - origin.x * static_cast<float>(size.x), position.y - origin.y * static_cast<float>(size.y), 0.0f))
                 .translate(CR::Vec3<float>(origin.x * static_cast<float>(size.x), origin.y * static_cast<float>(size.y), 0.0f))
                 .rotate(angle, CR::Vec3<float>(0.0f, 0.0f, 1.0f))
@@ -371,9 +353,9 @@ CR::Gfx::Renderable *CR::Gfx::Draw::RenderLayer(const std::shared_ptr<CR::Gfx::R
                 .scale(CR::Vec3<float>(size.x, size.y, 1.0f));
 
 
-        static_cast<CR::Gfx::ShaderAttrMat4*>(rl->transform->shAttrsValVec[2])->mat = rl->projection;
+        static_cast<CR::Gfx::ShaderAttrMat4*>(trans2DTexture.shAttrsValVec[2])->mat = rl->projection;
 
-        CR::Gfx::applyShader(shBRect->getRsc()->shaderId, rl->transform->shAttrsLocVec, rl->transform->shAttrsValVec);
+        CR::Gfx::applyShader(trans2DTexture.shader->getRsc()->shaderId, trans2DTexture.shAttrsLocVec, trans2DTexture.shAttrsValVec);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, fbId);
@@ -402,8 +384,6 @@ CR::Gfx::Renderable *CR::Gfx::Draw::Texture(const std::shared_ptr<CR::Gfx::Textu
     self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
         auto *obj = static_cast<Renderable2D*>(renobj);
         
-        // const auto projection = CR::Math::orthogonal(0, rl->size.x, rl->size.y, 0);
-
         auto &position = obj->position;
         auto &size = obj->size;
         auto &scale = obj->scale;
@@ -412,31 +392,16 @@ CR::Gfx::Renderable *CR::Gfx::Draw::Texture(const std::shared_ptr<CR::Gfx::Textu
         auto &origSize = obj->origSize;
         auto &angle = obj->angle;
 
-        static bool init = false;
-        static CR::Gfx::Transform transform;
-        if(!init){
-            transform.shAttrsLoc = shBRect->shAttrs;
-            transform.shAttrsVal = {
-                {"image", std::make_shared<CR::Gfx::ShaderAttrInt>(0)},
-                {"model", std::make_shared<CR::Gfx::ShaderAttrMat4>(CR::MAT4Identity)},
-                {"projection", std::make_shared<CR::Gfx::ShaderAttrMat4>(CR::MAT4Identity)},
-                {"color", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))}
-            };
-            transform.fixShaderAttributes({"image", "model", "projection", "color"});
-            init = true;
-        }
-
-        // Remembering second val in the vector is the model matrix
-        static_cast<CR::Gfx::ShaderAttrMat4*>(transform.shAttrsValVec[1])->mat = CR::MAT4Identity
+        static_cast<CR::Gfx::ShaderAttrMat4*>(trans2DTexture.shAttrsValVec[1])->mat = CR::MAT4Identity
                     .translate(CR::Vec3<float>(position.x - origin.x * static_cast<float>(size.x), position.y - origin.y * static_cast<float>(size.y), 0.0f))
                     .translate(CR::Vec3<float>(origin.x * static_cast<float>(size.x), origin.y * static_cast<float>(size.y), 0.0f))
                     .rotate(angle, CR::Vec3<float>(0.0f, 0.0f, 1.0f))
                     .translate(CR::Vec3<float>(-origin.x * static_cast<float>(size.x), -origin.y * static_cast<float>(size.y), 0.0f))
                     .scale(CR::Vec3<float>(size.x, size.y, 1.0f));
 
-        static_cast<CR::Gfx::ShaderAttrMat4*>(transform.shAttrsValVec[2])->mat = rl->projection;
+        static_cast<CR::Gfx::ShaderAttrMat4*>(trans2DTexture.shAttrsValVec[2])->mat = rl->projection;
 
-        CR::Gfx::applyShader(shBRect->getRsc()->shaderId, transform.shAttrsLocVec, transform.shAttrsValVec);
+        CR::Gfx::applyShader(trans2DTexture.shader->getRsc()->shaderId, trans2DTexture.shAttrsLocVec, trans2DTexture.shAttrsValVec);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, obj->handleId);
@@ -600,6 +565,18 @@ bool CR::Gfx::init(){
     shBRect->findAttrs({"color", "model", "projection", "image"});
     shBCube->findAttrs({"color", "model", "projection", "image", "view"});
 
+
+    // Global transform for 2D textures
+    trans2DTexture.shader = shBRect;
+    trans2DTexture.shAttrsLoc = shBRect->shAttrs;
+    trans2DTexture.shAttrsVal = {
+        {"image", std::make_shared<CR::Gfx::ShaderAttrInt>(0)},
+        {"model", std::make_shared<CR::Gfx::ShaderAttrMat4>(CR::MAT4Identity)},
+        {"projection", std::make_shared<CR::Gfx::ShaderAttrMat4>(MAT4Identity)},
+        {"color", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))}
+    };    
+    trans2DTexture.fixShaderAttributes({"image", "model", "projection", "color"});
+
     mBRect = createMesh({ 
         // pos              // tex
         0.0f, 1.0f, 0.0f,   0.0f, 1.0f,
@@ -620,16 +597,18 @@ bool CR::Gfx::init(){
 
     CR::log("%i %f %f %f %f\n", atlasTexture->getRsc()->rscLoaded, (float)atlasTexture->getRsc()->size.x, (float)atlasTexture->getRsc()->size.y, indexCoorW, indexCoorH);
 
-    float coorX = 5 * indexCoorW;
+    float coorX = 19 * indexCoorW;
     float coorW = coorX + indexCoorW;
 
     float coorY = 0 * indexCoorH;
     float coorH = coorY + indexCoorH;    
 
 
-    static const float cubeScale = 25.0f;
+    static const float cubeScale = 250.0f;
     mBCube = createMesh({ 
         // pos                                 // tex
+
+        // SOUTH
         -cubeScale, -cubeScale, -cubeScale,    coorX, coorY,
          cubeScale, -cubeScale, -cubeScale,    coorW, coorY,
          cubeScale,  cubeScale, -cubeScale,    coorW, coorH,
@@ -639,7 +618,7 @@ bool CR::Gfx::init(){
         -cubeScale, -cubeScale, -cubeScale,    coorX, coorY,
 
 
-
+        //  NORTH
         -cubeScale, -cubeScale,  cubeScale,    coorX, coorY,
          cubeScale, -cubeScale,  cubeScale,    coorW, coorY,
          cubeScale,  cubeScale,  cubeScale,    coorW, coorH,
@@ -649,37 +628,37 @@ bool CR::Gfx::init(){
         -cubeScale, -cubeScale,  cubeScale,    coorX, coorY,
 
 
+        // WEST
+        -cubeScale,  cubeScale,  cubeScale,    coorW, coorH,
+        -cubeScale,  cubeScale, -cubeScale,    coorX, coorH,
+        -cubeScale, -cubeScale, -cubeScale,    coorX, coorY,
 
-        -cubeScale,  cubeScale,  cubeScale,    coorW, coorY,
-        -cubeScale,  cubeScale, -cubeScale,    coorW, coorH,
-        -cubeScale, -cubeScale, -cubeScale,    coorX, coorH,
-
-        -cubeScale, -cubeScale, -cubeScale,    coorX, coorH,
-        -cubeScale, -cubeScale,  cubeScale,    coorX, coorY,
-        -cubeScale,  cubeScale,  cubeScale,    coorW, coorY,
+        -cubeScale, -cubeScale, -cubeScale,    coorX, coorY,
+        -cubeScale, -cubeScale,  cubeScale,    coorW, coorY,
+        -cubeScale,  cubeScale,  cubeScale,    coorW, coorH,
 
 
+        // EAST
+         cubeScale,  cubeScale,  cubeScale,    coorW, coorH,
+         cubeScale,  cubeScale, -cubeScale,    coorX, coorH,
+         cubeScale, -cubeScale, -cubeScale,    coorX, coorY,
 
-         cubeScale,  cubeScale,  cubeScale,    coorW, coorY,
-         cubeScale,  cubeScale, -cubeScale,    coorW, coorH,
-         cubeScale, -cubeScale, -cubeScale,    coorX, coorH,
+         cubeScale, -cubeScale, -cubeScale,    coorX, coorY,
+         cubeScale, -cubeScale,  cubeScale,    coorW, coorY,
+         cubeScale,  cubeScale,  cubeScale,    coorW, coorH,
 
+
+        // TOP
+        -cubeScale, -cubeScale, -cubeScale,    coorW, coorH,
          cubeScale, -cubeScale, -cubeScale,    coorX, coorH,
          cubeScale, -cubeScale,  cubeScale,    coorX, coorY,
-         cubeScale,  cubeScale,  cubeScale,    coorW, coorY,
+
+         cubeScale, -cubeScale,  cubeScale,    coorX, coorY,
+        -cubeScale, -cubeScale,  cubeScale,    coorW, coorY,
+        -cubeScale, -cubeScale, -cubeScale,    coorW, coorH,
 
 
-
-        -cubeScale, -cubeScale, -cubeScale,    coorX, coorH,
-         cubeScale, -cubeScale, -cubeScale,    coorW, coorH,
-         cubeScale, -cubeScale,  cubeScale,    coorW, coorY,
-
-         cubeScale, -cubeScale,  cubeScale,    coorW, coorY,
-        -cubeScale, -cubeScale,  cubeScale,    coorX, coorY,
-        -cubeScale, -cubeScale, -cubeScale,    coorX, coorH,
-
-
-
+        // BOTTOM
         -cubeScale,  cubeScale, -cubeScale,    coorX, coorH,
          cubeScale,  cubeScale, -cubeScale,    coorW, coorH,
          cubeScale,  cubeScale,  cubeScale,    coorW, coorY,
@@ -754,7 +733,7 @@ CR::Gfx::Renderable *CR::Gfx::Draw::Mesh(CR::Gfx::MeshData &md, CR::Gfx::Transfo
         static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->shAttrsValVec[2])->mat = rl->camera.getView();
         static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->shAttrsValVec[3])->mat = rl->projection;
 
-        CR::Gfx::applyShader(shBCube->getRsc()->shaderId, obj->transform->shAttrsLocVec, obj->transform->shAttrsValVec);
+        CR::Gfx::applyShader(obj->transform->shader->getRsc()->shaderId, obj->transform->shAttrsLocVec, obj->transform->shAttrsValVec);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, dummyTexture->getRsc()->textureId);
@@ -786,29 +765,29 @@ void CR::Gfx::render(){
     lastDeltaCheck = currentTime;
 
 
+    int mamount = 1;
 
     static bool yes = false;
     static float add = 0.0f;
     static std::shared_ptr<RenderLayer> dummyLayer;
-    static CR::Gfx::Transform *transforms = new CR::Gfx::Transform[32*32];
+    static CR::Gfx::Transform *transforms = new CR::Gfx::Transform[mamount*mamount];
 
-    int mamount = 32;
 
-    add += 0; //360.0f * currentDelta;
+    add += 45.0f * currentDelta;
 
     if(!yes){
         yes = true;
-        // dummyLayer = CR::Gfx::createRenderLayer(CR::Vec2<int>(dummyTexture->getRsc()->size), CR::Gfx::RenderLayerType::T_2D);
+        dummyLayer = CR::Gfx::createRenderLayer(CR::Vec2<int>(dummyTexture->getRsc()->size), CR::Gfx::RenderLayerType::T_2D);
 
 
         for(unsigned y = 0; y < mamount; ++y){
             for(unsigned x = 0; x < mamount; ++x){
                 auto transform = CR::Gfx::Transform();
-                transform.textures[CR::Gfx::TextureRole::DIFFUSE] = dummyTexture->getRsc()->textureId;
+                transform.textures[CR::Gfx::TextureRole::DIFFUSE] = atlasTexture->getRsc()->textureId;
                 transform.model = CR::MAT4Identity.translate(CR::Vec3<float>(x * 50, 0, y * 50)).rotate(0, CR::Vec3<float>(0.0f)).scale(CR::Vec3<float>(1.0f));
 
+                transform.shader = shBCube;
                 transform.shAttrsLoc = shBCube->shAttrs;
-
                 transform.shAttrsVal = {
                     {"image", std::make_shared<CR::Gfx::ShaderAttrInt>(0)},
                     {"model", std::make_shared<CR::Gfx::ShaderAttrMat4>(transform.model)},
@@ -827,11 +806,11 @@ void CR::Gfx::render(){
 
     }
 
-    // dummyLayer->renderOn([](CR::Gfx::RenderLayer *lyr){
-    //     lyr->add(Draw::Texture(dummyTexture, CR::Vec2<float>(), dummyTexture->getRsc()->size, CR::Vec2<float>(0.0f), CR::Math::rads(0)));
-    // });
-    // dummyLayer->clear();
-    // dummyLayer->flush();
+    dummyLayer->renderOn([](CR::Gfx::RenderLayer *lyr){
+        lyr->add(Draw::Texture(dummyTexture, CR::Vec2<float>(), dummyTexture->getRsc()->size, CR::Vec2<float>(0.0f), CR::Math::rads(0)));
+    });
+    dummyLayer->clear();
+    dummyLayer->flush();
 
 
 
@@ -883,26 +862,28 @@ void CR::Gfx::render(){
 
         // layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->size, CR::Vec2<float>(0.5f), CR::Math::rads(0)));
         
+        // for(unsigned y = 0; y < mamount; ++y){
+        //     for(unsigned x = 0; x < mamount; ++x){
 
-        for(unsigned y = 0; y < mamount; ++y){
-            for(unsigned x = 0; x < mamount; ++x){
-                    layer->add(CR::Gfx::Draw::Mesh(mBCube, &transforms[x + y * mamount]));
-                    // pos.z += z * 50;
-                // for(unsigned z = 0; z < 8; ++z){
+        //             static_cast<CR::Gfx::ShaderAttrMat4*>((&transforms[x + y * mamount])->shAttrsValVec[1])->mat = CR::MAT4Identity.translate(CR::Vec3<float>(x * 50, 0, y * 50)).rotate(CR::Math::rads(add), CR::Vec3<float>(1, 1, 0)).scale(CR::Vec3<float>(1.0f));
+
+        //             layer->add(CR::Gfx::Draw::Mesh(mBCube, &transforms[x + y * mamount]));
+        //             // pos.z += z * 50;
+        //         // for(unsigned z = 0; z < 8; ++z){
 
 
-                // }
-            }
-        }
+        //         // }
+        //     }
+        // }
 
 
     });
 
 
-    // uiL->renderOn([](CR::Gfx::RenderLayer *layer){    
-    //     // layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->size, CR::Vec2<float>(0.5f), CR::Math::rads(0)));
-    //     layer->add(CR::Gfx::Draw::RenderLayer(dummyLayer, CR::Vec2<float>(layer->size.x - dummyLayer->size.x,0), CR::Vec2<int>(dummyLayer->size), CR::Vec2<float>(0.0f), 0.0f));
-    // });
+    uiL->renderOn([](CR::Gfx::RenderLayer *layer){    
+        // layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->size, CR::Vec2<float>(0.5f), CR::Math::rads(0)));
+        layer->add(CR::Gfx::Draw::RenderLayer(dummyLayer, CR::Vec2<float>(layer->size.x - dummyLayer->size.x,layer->size.y - dummyLayer->size.y), CR::Vec2<int>(dummyLayer->size), CR::Vec2<float>(0.0f), 0.0f));
+    });
 
     
     // Flush system layers
@@ -1282,6 +1263,22 @@ bool CR::Gfx::applyShader(unsigned shaderId, const std::vector<unsigned> &loc, c
 // }
 
 
+CR::Gfx::Transform::Transform(){
+    this->textures = {0, 0, 0, 0};
+    this->model = CR::MAT4Identity;
+    this->shader = std::make_shared<CR::Gfx::Shader>(CR::Gfx::Shader());
+}
+
+void CR::Gfx::Transform::fixShaderAttributes(const std::vector<std::string> &locOrder){
+    shAttrsLocVec.clear();
+    shAttrsValVec.clear();
+    for(unsigned i = 0; i < locOrder.size(); ++i){
+        auto &attr = shAttrsVal[locOrder[i]];
+        auto &loc = shAttrsLoc[locOrder[i]];
+        shAttrsLocVec.push_back(loc);
+        shAttrsValVec.push_back(attr.get());
+    }
+}
 
 
 
@@ -1315,23 +1312,23 @@ CR::Mat<4, 4, float> CR::Gfx::Camera::getView(){
 
     // UP
     if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD8)){
-        this->position.z += getDelta() * 0.005f;
+        this->position.z += getDelta() * 0.05f;
         // CR::log("%f %s\n", getDelta(), this->position.str().c_str());
     }
     //DOWN
     if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD2)){
-        this->position.z -= getDelta() * 0.005f;
+        this->position.z -= getDelta() * 0.05f;
         // CR::log("%f %s\n", getDelta(), this->position.str().c_str());
 
     }
     // LEFT    
     if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD4)){
-        this->position.x -= getDelta() * 0.005f;
+        this->position.x -= getDelta() * 0.05f;
         // CR::log("%f %s\n", getDelta(), this->position.str().c_str());
     }
     // RIGHT
     if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD6)){
-        this->position.x += getDelta() * 0.005f;
+        this->position.x += getDelta() * 0.05f;
         // CR::log("%f %s\n", getDelta(), this->position.str().c_str());
 
 
@@ -1339,5 +1336,5 @@ CR::Mat<4, 4, float> CR::Gfx::Camera::getView(){
 
     return Math::lookAt(this->position, this->position + this->targetBias, CR::Vec3<float>(0.0f, 1.0f, 0.0f));
 
-    // return Math::lookAt(CR::Vec3<float>(0.0f, 0.0f, 100.0f), CR::Vec3<float>(0.0f, 0.0f, 0.0f), CR::Vec3<float>(0.0f, 1.0f, 0.0f));
+    // return Math::lookAt(this->position, CR::Vec3<float>(0.0f, 0.0f, 0.0f), CR::Vec3<float>(0.0f, 1.0f, 0.0f));
 }

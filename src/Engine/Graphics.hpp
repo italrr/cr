@@ -124,6 +124,7 @@
             struct Shader;
 
             struct Transform {
+                std::shared_ptr<CR::Gfx::Shader> shader;
 				CR::Mat<4, 4, float> model;
 				// CR::Vec3<float> position;
 				// CR::Color color;
@@ -135,21 +136,9 @@
                 std::vector<CR::Gfx::ShaderAttr*> shAttrsValVec;
                 std::vector<unsigned> shAttrsLocVec;
 
-                Transform(){
-                    this->textures = {0, 0, 0, 0};
-					this->model = CR::MAT4Identity;
-				}
+                Transform();
 
-                void fixShaderAttributes(const std::vector<std::string> &locOrder){
-                    shAttrsLocVec.clear();
-                    shAttrsValVec.clear();
-                    for(unsigned i = 0; i < locOrder.size(); ++i){
-                        auto &attr = shAttrsVal[locOrder[i]];
-                        auto &loc = shAttrsLoc[locOrder[i]];
-                        shAttrsLocVec.push_back(loc);
-                        shAttrsValVec.push_back(attr.get());
-                    }
-                }
+                void fixShaderAttributes(const std::vector<std::string> &locOrder);
             };
 
             struct RenderLayer;
@@ -213,7 +202,7 @@
             struct RenderLayer {
                 unsigned id;
                 unsigned type;
-                std::shared_ptr<CR::Gfx::Transform> transform;
+                // std::shared_ptr<CR::Gfx::Transform> transform;
                 std::shared_ptr<FramebufferObj> fb;
                 int order;
                 int depth; // current depth (doesn't work in T_3D)
