@@ -560,10 +560,10 @@ bool CR::Gfx::init(){
 
     // basic rectangle for 2d rendering
     shBRect->load("data/shader/b_rect_texture_f.glsl", "data/shader/b_rect_texture_v.glsl");
-    shBCube->load("data/shader/b_cube_texture_f.glsl", "data/shader/b_cube_texture_v.glsl");
+    // shBCube->load("data/shader/b_cube_texture_f.glsl", "data/shader/b_cube_texture_v.glsl");
     
     shBRect->findAttrs({"color", "model", "projection", "image"});
-    shBCube->findAttrs({"color", "model", "projection", "image", "view"});
+    // shBCube->findAttrs({"color", "model", "projection", "image", "view"});
 
 
     // Global transform for 2D textures
@@ -590,83 +590,83 @@ bool CR::Gfx::init(){
 
 
     dummyTexture->load("data/texture/container.png");
-    atlasTexture->load("data/texture/32x32.bmp");
+    // atlasTexture->load("data/texture/32x32.bmp");
 
-    float indexCoorW = 32.0f / static_cast<float>(atlasTexture->getRsc()->size.x);
-    float indexCoorH = 32.0f / static_cast<float>(atlasTexture->getRsc()->size.y);
+    // float indexCoorW = 32.0f / static_cast<float>(atlasTexture->getRsc()->size.x);
+    // float indexCoorH = 32.0f / static_cast<float>(atlasTexture->getRsc()->size.y);
 
-    CR::log("%i %f %f %f %f\n", atlasTexture->getRsc()->rscLoaded, (float)atlasTexture->getRsc()->size.x, (float)atlasTexture->getRsc()->size.y, indexCoorW, indexCoorH);
+    // CR::log("%i %f %f %f %f\n", atlasTexture->getRsc()->rscLoaded, (float)atlasTexture->getRsc()->size.x, (float)atlasTexture->getRsc()->size.y, indexCoorW, indexCoorH);
 
-    float coorX = 19 * indexCoorW;
-    float coorW = coorX + indexCoorW;
+    // float coorX = 19 * indexCoorW;
+    // float coorW = coorX + indexCoorW;
 
-    float coorY = 0 * indexCoorH;
-    float coorH = coorY + indexCoorH;    
-
-
-    static const float cubeScale = 250.0f;
-    mBCube = createMesh({ 
-        // pos                                 // tex
-
-        // SOUTH
-        -cubeScale, -cubeScale, -cubeScale,    coorX, coorY,
-         cubeScale, -cubeScale, -cubeScale,    coorW, coorY,
-         cubeScale,  cubeScale, -cubeScale,    coorW, coorH,
-
-         cubeScale,  cubeScale, -cubeScale,    coorW, coorH,
-        -cubeScale,  cubeScale, -cubeScale,    coorX, coorH,
-        -cubeScale, -cubeScale, -cubeScale,    coorX, coorY,
+    // float coorY = 0 * indexCoorH;
+    // float coorH = coorY + indexCoorH;    
 
 
-        //  NORTH
-        -cubeScale, -cubeScale,  cubeScale,    coorX, coorY,
-         cubeScale, -cubeScale,  cubeScale,    coorW, coorY,
-         cubeScale,  cubeScale,  cubeScale,    coorW, coorH,
+    // static const float cubeScale = 250.0f;
+    // mBCube = createMesh({ 
+    //     // pos                                 // tex
+
+    //     // SOUTH
+    //     -cubeScale, -cubeScale, -cubeScale,    coorX, coorY,
+    //      cubeScale, -cubeScale, -cubeScale,    coorW, coorY,
+    //      cubeScale,  cubeScale, -cubeScale,    coorW, coorH,
+
+    //      cubeScale,  cubeScale, -cubeScale,    coorW, coorH,
+    //     -cubeScale,  cubeScale, -cubeScale,    coorX, coorH,
+    //     -cubeScale, -cubeScale, -cubeScale,    coorX, coorY,
+
+
+    //     //  NORTH
+    //     -cubeScale, -cubeScale,  cubeScale,    coorX, coorY,
+    //      cubeScale, -cubeScale,  cubeScale,    coorW, coorY,
+    //      cubeScale,  cubeScale,  cubeScale,    coorW, coorH,
          
-         cubeScale,  cubeScale,  cubeScale,    coorW, coorH,
-        -cubeScale,  cubeScale,  cubeScale,    coorX, coorH,
-        -cubeScale, -cubeScale,  cubeScale,    coorX, coorY,
+    //      cubeScale,  cubeScale,  cubeScale,    coorW, coorH,
+    //     -cubeScale,  cubeScale,  cubeScale,    coorX, coorH,
+    //     -cubeScale, -cubeScale,  cubeScale,    coorX, coorY,
 
 
-        // WEST
-        -cubeScale,  cubeScale,  cubeScale,    coorW, coorH,
-        -cubeScale,  cubeScale, -cubeScale,    coorX, coorH,
-        -cubeScale, -cubeScale, -cubeScale,    coorX, coorY,
+    //     // WEST
+    //     -cubeScale,  cubeScale,  cubeScale,    coorW, coorH,
+    //     -cubeScale,  cubeScale, -cubeScale,    coorX, coorH,
+    //     -cubeScale, -cubeScale, -cubeScale,    coorX, coorY,
 
-        -cubeScale, -cubeScale, -cubeScale,    coorX, coorY,
-        -cubeScale, -cubeScale,  cubeScale,    coorW, coorY,
-        -cubeScale,  cubeScale,  cubeScale,    coorW, coorH,
-
-
-        // EAST
-         cubeScale,  cubeScale,  cubeScale,    coorW, coorH,
-         cubeScale,  cubeScale, -cubeScale,    coorX, coorH,
-         cubeScale, -cubeScale, -cubeScale,    coorX, coorY,
-
-         cubeScale, -cubeScale, -cubeScale,    coorX, coorY,
-         cubeScale, -cubeScale,  cubeScale,    coorW, coorY,
-         cubeScale,  cubeScale,  cubeScale,    coorW, coorH,
+    //     -cubeScale, -cubeScale, -cubeScale,    coorX, coorY,
+    //     -cubeScale, -cubeScale,  cubeScale,    coorW, coorY,
+    //     -cubeScale,  cubeScale,  cubeScale,    coorW, coorH,
 
 
-        // TOP
-        -cubeScale, -cubeScale, -cubeScale,    coorW, coorH,
-         cubeScale, -cubeScale, -cubeScale,    coorX, coorH,
-         cubeScale, -cubeScale,  cubeScale,    coorX, coorY,
+    //     // EAST
+    //      cubeScale,  cubeScale,  cubeScale,    coorW, coorH,
+    //      cubeScale,  cubeScale, -cubeScale,    coorX, coorH,
+    //      cubeScale, -cubeScale, -cubeScale,    coorX, coorY,
 
-         cubeScale, -cubeScale,  cubeScale,    coorX, coorY,
-        -cubeScale, -cubeScale,  cubeScale,    coorW, coorY,
-        -cubeScale, -cubeScale, -cubeScale,    coorW, coorH,
+    //      cubeScale, -cubeScale, -cubeScale,    coorX, coorY,
+    //      cubeScale, -cubeScale,  cubeScale,    coorW, coorY,
+    //      cubeScale,  cubeScale,  cubeScale,    coorW, coorH,
 
 
-        // BOTTOM
-        -cubeScale,  cubeScale, -cubeScale,    coorX, coorH,
-         cubeScale,  cubeScale, -cubeScale,    coorW, coorH,
-         cubeScale,  cubeScale,  cubeScale,    coorW, coorY,
+    //     // TOP
+    //     -cubeScale, -cubeScale, -cubeScale,    coorW, coorH,
+    //      cubeScale, -cubeScale, -cubeScale,    coorX, coorH,
+    //      cubeScale, -cubeScale,  cubeScale,    coorX, coorY,
+
+    //      cubeScale, -cubeScale,  cubeScale,    coorX, coorY,
+    //     -cubeScale, -cubeScale,  cubeScale,    coorW, coorY,
+    //     -cubeScale, -cubeScale, -cubeScale,    coorW, coorH,
+
+
+    //     // BOTTOM
+    //     -cubeScale,  cubeScale, -cubeScale,    coorX, coorH,
+    //      cubeScale,  cubeScale, -cubeScale,    coorW, coorH,
+    //      cubeScale,  cubeScale,  cubeScale,    coorW, coorY,
          
-         cubeScale,  cubeScale,  cubeScale,    coorW, coorY,
-        -cubeScale,  cubeScale,  cubeScale,    coorX, coorY,
-        -cubeScale,  cubeScale, -cubeScale,    coorX, coorH
-    });    
+    //      cubeScale,  cubeScale,  cubeScale,    coorW, coorY,
+    //     -cubeScale,  cubeScale,  cubeScale,    coorX, coorY,
+    //     -cubeScale,  cubeScale, -cubeScale,    coorX, coorH
+    // });    
     // mBCube = createMesh({ 
     //     // pos                                 // tex
     //     -cubeScale, -cubeScale, -cubeScale,    0.0f, 0.0f,
@@ -736,7 +736,7 @@ CR::Gfx::Renderable *CR::Gfx::Draw::Mesh(CR::Gfx::MeshData &md, CR::Gfx::Transfo
         CR::Gfx::applyShader(obj->transform->shader->getRsc()->shaderId, obj->transform->shAttrsLocVec, obj->transform->shAttrsValVec);
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, dummyTexture->getRsc()->textureId);
+        glBindTexture(GL_TEXTURE_2D, obj->transform->textures[CR::Gfx::TextureRole::DIFFUSE]);
 
         glBindVertexArray(obj->md.vao);
         glDrawArrays(GL_TRIANGLES, 0, obj->md.vertn);
@@ -765,42 +765,42 @@ void CR::Gfx::render(){
     lastDeltaCheck = currentTime;
 
 
-    int mamount = 1;
+    // int mamount = 1;
 
     static bool yes = false;
-    static float add = 0.0f;
+    // static float add = 0.0f;
     static std::shared_ptr<RenderLayer> dummyLayer;
-    static CR::Gfx::Transform *transforms = new CR::Gfx::Transform[mamount*mamount];
+    // static CR::Gfx::Transform *transforms = new CR::Gfx::Transform[mamount*mamount];
 
 
-    add += 45.0f * currentDelta;
+    // add += 45.0f * currentDelta;
 
     if(!yes){
         yes = true;
         dummyLayer = CR::Gfx::createRenderLayer(CR::Vec2<int>(dummyTexture->getRsc()->size), CR::Gfx::RenderLayerType::T_2D);
 
 
-        for(unsigned y = 0; y < mamount; ++y){
-            for(unsigned x = 0; x < mamount; ++x){
-                auto transform = CR::Gfx::Transform();
-                transform.textures[CR::Gfx::TextureRole::DIFFUSE] = atlasTexture->getRsc()->textureId;
-                transform.model = CR::MAT4Identity.translate(CR::Vec3<float>(x * 50, 0, y * 50)).rotate(0, CR::Vec3<float>(0.0f)).scale(CR::Vec3<float>(1.0f));
+    //     for(unsigned y = 0; y < mamount; ++y){
+    //         for(unsigned x = 0; x < mamount; ++x){
+    //             auto transform = CR::Gfx::Transform();
+    //             transform.textures[CR::Gfx::TextureRole::DIFFUSE] = atlasTexture->getRsc()->textureId;
+    //             transform.model = CR::MAT4Identity.translate(CR::Vec3<float>(x * 50, 0, y * 50)).rotate(0, CR::Vec3<float>(0.0f)).scale(CR::Vec3<float>(1.0f));
 
-                transform.shader = shBCube;
-                transform.shAttrsLoc = shBCube->shAttrs;
-                transform.shAttrsVal = {
-                    {"image", std::make_shared<CR::Gfx::ShaderAttrInt>(0)},
-                    {"model", std::make_shared<CR::Gfx::ShaderAttrMat4>(transform.model)},
-                    {"view", std::make_shared<CR::Gfx::ShaderAttrMat4>(CR::MAT4Identity)},
-                    {"projection", std::make_shared<CR::Gfx::ShaderAttrMat4>(CR::MAT4Identity)},
-                    {"color", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))}
-                };
+    //             transform.shader = shBCube;
+    //             transform.shAttrsLoc = shBCube->shAttrs;
+    //             transform.shAttrsVal = {
+    //                 {"image", std::make_shared<CR::Gfx::ShaderAttrInt>(0)},
+    //                 {"model", std::make_shared<CR::Gfx::ShaderAttrMat4>(transform.model)},
+    //                 {"view", std::make_shared<CR::Gfx::ShaderAttrMat4>(CR::MAT4Identity)},
+    //                 {"projection", std::make_shared<CR::Gfx::ShaderAttrMat4>(CR::MAT4Identity)},
+    //                 {"color", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))}
+    //             };
 
-                transform.fixShaderAttributes({"image", "model", "view", "projection", "color"});
+    //             transform.fixShaderAttributes({"image", "model", "view", "projection", "color"});
 
-                transforms[x + y * mamount] = transform;
-            }
-        }
+    //             transforms[x + y * mamount] = transform;
+    //         }
+    //     }
         
 
 
@@ -951,10 +951,16 @@ unsigned CR::Gfx::createTexture2D(unsigned char *data, unsigned w, unsigned h, u
     std::unique_lock<std::mutex> texLock(textureRenderMutex);
     glGenTextures(1, &texture);  
     glBindTexture(GL_TEXTURE_2D, texture);  
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
     GLenum glformat;
     switch(format){
         case ImageFormat::RED: {
@@ -1312,23 +1318,23 @@ CR::Mat<4, 4, float> CR::Gfx::Camera::getView(){
 
     // UP
     if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD8)){
-        this->position.z += getDelta() * 0.05f;
+        this->position.z += getDelta() * 0.005f;
         // CR::log("%f %s\n", getDelta(), this->position.str().c_str());
     }
     //DOWN
     if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD2)){
-        this->position.z -= getDelta() * 0.05f;
+        this->position.z -= getDelta() * 0.005f;
         // CR::log("%f %s\n", getDelta(), this->position.str().c_str());
 
     }
     // LEFT    
     if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD4)){
-        this->position.x -= getDelta() * 0.05f;
+        this->position.x -= getDelta() * 0.005f;
         // CR::log("%f %s\n", getDelta(), this->position.str().c_str());
     }
     // RIGHT
     if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD6)){
-        this->position.x += getDelta() * 0.05f;
+        this->position.x += getDelta() * 0.005f;
         // CR::log("%f %s\n", getDelta(), this->position.str().c_str());
 
 

@@ -13,6 +13,7 @@ static CR::Gfx::MeshData buildCube(float cubeScale, const std::vector<CR::Map::A
     auto FTT    = CR::Map::FaceType::TOP;    
     auto FTB    = CR::Map::FaceType::BOTTOM;    
 
+
     auto mesh = CR::Gfx::createMesh({ 
         // POSITION                             // TEXTURE
 
@@ -95,7 +96,7 @@ CR::Map::Map::Map(){
 }
 
 
-void CR::Map::Map::build(const CR::Vec2<int> mapSize, const CR::Map::UnitSize &us){
+void CR::Map::Map::build(const CR::Vec2<int> mapSize, float us){
 
     game = CR::Gfx::getRenderLayer("world", true);
 
@@ -129,7 +130,7 @@ void CR::Map::Map::build(const CR::Vec2<int> mapSize, const CR::Map::UnitSize &u
     }
 
     // Build some sources
-    this->sources["wall"] = buildTileSource("wall", 50, {
+    this->sources["wall"] = buildTileSource("wall", us, {
                                                             this->atlasSingles[4],  // SOUTH
                                                             this->atlasSingles[4],  // NORTH
                                                             this->atlasSingles[4],  // WEST
@@ -149,10 +150,15 @@ void CR::Map::Map::build(const CR::Vec2<int> mapSize, const CR::Map::UnitSize &u
         this->tiles[i].position.x = i % mapSize.x;
         this->tiles[i].position.y = i / mapSize.y;
         this->tiles[i].source = this->sources["wall"].get();
+
         this->tiles[i].transform.shader = worldShader;
         this->tiles[i].transform.textures[CR::Gfx::TextureRole::DIFFUSE] = this->atlas->getRsc()->textureId;
         this->tiles[i].transform.shAttrsLoc = worldShader->shAttrs;
-        auto position = CR::MAT4Identity.translate(CR::Vec3<float>(0)).rotate(0, CR::Vec3<float>(1, 1, 1)).scale(CR::Vec3<float>(1.0f));
+        
+        auto position = CR::MAT4Identity
+                        .translate(CR::Vec3<float>(this->tiles[i].position.x * (us*2.0f), 0, this->tiles[i].position.y * (us*2.0f)))
+                        .rotate(0, CR::Vec3<float>(1, 1, 1))
+                        .scale(CR::Vec3<float>(1.0f));
         this->tiles[i].transform.shAttrsVal = {
             {"image", std::make_shared<CR::Gfx::ShaderAttrInt>(0)},
             {"model", std::make_shared<CR::Gfx::ShaderAttrMat4>(position)},
@@ -160,7 +166,7 @@ void CR::Map::Map::build(const CR::Vec2<int> mapSize, const CR::Map::UnitSize &u
             {"projection", std::make_shared<CR::Gfx::ShaderAttrMat4>(MAT4Identity)},
             {"color", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))}
         };    
-        this->tiles[i].transform.fixShaderAttributes({"image", "model", "projection", "color"});
+        this->tiles[i].transform.fixShaderAttributes({"image", "model", "view", "projection", "color"});
 
     }
 

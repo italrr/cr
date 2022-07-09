@@ -53,19 +53,6 @@
                 CR::Gfx::Transform transform;
             };
 
-            struct UnitSize { // in pixels
-                unsigned width;
-                unsigned height;
-                UnitSize(){
-                    this->width = 50;
-                    this->height = 50;
-                }
-                UnitSize(unsigned width, unsigned height){
-                    this->width = width;
-                    this->height = height;                    
-                }                
-            };
-
             struct Map {
                 std::string title;
                 std::string author;
@@ -78,7 +65,7 @@
                 std::shared_ptr<CR::Gfx::Shader> worldShader;
 
                 CR::Vec3<float> origin;
-                CR::Map::UnitSize usize;
+                float usize;
                 CR::Vec2<int> size; // units * unitsize
                 unsigned totalUnits;
 
@@ -86,7 +73,7 @@
                 unsigned height;
 
                 Map();
-                void build(const CR::Vec2<int> mapSize, const CR::Map::UnitSize &us);
+                void build(const CR::Vec2<int> mapSize, float us);
                 void render();
                 void clear();
             };
