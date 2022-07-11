@@ -300,6 +300,9 @@ std::string CR::String::replaceAll(std::string subject, const std::string& searc
 
 namespace CR {
 	namespace Math {
+		int odd(int n){
+			return n % 2 == 0 ? n + 1 : n;
+		}
 		int random(int min, int max){
 			static std::random_device rd;
 			std::mt19937 rng(rd());

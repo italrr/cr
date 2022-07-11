@@ -24,9 +24,39 @@ int main(int argc, char* argv[]){
 
     std::shared_ptr<CR::Map::Map> map = std::make_shared<CR::Map::Map>(CR::Map::Map()); 
 
-    map->build(CR::Vec2<int>(32, 32), 50);
+    map->build(CR::Vec2<int>(11, 11), 100);
 
     while(CR::Gfx::isRunning()){
+
+        if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD8)){
+            gameL->camera.targetBias.z += CR::getDelta() * 20;
+        }
+        //DOWN
+        if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD5)){
+            gameL->camera.targetBias.z -= CR::getDelta() * 20;
+        }
+        // LEFT    
+        if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD4)){
+            gameL->camera.targetBias.x -= CR::getDelta() * 20;
+        }
+        // RIGHT
+        if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD6)){
+            gameL->camera.targetBias.x += CR::getDelta() * 20;
+        }  
+
+        // LEFT    
+        if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD9)){
+            gameL->camera.targetBias.y -= CR::getDelta() * 20;
+        }
+        // RIGHT
+        if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD3)){
+            gameL->camera.targetBias.y += CR::getDelta() * 20;
+        } 
+
+
+        if(CR::Input::keyboardPressed(CR::Input::Key::NUMPAD0)){
+            gameL->camera.targetBias = CR::Vec3<float>(-55.0f, -35.0f, -75.0f);
+        }    
 
         // CR::log("%f\n", CR::getDelta());
         // UP

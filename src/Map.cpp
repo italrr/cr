@@ -1,3 +1,6 @@
+#include <algorithm>
+#include <random>
+
 #include "Engine/Log.hpp"
 #include "Engine/Tools.hpp"
 #include "Map.hpp"
@@ -10,6 +13,28 @@ namespace MeshType {
         PLANE
     };
 }
+
+namespace CellType {
+    enum CellType : unsigned {
+        WALL = 0,
+        PATH
+    };
+}
+
+struct Cell {
+    int x;
+    int y;
+    unsigned i;
+    unsigned type;
+    Cell(){
+        this->type = CellType::WALL;
+    }
+    Cell(unsigned x, unsigned y){
+        this->x = x;
+        this->y = y;
+    }
+};
+
 
 static CR::Gfx::MeshData buildMesh(float cubeScale, const std::vector<CR::Map::AtlasSingle> &faces, unsigned type){
 
@@ -115,13 +140,118 @@ static std::shared_ptr<CR::Map::TileSource> buildTileSource(const std::string &n
     return src;
 }
 
+static std::vector<Cell> generateEmptyMaze(unsigned w, unsigned h){
+    unsigned total = w * h;
+    std::vector<Cell> maze;
+    for(unsigned i = 0; i < total; ++i){
+        auto cell = Cell();
+        cell.i = i;
+        cell.x = i % w;
+        cell.y = i % h;
+        maze.push_back(cell);
+    }
+    return maze;
+}
+
+static void generateMaze(std::vector<Cell> &src, unsigned width, unsigned height){
+    auto randodd = [](int from, int to){
+        return CR::Math::odd(CR::Math::random(from, to));
+    };    
+
+    auto depthFirstSearch = [&](){
+        // choose a random start position
+        unsigned start = 0;
+        Cell spawn(randodd(3, width - 4), randodd(3, height - 4));    
+        // auto makeRoom = [&](int minWidth, int minHeight, int maxWidth, int maxHeight){
+        //     // make room
+        //     Game::RING::Cell size(nite::randomInt(minWidth, maxWidth), nite::randomInt(minHeight, maxHeight));
+        //     Game::RING::Cell start;
+        //     do {
+        //         start = Game::RING::Cell(nite::randomInt(2, width - 2), nite::randomInt(2, height - 2));
+        //     } while((start.x + size.x >= width - 1 || start.y + size.y >= height - 1));
+        //     fillRectangle(start.x, start.y, size.x, size.y, Game::RING::CellType::Path);
+        //     // // set up walls
+        //     // for(int i = 0; i < size.x; ++i){
+        //     //     for(int j = 0; j < size.y; ++j){
+        //     //         if(i > 0 && i < size.x - 1 && j > 0 && j < size.y - 1) continue;
+        //     //         Game::RING::Cell p = Game::RING::Cell(start.x + i, start.y + j);
+                    
+
+        //     //         set(p.x, p.y, Game::RING::CellType::Wall);
+        //     //     }
+        //     // }
+        //     // make doors            
+        // };        
+        start = spawn.x + spawn.y * width;
+        src[spawn.x + spawn.y * width].type = CellType::PATH;
+        auto randdir = [&](){
+            std::vector<unsigned> dirs;
+            for(int i = 0; i < 4; ++i){
+                dirs.push_back(i);
+            }
+            std::random_shuffle(dirs.begin(), dirs.end());           
+            return dirs;
+        };
+        std::function<void(Cell)> recursion = [&](Cell cell){
+            auto dirs = randdir();
+            auto index = [&](int x, int y){
+                return x + y * height;
+            };
+            auto ptype = CellType::PATH;
+            for(int i = 0; i < dirs.size(); ++i){
+                switch(dirs[i]){
+                    case 0: { // up
+                        if(cell.y - 2 < 0) continue;
+                        if(src[index(cell.x, cell.y - 2)].type != ptype){
+                            src[index(cell.x, cell.y - 2)].type = ptype;
+                            src[index(cell.x, cell.y - 1)].type = ptype;
+                            recursion(Cell(cell.x, cell.y - 2));
+                        }
+                    } break;
+                    case 1: { // right
+                        if(cell.x + 2 >= width) continue;
+                        if(src[index(cell.x + 2, cell.y)].type != ptype){
+                            src[index(cell.x + 2, cell.y)].type = ptype;
+                            src[index(cell.x + 1, cell.y)].type = ptype;
+                            recursion(Cell(cell.x + 2, cell.y));
+                        }
+                    } break;
+                    case 2: { // down
+                        if(cell.y + 2 >= height) continue;
+                        if(src[index(cell.x, cell.y + 2)].type != ptype){
+                            src[index(cell.x, cell.y + 2)].type = ptype;
+                            src[index(cell.x, cell.y + 1)].type = ptype;
+                            recursion(Cell(cell.x, cell.y + 2));
+                        }
+                    } break;
+                    case 3: { // left
+                        if(cell.x - 2 < 0) continue;
+                        if(src[index(cell.x - 2, cell.y)].type != ptype){
+                            src[index(cell.x - 2, cell.y)].type = ptype;
+                            src[index(cell.x - 1, cell.y)].type = ptype;
+                            recursion(Cell(cell.x - 2, cell.y));
+                        }
+                    } break;                                                            
+                }
+            }
+        };
+        recursion(spawn);
+        // for(int i = 0; i < 3; ++i){
+        //     makeRoom(4, 4, 8, 8); // make a random room
+        // }
+
+    };
+    depthFirstSearch();
+}
+
+
+
 CR::Map::Map::Map(){
     this->tiles = NULL;
     this->worldShader = std::make_shared<CR::Gfx::Shader>(CR::Gfx::Shader());
     this->atlas = std::make_shared<CR::Gfx::Texture>(CR::Gfx::Texture());
 
 }
-
 
 void CR::Map::Map::build(const CR::Vec2<int> mapSize, float us){
 
@@ -175,8 +305,15 @@ void CR::Map::Map::build(const CR::Vec2<int> mapSize, float us){
                                                         }, MeshType::PLANE);                                                        
 
 
-    this->tiles = new Tile[this->totalUnits];
+    auto maze = generateEmptyMaze(mapSize.x, mapSize.y);
 
+    generateMaze(maze, mapSize.x, mapSize.y);
+
+
+    this->tiles = new Tile[this->totalUnits];
+    
+    // unsigned scale = 3;
+    
     for(unsigned i = 0; i < this->totalUnits; ++i){
         this->tiles[i].id = i;
         this->tiles[i].index = i;
@@ -184,7 +321,12 @@ void CR::Map::Map::build(const CR::Vec2<int> mapSize, float us){
         this->tiles[i].height = 0;
         this->tiles[i].position.x = i % mapSize.x;
         this->tiles[i].position.y = i / mapSize.y;
-        this->tiles[i].source = CR::Math::random(1, 2) == 1 ? this->sources["floor"].get() : this->sources["wall"].get();
+
+        // int mazeind = (i % mapSize.x) / scale + ((i / mapSize.x) / scale) * 12; 
+
+
+
+        this->tiles[i].source = maze[i].type == CellType::PATH ? this->sources["floor"].get() : this->sources["wall"].get();
 
         this->tiles[i].transform.shader = worldShader;
         this->tiles[i].transform.textures[CR::Gfx::TextureRole::DIFFUSE] = this->atlas->getRsc()->textureId;
@@ -204,7 +346,6 @@ void CR::Map::Map::build(const CR::Vec2<int> mapSize, float us){
         this->tiles[i].transform.fixShaderAttributes({"image", "model", "view", "projection", "color"});
 
     }
-
 }
 
 void CR::Map::Map::render(){
