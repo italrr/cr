@@ -533,7 +533,7 @@ bool CR::Gfx::init(){
     CR::log("[GFX] GPU OpenGL version: %s\n", glGetString(GL_VERSION));
     
     signal(SIGINT, ctrlC);
-    glfwSwapInterval(1);
+    // glfwSwapInterval(1);
     __CR_init_input(window);
     __CR_init_job();
 
@@ -596,7 +596,50 @@ CR::Gfx::Renderable *CR::Gfx::Draw::Mesh(CR::Gfx::MeshData &md, CR::Gfx::Transfo
     };
 
     return self;
+}
 
+// gotta go fasto optimization
+CR::Gfx::Renderable *CR::Gfx::Draw::MeshBatch(std::vector<CR::Gfx::MeshData*> &md, std::vector<CR::Gfx::Transform*> &transform, bool shareTexture, bool shareShader, bool shareModelTrans, unsigned modelPos){
+    auto *self = new CR::Gfx::Renderable3DBatch(); // layer's flush is in charge of deleting this
+
+    self->md = &md;
+    self->transform = &transform;
+
+    self->shareShader = shareShader;
+    self->shareShader = shareShader;
+    self->shareModelTrans = shareModelTrans;
+    self->modelPos = modelPos;
+
+    self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
+        auto *obj = static_cast<CR::Gfx::Renderable3DBatch*>(renobj);
+  
+        glActiveTexture(GL_TEXTURE0);
+
+        for(unsigned i = 0; i < obj->md->size(); ++i){
+            if(!obj->shareShader || i == 0){
+                static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->at(i)->shAttrsValVec[2])->mat = rl->camera.getView();
+                static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->at(i)->shAttrsValVec[3])->mat = rl->projection;
+                CR::Gfx::applyShader(obj->transform->at(i)->shader->getRsc()->shaderId, obj->transform->at(i)->shAttrsLocVec, obj->transform->at(i)->shAttrsValVec);                  
+            }else
+            if(obj->shareShader && obj->shareModelTrans){
+                CR::Gfx::applyShaderPartial(obj->transform->at(i)->shAttrsLocVec[1], obj->transform->at(i)->shAttrsValVec[1]);
+            }            
+            if(!obj->shareTexture || i == 0){
+                glBindTexture(GL_TEXTURE_2D, obj->transform->at(i)->textures[CR::Gfx::TextureRole::DIFFUSE]);
+            }
+
+            
+            glBindVertexArray(obj->md->at(i)->vao);
+            glDrawArrays(GL_TRIANGLES, 0, obj->md->at(i)->vertn);            
+
+        }
+
+        glBindVertexArray(0);       
+        glUseProgram(0);     
+    };
+
+
+    return self;
 }
 
 void CR::Gfx::render(){
@@ -925,8 +968,42 @@ int CR::Gfx::findShaderAttr(unsigned shaderId, const std::string &name){
     }
     return locId;
 }
+#include <stdio.h>
 
-bool CR::Gfx::applyShader(unsigned shaderId, const std::vector<unsigned> &loc, const std::vector<CR::Gfx::ShaderAttr*> &attributes){
+void CR::Gfx::applyShaderPartial(unsigned loc, CR::Gfx::ShaderAttr* attrv){
+    switch(attrv->type){
+        case CR::Gfx::ShaderAttrType::FLOAT: {
+            CR::Gfx::ShaderAttrFloat *attr = static_cast<CR::Gfx::ShaderAttrFloat*>(attrv);
+            glUniform1f(loc, attr->n);
+        } break;
+        case CR::Gfx::ShaderAttrType::INT: {
+            CR::Gfx::ShaderAttrInt *attr = static_cast<CR::Gfx::ShaderAttrInt*>(attrv);
+            glUniform1f(loc, attr->n);
+        } break;                 
+        case CR::Gfx::ShaderAttrType::COLOR: {
+            CR::Gfx::ShaderAttrColor *attr = static_cast<CR::Gfx::ShaderAttrColor*>(attrv);
+            glUniform3fv(loc, 1, attr->color);
+        } break;
+        case CR::Gfx::ShaderAttrType::VEC2: {
+            CR::Gfx::ShaderAttrVec2 *attr = static_cast<CR::Gfx::ShaderAttrVec2*>(attrv);
+            glUniform2fv(loc, 1, attr->vec);
+        } break;     
+        case CR::Gfx::ShaderAttrType::VEC3: {
+            CR::Gfx::ShaderAttrVec3 *attr = static_cast<CR::Gfx::ShaderAttrVec3*>(attrv);
+            glUniform3fv(loc, 1, attr->vec);
+        } break; 
+        case CR::Gfx::ShaderAttrType::MAT4: {
+            CR::Gfx::ShaderAttrMat4 *attr = static_cast<CR::Gfx::ShaderAttrMat4*>(attrv);
+            glUniformMatrix4fv(loc, 1, GL_FALSE, attr->mat.mat);          
+        } break;                                                           
+        default: {
+            CR::log("[GFX] undefined shader type to apply '%s'\n", attrv->type);
+        } break;
+    }        
+}
+
+
+void CR::Gfx::applyShader(unsigned shaderId, const std::vector<unsigned> &loc, const std::vector<CR::Gfx::ShaderAttr*> &attributes){
     glUseProgram(shaderId);
     for(unsigned i = 0; i < loc.size(); ++i){
         switch(attributes[i]->type){
@@ -956,11 +1033,10 @@ bool CR::Gfx::applyShader(unsigned shaderId, const std::vector<unsigned> &loc, c
             } break;                                                           
             default: {
                 CR::log("[GFX] undefined shader type to apply '%s'\n", attributes[i]->type);
-                return false;
+                return;
             } break;
         }        
     }
-    return true;
 }
 
 CR::Gfx::Transform::Transform(){

@@ -164,9 +164,17 @@
 
             struct Renderable3D : Renderable {
                 CR::Gfx::Transform *transform;
-                std::shared_ptr<CR::Gfx::Shader> shader;
                 CR::Gfx::MeshData md;
-            };            
+            };          
+            
+            struct Renderable3DBatch : Renderable3D {
+                std::vector<CR::Gfx::MeshData*> *md;
+                std::vector<CR::Gfx::Transform*> *transform;
+                unsigned modelPos;
+                bool shareTexture;
+                bool shareShader;
+                bool shareModelTrans;
+            };                          
 
             namespace RenderLayerType {
                 enum RenderLayerType : unsigned {
@@ -232,6 +240,7 @@
                 CR::Gfx::Renderable *RenderLayer(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle);        
                 CR::Gfx::Renderable *Texture(const std::shared_ptr<CR::Gfx::Texture> &tex, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle); 
                 CR::Gfx::Renderable *Mesh(CR::Gfx::MeshData &md, CR::Gfx::Transform *transform); 
+                CR::Gfx::Renderable *MeshBatch(std::vector<CR::Gfx::MeshData*> &md, std::vector<CR::Gfx::Transform*> &trans, bool shareTexture, bool shareShader, bool shareModel, unsigned modelPos = 0); 
 
             } 
 
@@ -255,7 +264,8 @@
             unsigned createShader(const std::string &vert, const std::string &frag);
             int findShaderAttr(unsigned shaderId, const std::string &name);
             struct ShaderAttr;
-            bool applyShader(unsigned shaderId, const std::vector<unsigned> &loc, const std::vector<CR::Gfx::ShaderAttr*> &attributes);
+            void applyShader(unsigned shaderId, const std::vector<unsigned> &loc, const std::vector<CR::Gfx::ShaderAttr*> &attributes);
+            void applyShaderPartial(unsigned loc, CR::Gfx::ShaderAttr* attr);
             bool deleteShader(unsigned id);
 
         }

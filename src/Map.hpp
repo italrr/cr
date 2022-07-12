@@ -50,7 +50,7 @@
                 unsigned height; // Y
                 CR::Vec2<int> position;
                 CR::Map::TileSource *source;
-                CR::Gfx::Transform transform;
+                CR::Gfx::Transform *transform;
             };
 
             struct Map {
@@ -63,6 +63,13 @@
                 std::unordered_map<std::string, std::shared_ptr<TileSource>> sources;
                 std::shared_ptr<CR::Gfx::Texture> atlas; // Texture Atlas 
                 std::shared_ptr<CR::Gfx::Shader> worldShader;
+
+
+                std::vector<CR::Gfx::Transform*> batchTrans;
+                std::vector<CR::Gfx::MeshData*> batchMesh;
+
+                void rebuildBatch();
+
 
                 CR::Vec3<float> origin;
                 float usize;

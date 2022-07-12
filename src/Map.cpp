@@ -323,37 +323,55 @@ void CR::Map::Map::build(const CR::Vec2<int> mapSize, float us){
         this->tiles[i].position.y = i / mapSize.y;
 
         // int mazeind = (i % mapSize.x) / scale + ((i / mapSize.x) / scale) * 12; 
-
-
-
         this->tiles[i].source = maze[i].type == CellType::PATH ? this->sources["floor"].get() : this->sources["wall"].get();
 
-        this->tiles[i].transform.shader = worldShader;
-        this->tiles[i].transform.textures[CR::Gfx::TextureRole::DIFFUSE] = this->atlas->getRsc()->textureId;
-        this->tiles[i].transform.shAttrsLoc = worldShader->shAttrs;
+        this->tiles[i].transform = new CR::Gfx::Transform();
+
+        this->tiles[i].transform->shader = worldShader;
+        this->tiles[i].transform->textures[CR::Gfx::TextureRole::DIFFUSE] = this->atlas->getRsc()->textureId;
+        this->tiles[i].transform->shAttrsLoc = worldShader->shAttrs;
         
         auto position = CR::MAT4Identity
                         .translate(CR::Vec3<float>(this->tiles[i].position.x * (us*2.0f), -this->tiles[i].height * (us*2.0f), this->tiles[i].position.y * (us*2.0f)))
                         .rotate(0, CR::Vec3<float>(1, 1, 1))
                         .scale(CR::Vec3<float>(1.0f));
-        this->tiles[i].transform.shAttrsVal = {
+
+        this->tiles[i].transform->shAttrsVal = {
             {"image", std::make_shared<CR::Gfx::ShaderAttrInt>(0)},
             {"model", std::make_shared<CR::Gfx::ShaderAttrMat4>(position)},
             {"view", std::make_shared<CR::Gfx::ShaderAttrMat4>(CR::MAT4Identity)},
             {"projection", std::make_shared<CR::Gfx::ShaderAttrMat4>(MAT4Identity)},
             {"color", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))}
         };    
-        this->tiles[i].transform.fixShaderAttributes({"image", "model", "view", "projection", "color"});
+        this->tiles[i].transform->fixShaderAttributes({"image", "model", "view", "projection", "color"});
+
 
     }
+
+    this->rebuildBatch();
+  
+}
+
+void CR::Map::Map::rebuildBatch(){
+    this->batchMesh.clear();
+    this->batchTrans.clear();
+    for(unsigned i = 0; i < this->totalUnits; ++i){
+        auto &tile = this->tiles[i];
+        this->batchMesh.push_back(&this->tiles[i].source->md);
+        this->batchTrans.push_back(this->tiles[i].transform);
+    }
+
+
 }
 
 void CR::Map::Map::render(){
     game->renderOn([&](CR::Gfx::RenderLayer *layer){    
 
-        for(unsigned i = 0; i < totalUnits; ++i){
-            layer->add(CR::Gfx::Draw::Mesh(this->tiles[i].source->md, &this->tiles[i].transform));
-        }
+        // for(unsigned i = 0; i < totalUnits; ++i){
+            // layer->add(CR::Gfx::Draw::Mesh(this->tiles[i].source->md, this->tiles[i].transform));
+        // }
+
+        layer->add(CR::Gfx::Draw::MeshBatch(this->batchMesh, this->batchTrans, true, true, true, 1));
 
 
     });    

@@ -24,7 +24,7 @@ int main(int argc, char* argv[]){
 
     std::shared_ptr<CR::Map::Map> map = std::make_shared<CR::Map::Map>(CR::Map::Map()); 
 
-    map->build(CR::Vec2<int>(11, 11), 100);
+    map->build(CR::Vec2<int>(32, 32), 100);
 
     while(CR::Gfx::isRunning()){
 
