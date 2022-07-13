@@ -185,6 +185,7 @@
             float rads(float deg);
             float degs(float rads);
             int odd(int n);
+            int even(int n);
             CR::Mat<4, 4, float> scale(const CR::Vec3<float> &dir);
             CR::Mat<4, 4, float> perspective(float fovy, float aspRatio, float nearPlane, float farPlane);
             CR::Mat<4, 4, float> orthogonal(float left, float right, float bottom, float top, float zNear, float zFar);

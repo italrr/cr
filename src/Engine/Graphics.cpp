@@ -533,7 +533,7 @@ bool CR::Gfx::init(){
     CR::log("[GFX] GPU OpenGL version: %s\n", glGetString(GL_VERSION));
     
     signal(SIGINT, ctrlC);
-    // glfwSwapInterval(1);
+    glfwSwapInterval(1);
     __CR_init_input(window);
     __CR_init_job();
 
@@ -622,13 +622,12 @@ CR::Gfx::Renderable *CR::Gfx::Draw::MeshBatch(std::vector<CR::Gfx::MeshData*> &m
                 CR::Gfx::applyShader(obj->transform->at(i)->shader->getRsc()->shaderId, obj->transform->at(i)->shAttrsLocVec, obj->transform->at(i)->shAttrsValVec);                  
             }else
             if(obj->shareShader && obj->shareModelTrans){
-                CR::Gfx::applyShaderPartial(obj->transform->at(i)->shAttrsLocVec[1], obj->transform->at(i)->shAttrsValVec[1]);
+                CR::Gfx::applyShaderPartial(obj->transform->at(i)->shAttrsLocVec[obj->modelPos], obj->transform->at(i)->shAttrsValVec[obj->modelPos]);
             }            
             if(!obj->shareTexture || i == 0){
                 glBindTexture(GL_TEXTURE_2D, obj->transform->at(i)->textures[CR::Gfx::TextureRole::DIFFUSE]);
             }
 
-            
             glBindVertexArray(obj->md->at(i)->vao);
             glDrawArrays(GL_TRIANGLES, 0, obj->md->at(i)->vertn);            
 

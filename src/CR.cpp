@@ -19,12 +19,13 @@ int main(int argc, char* argv[]){
     gameL->camera.setPosition(CR::Vec3<float>(CR::Vec3<float>(-106.964981, -500.000000, 405.812775)));    
     gameL->camera.setTarget(CR::Vec3<float>(0, 0, 0));
     gameL->camera.setUp(CR::Vec3<float>(0.0f, 1.0f, 0.0f));
-    gameL->camera.targetBias = CR::Vec3<float>(-55.0f, -35.0f, -75.0f);
+    gameL->camera.targetBias = CR::Vec3<float>(-25, -65.0f, -75.0f);
+    // gameL->camera.targetBias = CR::Vec3<float>(-55.0f, -35.0f, -75.0f);
     // gameL->camera.targetBias = CR::Vec3<float>(-55.0f, -55.0f, -75.0f);
 
     std::shared_ptr<CR::Map::Map> map = std::make_shared<CR::Map::Map>(CR::Map::Map()); 
 
-    map->build(CR::Vec2<int>(32, 32), 100);
+    map->build(CR::Vec2<int>(64, 64), 50);
 
     while(CR::Gfx::isRunning()){
 

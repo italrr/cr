@@ -300,12 +300,15 @@ std::string CR::String::replaceAll(std::string subject, const std::string& searc
 
 namespace CR {
 	namespace Math {
+		int even(int n){
+			return n % 2 != 0 ? n + 1 : n;
+		}
 		int odd(int n){
 			return n % 2 == 0 ? n + 1 : n;
 		}
 		int random(int min, int max){
-			static std::random_device rd;
-			std::mt19937 rng(rd());
+			// static std::random_device rd;
+			static std::mt19937 rng(std::time(nullptr));
 			std::uniform_int_distribution<int> uni(min,max);
 			return uni(rng);			
 		}

@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <random>
+#include <stack>
 
 #include "Engine/Log.hpp"
 #include "Engine/Tools.hpp"
@@ -29,7 +30,7 @@ struct Cell {
     Cell(){
         this->type = CellType::WALL;
     }
-    Cell(unsigned x, unsigned y){
+    Cell(int x, int y){
         this->x = x;
         this->y = y;
     }
@@ -145,43 +146,96 @@ static std::vector<Cell> generateEmptyMaze(unsigned w, unsigned h){
     std::vector<Cell> maze;
     for(unsigned i = 0; i < total; ++i){
         auto cell = Cell();
+        cell.type = CellType::WALL;
         cell.i = i;
         cell.x = i % w;
-        cell.y = i % h;
+        cell.y = i / h;
         maze.push_back(cell);
     }
     return maze;
 }
+
+struct Room {
+    CR::Vec2<int> pos;
+    CR::Vec2<int> size;
+    Room(){
+
+    }
+    Room(unsigned x, unsigned y, unsigned width, unsigned height){
+        this->pos.x = x;
+        this->pos.y = y;
+        this->size.x = width;
+        this->size.y = height;
+    }
+
+};
 
 static void generateMaze(std::vector<Cell> &src, unsigned width, unsigned height){
     auto randodd = [](int from, int to){
         return CR::Math::odd(CR::Math::random(from, to));
     };    
 
-    auto depthFirstSearch = [&](){
+    auto fillBorders = [&](Room &room, Cell except = Cell(-1, -1)){
+        unsigned absW = room.pos.x + room.size.x;
+        unsigned absH = room.pos.y + room.size.y;
+        for(int x = room.pos.x; x < absW; ++x){
+            for(int y = room.pos.y; y < absH; ++y){
+                if(except.x != -1 && except.y != -1 && except.x == x  && except.y == y){ /// ignore door
+                    continue;
+                }
+                if(     x == room.pos.x ||
+                        y == room.pos.y ||
+                        x == absW-1 ||
+                        y == absH-1 ){
+
+                    src[x  + y * width].type = CellType::WALL;
+                }
+            }
+        }        
+    };
+
+    auto digDoor = [&](Room &room){
+        std::vector<unsigned> sides;
+        unsigned absW = room.pos.x + room.size.x;
+        unsigned absH = room.pos.y + room.size.y;
+        for(int y = room.pos.y; y < absH; ++y){
+            for(int x = room.pos.x; x < absW; ++x){
+                // avoid corners
+                bool isCorner =     (x - room.pos.x) == 0 && (y - room.pos.y) == 0                              || // BOTTOM LEFT
+                                    (x - room.pos.x) == 0 && (y - room.pos.y) == room.size.y -1                 || // TOP LEF
+                                    (x - room.pos.x) == room.size.x-1 && (y - room.pos.y) == room.size.y-1      ||  // TOP RIGHT
+                                    (x - room.pos.x) == room.size.x-1 && (y - room.pos.y) ==  0;                    // BOTTOM RIGHT
+
+                if(x == 0 || y == 0 || x == width-1 || y == height-1 || isCorner){
+                    continue;
+                }
+                if(x == room.pos.x || y == room.pos.y || x == absW-1 || y == absH-1){
+                    sides.push_back(src[x  + y * width].i);
+                }
+            }
+        }    
+        unsigned index = sides[CR::Math::random(0, sides.size()-1)];
+        src[index].type = CellType::PATH;
+        return src[index];
+    };    
+
+    auto makeRoom = [&](int _x, int _y, int _width, int _height){
+        _width = CR::Math::even(_width);
+        _height = CR::Math::even(_height);
+        for(int x = 0; x < _width; ++x){
+            for(int y = 0; y < _height; ++y){
+                src[ (x + _x) + (y + _y)* width].type = CellType::PATH;
+            }
+        }
+        auto r = Room(_x, _y, _width, _height);
+        return r;
+    };   
+
+    auto depthFirstSearch = [&](Cell dstart = Cell(-1, -1)){
         // choose a random start position
         unsigned start = 0;
-        Cell spawn(randodd(3, width - 4), randodd(3, height - 4));    
-        // auto makeRoom = [&](int minWidth, int minHeight, int maxWidth, int maxHeight){
-        //     // make room
-        //     Game::RING::Cell size(nite::randomInt(minWidth, maxWidth), nite::randomInt(minHeight, maxHeight));
-        //     Game::RING::Cell start;
-        //     do {
-        //         start = Game::RING::Cell(nite::randomInt(2, width - 2), nite::randomInt(2, height - 2));
-        //     } while((start.x + size.x >= width - 1 || start.y + size.y >= height - 1));
-        //     fillRectangle(start.x, start.y, size.x, size.y, Game::RING::CellType::Path);
-        //     // // set up walls
-        //     // for(int i = 0; i < size.x; ++i){
-        //     //     for(int j = 0; j < size.y; ++j){
-        //     //         if(i > 0 && i < size.x - 1 && j > 0 && j < size.y - 1) continue;
-        //     //         Game::RING::Cell p = Game::RING::Cell(start.x + i, start.y + j);
-                    
-
-        //     //         set(p.x, p.y, Game::RING::CellType::Wall);
-        //     //     }
-        //     // }
-        //     // make doors            
-        // };        
+        Cell spawn(dstart.x, dstart.y);    
+     
         start = spawn.x + spawn.y * width;
         src[spawn.x + spawn.y * width].type = CellType::PATH;
         auto randdir = [&](){
@@ -241,7 +295,28 @@ static void generateMaze(std::vector<Cell> &src, unsigned width, unsigned height
         // }
 
     };
-    depthFirstSearch();
+
+    for(unsigned i = 0; i < 4; ++i){
+        unsigned _x = CR::Math::odd(CR::Math::random(4, width - 4));
+        unsigned _y = CR::Math::odd(CR::Math::random(4, height - 4));
+        unsigned _w = CR::Math::random(4, 6);
+        unsigned _h = CR::Math::random(4, 6);
+        auto r = makeRoom(_x, _y, _w, _h);
+        // digDoor(r);
+        CR::log("created room (%ix%i) at %ix%i\n", _w, _h, _x, _y);
+    }
+    
+    // fillBorders(r, d);
+
+    Cell cell;
+
+    cell.x = CR::Math::odd(CR::Math::random(4, width - 4));
+    cell.y = CR::Math::odd(CR::Math::random(4, height - 4));
+
+    cell.i = cell.x + cell.y * width;
+
+    depthFirstSearch(cell);
+
 }
 
 
@@ -253,13 +328,14 @@ CR::Map::Map::Map(){
 
 }
 
-void CR::Map::Map::build(const CR::Vec2<int> mapSize, float us){
+void CR::Map::Map::build(const CR::Vec2<int> _mapSize, float us){
 
     game = CR::Gfx::getRenderLayer("world", true);
 
     this->worldShader->load("data/shader/b_cube_texture_f.glsl", "data/shader/b_cube_texture_v.glsl");
     this->worldShader->findAttrs({"color", "model", "projection", "image", "view"});
 
+    CR::Vec2<int> mapSize (CR::Math::odd(_mapSize.x), CR::Math::odd(_mapSize.y));
     this->totalUnits = mapSize.x * mapSize.y;
     this->atlas->load("data/texture/32x32.bmp");
 
@@ -349,6 +425,8 @@ void CR::Map::Map::build(const CR::Vec2<int> mapSize, float us){
     }
 
     this->rebuildBatch();
+
+    CR::log("build map %ix%i\n", mapSize.x, mapSize.y);
   
 }
 
