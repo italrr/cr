@@ -1,10 +1,10 @@
-# Carribean Raster Engine [CR]
+# Caribbean Raster [CR]
 
-Carribean Raster is the evolution of two different engines:
+Caribbean Raster is the evolution of two different engines:
 - https://github.com/italrr/nite
 - https://github.com/italrr/astro
 
-It borrows concept, and code from both projects to build a simple but robust enough 3D game engine (also capable of 2D, of course).
+It borrows concepts, and code from both projects to build a simple but robust enough 3D game engine
 
 Features
 - Models are basic .obj

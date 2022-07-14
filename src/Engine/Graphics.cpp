@@ -156,6 +156,7 @@ bool CR::Gfx::RenderLayer::init(unsigned type, int width, int height){
     switch(this->type){
         case RenderLayerType::T_3D: {
             this->projection = CR::Math::orthogonal(0, size.x, 0.0f, size.y, -2500.0f, 2500.0f);
+            // this->projection = CR::Math::perspective(45.0f, static_cast<float>(this->size.x) /  static_cast<float>(this->size.y), -2500.0f, 2500.0f);
         } break;
         case RenderLayerType::T_2D: {
             this->projection = CR::Math::orthogonal(0, size.x, 0, size.y, -1.0f, 1.0f);
