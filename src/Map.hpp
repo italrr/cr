@@ -15,7 +15,10 @@
                     FLOOR = 0,
                     WALL,
                     DOOR,
-                    EVENT
+                    EVENT,
+                    EMPTY,
+                    ANY,
+                    OUTBOUNDS
                 };
             }
 

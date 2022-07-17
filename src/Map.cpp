@@ -17,7 +17,8 @@ namespace MeshType {
 
 namespace CellType {
     enum CellType : unsigned {
-        WALL = 0,
+        EMPTY = 0,
+        WALL,
         PATH
     };
 }
@@ -36,6 +37,12 @@ struct Cell {
     }
 };
 
+struct CellMap {
+    std::vector<Cell> cells;
+    unsigned width;
+    unsigned height;
+    unsigned total;
+};
 
 static CR::Gfx::MeshData buildMesh(float cubeScale, const std::vector<CR::Map::AtlasSingle> &faces, unsigned type){
 
@@ -141,12 +148,12 @@ static std::shared_ptr<CR::Map::TileSource> buildTileSource(const std::string &n
     return src;
 }
 
-static std::vector<Cell> generateEmptyMaze(unsigned w, unsigned h){
+static std::vector<Cell> generateEmptyMaze(unsigned w, unsigned h, unsigned defaultType = CellType::WALL){
     unsigned total = w * h;
     std::vector<Cell> maze;
     for(unsigned i = 0; i < total; ++i){
         auto cell = Cell();
-        cell.type = CellType::WALL;
+        cell.type = defaultType;
         cell.i = i;
         cell.x = i % w;
         cell.y = i / h;
@@ -296,15 +303,15 @@ static void generateMaze(std::vector<Cell> &src, unsigned width, unsigned height
 
     };
 
-    for(unsigned i = 0; i < 4; ++i){
-        unsigned _x = CR::Math::odd(CR::Math::random(4, width - 4));
-        unsigned _y = CR::Math::odd(CR::Math::random(4, height - 4));
-        unsigned _w = CR::Math::random(4, 6);
-        unsigned _h = CR::Math::random(4, 6);
-        auto r = makeRoom(_x, _y, _w, _h);
-        // digDoor(r);
-        CR::log("created room (%ix%i) at %ix%i\n", _w, _h, _x, _y);
-    }
+    // for(unsigned i = 0; i < 4; ++i){
+    //     unsigned _x = CR::Math::odd(CR::Math::random(4, width - 4));
+    //     unsigned _y = CR::Math::odd(CR::Math::random(4, height - 4));
+    //     unsigned _w = CR::Math::random(4, 6);
+    //     unsigned _h = CR::Math::random(4, 6);
+    //     auto r = makeRoom(_x, _y, _w, _h);
+    //     // digDoor(r);
+    //     CR::log("created room (%ix%i) at %ix%i\n", _w, _h, _x, _y);
+    // }
     
     // fillBorders(r, d);
 
@@ -318,7 +325,6 @@ static void generateMaze(std::vector<Cell> &src, unsigned width, unsigned height
     depthFirstSearch(cell);
 
 }
-
 
 
 CR::Map::Map::Map(){
@@ -335,11 +341,12 @@ void CR::Map::Map::build(const CR::Vec2<int> _mapSize, float us){
     this->worldShader->load("data/shader/b_cube_texture_f.glsl", "data/shader/b_cube_texture_v.glsl");
     this->worldShader->findAttrs({"color", "model", "projection", "image", "view"});
 
-    CR::Vec2<int> mapSize (CR::Math::odd(_mapSize.x), CR::Math::odd(_mapSize.y));
-    this->totalUnits = mapSize.x * mapSize.y;
     this->atlas->load("data/texture/32x32.bmp");
 
     CR::Vec2<float> atlasUnitSize(32.0f);
+
+    // _mapSize.x = CR::Math::odd(_mapSize.x);
+    // _mapSize.y = CR::Math::odd(_mapSize.y);
 
     float indexCoorW = atlasUnitSize.x / static_cast<float>(this->atlas->getRsc()->size.x);
     float indexCoorH = atlasUnitSize.y / static_cast<float>(this->atlas->getRsc()->size.y);
@@ -380,26 +387,197 @@ void CR::Map::Map::build(const CR::Vec2<int> _mapSize, float us){
                                                             this->atlasSingles[3],  // BOTTOM
                                                         }, MeshType::PLANE);                                                        
 
+    unsigned scale = 8;
 
-    auto maze = generateEmptyMaze(mapSize.x, mapSize.y);
+    CR::Vec2<int> mapSize (CR::Math::odd(_mapSize.x * scale), CR::Math::odd(_mapSize.y * scale));
+    
+    this->totalUnits = mapSize.x * mapSize.y;
 
-    generateMaze(maze, mapSize.x, mapSize.y);
 
+
+    auto maze = generateEmptyMaze(_mapSize.x, _mapSize.y);
+
+    generateMaze(maze, _mapSize.x, _mapSize.y);
 
     this->tiles = new Tile[this->totalUnits];
     
-    // unsigned scale = 3;
-    
+    // build tiles
     for(unsigned i = 0; i < this->totalUnits; ++i){
+        int mazeind = (i % mapSize.x) / scale + ((i / mapSize.x) / scale) * _mapSize.x; 
         this->tiles[i].id = i;
         this->tiles[i].index = i;
-        this->tiles[i].type = CR::Map::TileType::WALL;
+        this->tiles[i].type = maze[mazeind].type == CellType::PATH ? CR::Map::TileType::FLOOR : CR::Map::TileType::EMPTY;
         this->tiles[i].height = 0;
         this->tiles[i].position.x = i % mapSize.x;
         this->tiles[i].position.y = i / mapSize.y;
 
-        // int mazeind = (i % mapSize.x) / scale + ((i / mapSize.x) / scale) * 12; 
-        this->tiles[i].source = maze[i].type == CellType::PATH ? this->sources["floor"].get() : this->sources["wall"].get();
+    }
+
+    auto getNeighbors = [&](Tile *current, const std::vector<unsigned> &pattern){
+        std::vector<unsigned> group;
+
+        if(current->position.x-1 >= 0 && current->position.y-1 >= 0){
+            auto &other = this->tiles[(current->position.x-1) + ((current->position.y-1) * mapSize.x)];
+            group.push_back(other.type);
+        }else{
+            group.push_back(TileType::OUTBOUNDS);
+        } 
+
+        if(current->position.y-1 >= 0){
+            auto &other = this->tiles[current->position.x + (current->position.y-1) * mapSize.x];
+            group.push_back(other.type);
+        }else{
+            group.push_back(TileType::OUTBOUNDS);
+        }
+
+        if(current->position.x+1 < mapSize.x && current->position.y-1 >= 0){
+            auto &other = this->tiles[(current->position.x+1) + ((current->position.y-1) * mapSize.x)];
+            group.push_back(other.type);
+        }else{
+            group.push_back(TileType::OUTBOUNDS);
+        } 
+
+        if(current->position.x-1 >= 0){
+            auto &other = this->tiles[(current->position.x-1) + current->position.y * mapSize.x];
+            group.push_back(other.type);
+        }else{
+            group.push_back(TileType::OUTBOUNDS);
+        }
+
+        if(current->position.x >= 0 && current->position.x < mapSize.x && current->position.y >= 0 && current->position.y < mapSize.y){
+            group.push_back(current->type);
+        }else{
+            group.push_back(TileType::OUTBOUNDS);
+        }
+
+        if(current->position.x+1 < mapSize.x){
+            auto &other = this->tiles[(current->position.x+1) + current->position.y * mapSize.x];
+            group.push_back(other.type);
+        }else{
+            group.push_back(TileType::OUTBOUNDS);
+        } 
+
+        if(current->position.x-1 >= 0 && current->position.y+1 < mapSize.x){
+            auto &other = this->tiles[(current->position.x-1) + ((current->position.y+1) * mapSize.x)];
+            group.push_back(other.type);
+        }else{
+            group.push_back(TileType::OUTBOUNDS);
+        }       
+        
+        if(current->position.y+1 < mapSize.y){
+            auto &other = this->tiles[current->position.x + (current->position.y+1) * mapSize.x];
+            group.push_back(other.type);
+        }else{
+            group.push_back(TileType::OUTBOUNDS);
+        }
+
+        if(current->position.x+1 < mapSize.x && current->position.y+1 < mapSize.y){
+            auto &other = this->tiles[(current->position.x+1) + ((current->position.y+1) * mapSize.x)];
+            group.push_back(other.type);
+        }else{
+            group.push_back(TileType::OUTBOUNDS);
+        }
+
+        unsigned approved = false;
+        for(unsigned i = 0; i < pattern.size(); ++i){
+            if(pattern[i] == TileType::ANY || group[i] == pattern[i]){
+                ++approved;
+            }
+        }
+
+        return approved == pattern.size();
+
+    };
+
+    // clear unreachable
+    std::vector<CR::Map::Tile> toWall;
+    for(unsigned i = 0; i < this->totalUnits; ++i){
+        auto &tile = this->tiles[i];
+
+        /*
+            T T T
+            T T T
+            T T T
+        */
+
+        #define W CR::Map::TileType::WALL
+        #define O CR::Map::TileType::OUTBOUNDS
+        #define A CR::Map::TileType::ANY
+        #define E CR::Map::TileType::EMPTY
+        #define F CR::Map::TileType::FLOOR
+
+        static const std::vector<unsigned> WALL_FILL1 = {
+            A, A, A,
+            A, E, F,
+            A, A, A
+        };  
+
+        static const std::vector<unsigned> WALL_FILL2 = {
+            A, A, A,
+            F, E, A,
+            A, A, A
+        };  
+
+        static const std::vector<unsigned> WALL_FILL3 = {
+            A, A, A,
+            A, E, A,
+            A, F, A
+        };  
+
+        static const std::vector<unsigned> WALL_FILL4 = {
+            A, F, A,
+            A, E, A,
+            A, A, A
+        };                          
+
+        static const std::vector<unsigned> WALL_FILL5 = {
+            A, A, A,
+            A, E, A,
+            A, A, F
+        };                
+
+        static const std::vector<unsigned> WALL_FILL6 = {
+            A, A, A,
+            A, E, A,
+            F, A, A
+        };  
+
+        static const std::vector<unsigned> WALL_FILL7 = {
+            F, A, A,
+            A, E, A,
+            A, A, A
+        };  
+
+        static const std::vector<unsigned> WALL_FILL8 = {
+            A, A, F,
+            A, E, A,
+            A, A, A
+        };                 
+
+        #undef W
+        #undef O
+        #undef A
+        #undef E
+        #undef F
+
+        if(getNeighbors(&tile, WALL_FILL1) || 
+           getNeighbors(&tile, WALL_FILL2) ||
+           getNeighbors(&tile, WALL_FILL3) ||
+           getNeighbors(&tile, WALL_FILL4) ||
+           getNeighbors(&tile, WALL_FILL5) ||
+           getNeighbors(&tile, WALL_FILL6) ||
+           getNeighbors(&tile, WALL_FILL7) ||
+           getNeighbors(&tile, WALL_FILL8))    toWall.push_back(tile);
+        if(getNeighbors(&tile, WALL_FILL2))    toWall.push_back(tile);
+    }
+    for(unsigned i = 0; i < toWall.size(); ++i){
+        this->tiles[toWall[i].index].type = CR::Map::TileType::WALL;
+    }
+
+    // build transforms
+    for(unsigned i = 0; i < this->totalUnits; ++i){       
+
+        this->tiles[i].source = this->tiles[i].type == TileType::FLOOR ? this->sources["floor"].get() : this->sources["wall"].get();
 
         this->tiles[i].transform = new CR::Gfx::Transform();
 
@@ -435,6 +613,7 @@ void CR::Map::Map::rebuildBatch(){
     this->batchTrans.clear();
     for(unsigned i = 0; i < this->totalUnits; ++i){
         auto &tile = this->tiles[i];
+        if(tile.type == TileType::EMPTY) { continue;}
         this->batchMesh.push_back(&this->tiles[i].source->md);
         this->batchTrans.push_back(this->tiles[i].transform);
     }

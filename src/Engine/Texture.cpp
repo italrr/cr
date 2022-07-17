@@ -49,8 +49,9 @@ bool CR::Gfx::Texture::load(const std::string &path){
         format = ImageFormat::RED;
     else if (nrChannels == 3)
         format = ImageFormat::RGB;
-    else if (nrChannels == 4)
+    else if (nrChannels == 4){
         format = ImageFormat::RGBA;
+    }
 
     rscTexture->size.set(width, height);
     rscTexture->channels = nrChannels;

@@ -155,7 +155,7 @@ bool CR::Gfx::RenderLayer::init(unsigned type, int width, int height){
 
     switch(this->type){
         case RenderLayerType::T_3D: {
-            this->projection = CR::Math::orthogonal(0, size.x, 0.0f, size.y, -2500.0f, 2500.0f);
+            this->projection = CR::Math::orthogonal(0, size.x, 0.0f, size.y, -5000.0f, 5000.0f);
             // this->projection = CR::Math::perspective(45.0f, static_cast<float>(this->size.x) /  static_cast<float>(this->size.y), -2500.0f, 2500.0f);
         } break;
         case RenderLayerType::T_2D: {
@@ -872,6 +872,7 @@ CR::Gfx::MeshData CR::Gfx::createMesh(const std::vector<float> &vertices){
     CR::Gfx::MeshData md;
     md.vao = vao;
     md.vbo = vbo;
+    md.vertn = static_cast<float>(vertices.size()) / 5.0f; // assume a vertex is 5 floats
     return md;
 }
 
@@ -1079,8 +1080,14 @@ void CR::Gfx::Camera::setTarget(const CR::Vec3<float> &target){
     this->target = target;
 }
 
+CR::Vec3<float> CR::Gfx::Camera::getCenter(){
+    return this->position + CR::Vec3<float>(CR::Gfx::getWidth(), CR::Gfx::getHeight(), -CR::Gfx::getHeight()) * CR::Vec3<float>(0.5f);
+}
 
 CR::Mat<4, 4, float> CR::Gfx::Camera::getView(){
+    
     return Math::lookAt(this->position, this->position + this->targetBias, CR::Vec3<float>(0.0f, 1.0f, 0.0f));
+
+    // return Math::lookAt(this->position, this->position + this->targetBias, CR::Vec3<float>(0.0f, 1.0f, 0.0f));
     // return Math::lookAt(this->position, CR::Vec3<float>(0.0f, 0.0f, 0.0f), CR::Vec3<float>(0.0f, 1.0f, 0.0f));
 }

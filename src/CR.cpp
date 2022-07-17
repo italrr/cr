@@ -5,20 +5,30 @@
 #include "Engine/Input.hpp"
 #include "Map.hpp"
 
+#include "Entity.hpp"
+
 static std::shared_ptr<CR::Gfx::RenderLayer> game;
 
 struct Character {
     CR::Vec2<float> inTexSize;
     CR::Vec2<float> frameSize;
     std::shared_ptr<CR::Gfx::Texture> atlas;
-    CR::Gfx::MeshData meshFrame;
+
+    std::vector<CR::Gfx::MeshData> meshFrames;
     CR::Gfx::Transform *transform;
     std::shared_ptr<CR::Gfx::Shader> charShader;
+
+    unsigned lookAt;
+
+    CR::Vec3<float> position;
+    
     Character(){
         charShader = std::make_shared<CR::Gfx::Shader>(CR::Gfx::Shader());
         atlas = std::make_shared<CR::Gfx::Texture>(CR::Gfx::Texture());
     }
     void load(){
+
+        lookAt = CR::CharFace::DOWN;
         atlas->load("data/texture/male_body_assassin.png");
         inTexSize.set(50, 90);
         frameSize = CR::Vec2<float>(50, 90) * CR::Vec2<float>(3.0f);
@@ -26,36 +36,39 @@ struct Character {
         float inCoorsWidth = inTexSize.x / static_cast<float>(atlas->getRsc()->size.x);
         float inCoorsHeight = inTexSize.y / static_cast<float>(atlas->getRsc()->size.y);
 
-        float coorsX = inCoorsWidth * 0;
-        float coorsY = inCoorsHeight * 0;
-        float coorsW = coorsX + inCoorsWidth;
-        float coorsH = coorsY + inCoorsHeight;
+        auto genMeshFrame = [&](unsigned texX,  unsigned texY, bool horFlip = false){
+            float coorsX = inCoorsWidth * texX;
+            float coorsY = inCoorsHeight * texY;
+            float coorsW = coorsX + inCoorsWidth;
+            float coorsH = coorsY + inCoorsHeight;            
+            meshFrames.push_back(CR::Gfx::createMesh({
+                // POSITION                                                 // TEXTURE COOR
+                -frameSize.x*0.5f,    frameSize.y*0.5f,     0,              (horFlip ? coorsX : coorsW),   coorsH,
+                -frameSize.x*0.5f,   -frameSize.y*0.5f,     0,              (horFlip ? coorsX : coorsW),   coorsY,
+                frameSize.x*0.5f,    -frameSize.y*0.5f,     0,              (horFlip ? coorsW : coorsX),   coorsY,
 
-        float cubeScale = 200.0f;
-        
-        meshFrame = CR::Gfx::createMesh({
-            // POSITION                                                 // TEXTURE COOR
-            -frameSize.x*0.5f,    frameSize.y*0.5f,     0,              coorsX,   coorsH,
-            -frameSize.x*0.5f,   -frameSize.y*0.5f,     0,              coorsX,   coorsY,
-            frameSize.x*0.5f,    -frameSize.y*0.5f,     0,              coorsW,   coorsY,
+                frameSize.x*0.5f,    -frameSize.y*0.5f,     0,              (horFlip ? coorsW : coorsX),   coorsY,
+                frameSize.x*0.5f,    frameSize.y*0.5f,      0,              (horFlip ? coorsW : coorsX),   coorsH,
+                -frameSize.x*0.5f,    frameSize.y*0.5f,     0,              (horFlip ? coorsX : coorsW),   coorsH        
+            }));
+        };
 
-            frameSize.x*0.5f,    -frameSize.y*0.5f,     0,              coorsW,   coorsY,
-            frameSize.x*0.5f,    frameSize.y*0.5f,      0,              coorsW,   coorsH,
-            -frameSize.x*0.5f,    frameSize.y*0.5f,     0,              coorsX,   coorsH
-            
-
-
-            // // POSITION                                // TEXTURE
-            // -cubeScale,   cubeScale,  -cubeScale,     coorsX,   coorsH,
-            // cubeScale,    cubeScale,  -cubeScale,     coorsW,   coorsH,
-            // cubeScale,    cubeScale,  cubeScale,      coorsW,   coorsY
-            
-            // cubeScale,    cubeScale,  cubeScale,      coorsW,   coorsY,
-            // -cubeScale,   cubeScale,  cubeScale,      coorsX,   coorsY,
-            // -cubeScale,   cubeScale, -cubeScale,      coorsX,   coorsH              
-        });
-
-        meshFrame.vertn = 6;
+        // DOWN
+        genMeshFrame(0, 0, false);
+        // DOWN_LEFT
+        genMeshFrame(1, 0, false);
+        // LEFT
+        genMeshFrame(2, 0, false);
+        // UP_LEFT
+        genMeshFrame(3, 0, false);
+        // UP
+        genMeshFrame(4, 0, false);
+        // UP_RIGHT
+        genMeshFrame(3, 0, true);
+        // RIGHT
+        genMeshFrame(2, 0, true);
+        // DOWN_RIGHT
+        genMeshFrame(1, 0, true);
 
         this->charShader->load("data/shader/b_cube_texture_f.glsl", "data/shader/b_cube_texture_v.glsl");
         this->charShader->findAttrs({"color", "model", "projection", "image", "view"});         
@@ -79,39 +92,47 @@ struct Character {
         };    
         this->transform->fixShaderAttributes({"image", "model", "view", "projection", "color"});
                
+
+        this->position.set(50, -frameSize.y * 0.25f, -25);
+        
     }
 
-    void render(){
-        static float add = 0;
+    void render(bool nagger = false){
+
+        if(CR::Input::keyboardCheck(CR::Input::Key::W)){
+            position.z += CR::getDelta() * 5000;
+            this->lookAt = CR::CharFace::UP;
+        }
+        if(CR::Input::keyboardCheck(CR::Input::Key::S)){
+            position.z -= CR::getDelta() * 5000;
+            this->lookAt = CR::CharFace::DOWN;
+        }
+        if(CR::Input::keyboardCheck(CR::Input::Key::A)){
+            position.x -= CR::getDelta() * 5000;
+            this->lookAt = CR::CharFace::RIGHT;
+        }
+        if(CR::Input::keyboardCheck(CR::Input::Key::D)){
+            position.x += CR::getDelta() * 5000;
+            this->lookAt = CR::CharFace::LEFT;
+        }               
+
+
+        game->camera.position = this->position - CR::Vec3<float>(CR::Gfx::getWidth(), CR::Gfx::getHeight(), -CR::Gfx::getHeight()) * CR::Vec3<float>(0.5f);         
+
         game->renderOn([&](CR::Gfx::RenderLayer *layer){
-            // for(unsigned i = 0; i < totalUnits; ++i){
-                // layer->add(CR::Gfx::Draw::Mesh(this->tiles[i].source->md, this->tiles[i].transform));
-            // }
-
-            add += 45 * CR::getDelta();
-
-            auto position = CR::Vec3<float>(450.0f, 0.0f, 0.0f);
-
-            auto diff = (game->camera.position) - position;
-
-            auto normal = diff.normalize();
-
-            CR::Vec3<float> front(1, 0, 0);
-
-            
-
-            auto theta = CR::Math::acos(normal.dot(front)) + CR::Math::PI * 0.75f;
-
-            // CR::log("%f\n", theta);
 
             auto mposition = CR::MAT4Identity
                             .translate(position)
-                            .rotate(theta, CR::Vec3<float>(0, 1, 0))
+                            .rotate(0, CR::Vec3<float>(0, 1, 0))
                             .scale(CR::Vec3<float>(1.0f));            
 
             static_cast<CR::Gfx::ShaderAttrMat4*>(this->transform->shAttrsValVec[1])->mat = mposition;
 
-            layer->add(CR::Gfx::Draw::Mesh(this->meshFrame, this->transform));
+            layer->add(CR::Gfx::Draw::Mesh(this->meshFrames[this->lookAt], this->transform));
+
+
+
+
         });  
 
     };
@@ -145,7 +166,7 @@ int main(int argc, char* argv[]){
 
     std::shared_ptr<CR::Map::Map> map = std::make_shared<CR::Map::Map>(CR::Map::Map()); 
 
-    map->build(CR::Vec2<int>(64, 64), 50);
+    map->build(CR::Vec2<int>(32, 32), 50);
 
     Character player;
 
@@ -153,55 +174,88 @@ int main(int argc, char* argv[]){
 
     while(CR::Gfx::isRunning()){
 
-        if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD8)){
-            gameL->camera.targetBias.z += CR::getDelta() * 20;
+
+
+        // UP_LEFT
+        if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD7)){
+            float amnt = CR::getDelta() * 2000;
+            gameL->camera.position.z += amnt;
+            gameL->camera.position.x -= amnt;
         }
-        //DOWN
-        if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD5)){
-            gameL->camera.targetBias.z -= CR::getDelta() * 20;
+        //DOWN_LEFT
+        if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD3)){
+
+
+            float amnt = CR::getDelta() * 2000;
+
+            gameL->camera.position.z -= amnt;
+            gameL->camera.position.x += amnt;            
         }
-        // LEFT    
-        if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD4)){
-            gameL->camera.targetBias.x -= CR::getDelta() * 20;
+        // UP_RIGHT    
+        if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD9)){
+            float amnt = CR::getDelta() * 2000;
+
+            gameL->camera.position.z += amnt;
+            gameL->camera.position.x += amnt;
         }
-        // RIGHT
-        if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD6)){
-            gameL->camera.targetBias.x += CR::getDelta() * 20;
+        // DOWN_RIGHTH
+        if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD1)){
+            float amnt = CR::getDelta() * 2000;
+
+            gameL->camera.position.z -= CR::getDelta() * 2000;
+            gameL->camera.position.x -= CR::getDelta() * 2000;
         }  
 
-        // LEFT    
-        if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD9)){
-            gameL->camera.targetBias.y -= CR::getDelta() * 20;
-        }
-        // RIGHT
-        if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD3)){
-            gameL->camera.targetBias.y += CR::getDelta() * 20;
-        } 
+
+        // if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD8)){
+        //     gameL->camera.targetBias.z += CR::getDelta() * 20;
+        // }
+        // //DOWN
+        // if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD5)){
+        //     gameL->camera.targetBias.z -= CR::getDelta() * 20;
+        // }
+        // // LEFT    
+        // if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD4)){
+        //     gameL->camera.targetBias.x -= CR::getDelta() * 20;
+        // }
+        // // RIGHT
+        // if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD6)){
+        //     gameL->camera.targetBias.x += CR::getDelta() * 20;
+        // }  
+
+        // // LEFT    
+        // if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD9)){
+        //     gameL->camera.targetBias.y -= CR::getDelta() * 20;
+        // }
+        // // RIGHT
+        // if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD3)){
+        //     gameL->camera.targetBias.y += CR::getDelta() * 20;
+        // } 
 
 
-        if(CR::Input::keyboardPressed(CR::Input::Key::NUMPAD0)){
-            gameL->camera.targetBias = CR::Vec3<float>(-55.0f, -35.0f, -75.0f);
-        }    
+        // if(CR::Input::keyboardPressed(CR::Input::Key::NUMPAD0)){
+        //     gameL->camera.targetBias = CR::Vec3<float>(-55.0f, -35.0f, -75.0f);
+        // }    
 
         // CR::log("%f\n", CR::getDelta());
         // UP
-        if(CR::Input::keyboardCheck(CR::Input::Key::W)){
+        if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD8)){
             gameL->camera.position.z += CR::getDelta() * 2000;
         }
         //DOWN
-        if(CR::Input::keyboardCheck(CR::Input::Key::S)){
+        if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD2)){
             gameL->camera.position.z -= CR::getDelta() * 2000;
         }
         // LEFT    
-        if(CR::Input::keyboardCheck(CR::Input::Key::A)){
+        if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD4)){
             gameL->camera.position.x -= CR::getDelta() * 2000;
         }
         // RIGHT
-        if(CR::Input::keyboardCheck(CR::Input::Key::D)){
+        if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD6)){
             gameL->camera.position.x += CR::getDelta() * 2000;
         }    
 
-        // map->render();
+        map->render();
         player.render();
         
         CR::Gfx::render();

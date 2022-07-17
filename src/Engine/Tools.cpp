@@ -337,7 +337,12 @@ namespace CR {
 			return deg * 0.01745329251994329576923690768489;
 		}
 		float degs(float rads){
-			return rads * (180.0f/PI);	
+			// return rads * (180.0f/PI);
+			return (rads/PI*180) + (rads > 0 ? 0 : 360);
+
+			// )
+			// return (-rads * PI) / 180.0f;
+			// return std::fmod((rads * 180.0f) / (PI), 360);	
 		}
 
 		Mat<4, 4, float> perspective(float fovy, float aspect, float zNear, float zFar){

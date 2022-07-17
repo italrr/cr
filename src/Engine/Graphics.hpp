@@ -199,6 +199,7 @@
 				CR::Vec3<float> up;
                 CR::Vec3<float> targetBias;
                 CR::Vec3<float> positionBias;
+                CR::Vec3<float> getCenter();
 				void setPosition(const CR::Vec3<float> &pos);
 				void setUp(const CR::Vec3<float> &up);
                 void update();
