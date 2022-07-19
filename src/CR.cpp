@@ -117,7 +117,7 @@ struct Character {
         }               
 
 
-        game->camera.position = this->position - CR::Vec3<float>(CR::Gfx::getWidth(), CR::Gfx::getHeight(), -CR::Gfx::getHeight()) * CR::Vec3<float>(0.5f);         
+        // game->camera.position = this->position - CR::Vec3<float>(CR::Gfx::getWidth(), CR::Gfx::getHeight(), -CR::Gfx::getHeight()) * CR::Vec3<float>(0.5f);         
 
         game->renderOn([&](CR::Gfx::RenderLayer *layer){
 
@@ -223,14 +223,14 @@ int main(int argc, char* argv[]){
         //     gameL->camera.targetBias.x += CR::getDelta() * 20;
         // }  
 
-        // // LEFT    
-        // if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD9)){
-        //     gameL->camera.targetBias.y -= CR::getDelta() * 20;
-        // }
-        // // RIGHT
-        // if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD3)){
-        //     gameL->camera.targetBias.y += CR::getDelta() * 20;
-        // } 
+        // LEFT    
+        if(CR::Input::keyboardCheck(CR::Input::Key::SUBTRACT)){
+            gameL->camera.targetBias.y -= CR::getDelta() * 20;
+        }
+        // RIGHT
+        if(CR::Input::keyboardCheck(CR::Input::Key::ADD)){
+            gameL->camera.targetBias.y += CR::getDelta() * 20;
+        } 
 
 
         // if(CR::Input::keyboardPressed(CR::Input::Key::NUMPAD0)){

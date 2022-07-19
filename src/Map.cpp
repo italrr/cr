@@ -11,7 +11,8 @@ static std::shared_ptr<CR::Gfx::RenderLayer> game;
 namespace MeshType {
     enum MeshType : unsigned {
         UNIT_CUBE = 0,
-        PLANE
+        TALL_CUBE,
+        PLANE,
     };
 }
 
@@ -55,7 +56,6 @@ static CR::Gfx::MeshData buildMesh(float cubeScale, const std::vector<CR::Map::A
 
     auto mesh = CR::Gfx::MeshData();
 
-
     switch(type){
         case MeshType::PLANE: {
             mesh = CR::Gfx::createMesh({
@@ -72,6 +72,7 @@ static CR::Gfx::MeshData buildMesh(float cubeScale, const std::vector<CR::Map::A
             mesh.vertn = 6;
         } break;
         case MeshType::UNIT_CUBE: {
+
             mesh = CR::Gfx::createMesh({ 
                 // POSITION                             // TEXTURE
 
@@ -129,7 +130,118 @@ static CR::Gfx::MeshData buildMesh(float cubeScale, const std::vector<CR::Map::A
                 -cubeScale,  cubeScale,  cubeScale,     faces[FTB].coors.x,   faces[FTB].coors.y,
                 -cubeScale,  cubeScale, -cubeScale,     faces[FTB].coors.x,   faces[FTB].size.y
             });
-            mesh.vertn = 36;
+
+        } break;        
+        case MeshType::TALL_CUBE: {
+            CR::Vec3<float> offset = CR::Vec3<float>(0, -cubeScale * 2, 0);
+
+            mesh = CR::Gfx::createMesh({ 
+                // POSITION                             // TEXTURE
+
+                // SOUTH
+                -cubeScale, -cubeScale, -cubeScale,     faces[FTS].coors.x,   faces[FTS].coors.y,
+                cubeScale, -cubeScale, -cubeScale,     faces[FTS].size.x,    faces[FTS].coors.y,
+                cubeScale,  cubeScale, -cubeScale,     faces[FTS].size.x,    faces[FTS].size.y,
+
+                cubeScale,  cubeScale, -cubeScale,     faces[FTS].size.x,    faces[FTS].size.y,
+                -cubeScale,  cubeScale, -cubeScale,     faces[FTS].coors.x,   faces[FTS].size.y,
+                -cubeScale, -cubeScale, -cubeScale,     faces[FTS].coors.x,   faces[FTS].coors.y,
+
+                //  NORTH
+                -cubeScale, -cubeScale,  cubeScale,     faces[FTN].coors.x,   faces[FTN].coors.y,
+                cubeScale, -cubeScale,  cubeScale,     faces[FTN].size.x,    faces[FTN].coors.y,
+                cubeScale,  cubeScale,  cubeScale,     faces[FTN].size.x,    faces[FTN].size.y,
+                
+                cubeScale,  cubeScale,  cubeScale,     faces[FTN].size.x,    faces[FTN].size.y,
+                -cubeScale,  cubeScale,  cubeScale,     faces[FTN].coors.x,   faces[FTN].size.y,
+                -cubeScale, -cubeScale,  cubeScale,     faces[FTN].coors.x,   faces[FTN].coors.y,
+
+                // WEST
+                -cubeScale,  cubeScale,  cubeScale,     faces[FTW].size.x,    faces[FTW].size.y,
+                -cubeScale,  cubeScale, -cubeScale,     faces[FTW].coors.x,   faces[FTW].size.y,
+                -cubeScale, -cubeScale, -cubeScale,     faces[FTW].coors.x,   faces[FTW].coors.y,
+
+                -cubeScale, -cubeScale, -cubeScale,     faces[FTW].coors.x,   faces[FTW].coors.y,
+                -cubeScale, -cubeScale,  cubeScale,     faces[FTW].size.x,    faces[FTW].coors.y,
+                -cubeScale,  cubeScale,  cubeScale,     faces[FTW].size.x,    faces[FTW].size.y,
+
+                // EAST
+                cubeScale,  cubeScale,  cubeScale,     faces[FTE].size.x,    faces[FTE].size.y,
+                cubeScale,  cubeScale, -cubeScale,     faces[FTE].coors.x,   faces[FTE].size.y,
+                cubeScale, -cubeScale, -cubeScale,     faces[FTE].coors.x,   faces[FTE].coors.y,
+
+                cubeScale, -cubeScale, -cubeScale,     faces[FTE].coors.x,   faces[FTE].coors.y,
+                cubeScale, -cubeScale,  cubeScale,     faces[FTE].size.x,    faces[FTE].coors.y,
+                cubeScale,  cubeScale,  cubeScale,     faces[FTE].size.x,    faces[FTE].size.y,
+
+                // // TOP
+                // -cubeScale, -cubeScale, -cubeScale,     faces[FTT].size.x,    faces[FTT].size.y,
+                // cubeScale, -cubeScale, -cubeScale,     faces[FTT].coors.x,   faces[FTT].size.y,
+                // cubeScale, -cubeScale,  cubeScale,     faces[FTT].coors.x,   faces[FTT].coors.y,
+
+                // cubeScale, -cubeScale,  cubeScale,     faces[FTT].coors.x,   faces[FTT].coors.y,
+                // -cubeScale, -cubeScale,  cubeScale,     faces[FTT].size.x,    faces[FTT].coors.y,
+                // -cubeScale, -cubeScale, -cubeScale,     faces[FTT].size.x,    faces[FTT].size.y,
+
+                // BOTTOM
+                -cubeScale,  cubeScale, -cubeScale,     faces[FTB].coors.x,   faces[FTB].size.y,
+                cubeScale,  cubeScale, -cubeScale,     faces[FTB].size.x,    faces[FTB].size.y,
+                cubeScale,  cubeScale,  cubeScale,     faces[FTB].size.x,    faces[FTB].coors.y,
+                
+                cubeScale,  cubeScale,  cubeScale,     faces[FTB].size.x,    faces[FTB].coors.y,
+                -cubeScale,  cubeScale,  cubeScale,     faces[FTB].coors.x,   faces[FTB].coors.y,
+                -cubeScale,  cubeScale, -cubeScale,     faces[FTB].coors.x,   faces[FTB].size.y,
+
+                // second level
+                // SOUTH
+                -cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                 faces[FTS].coors.x,   faces[FTS].coors.y,
+                cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                  faces[FTS].size.x,    faces[FTS].coors.y,
+                cubeScale + offset.x,  cubeScale + offset.y, -cubeScale + offset.z,                  faces[FTS].size.x,    faces[FTS].size.y,
+
+                cubeScale + offset.x,  cubeScale + offset.y, -cubeScale + offset.z,                  faces[FTS].size.x,    faces[FTS].size.y,
+                -cubeScale + offset.x,  cubeScale + offset.y, -cubeScale + offset.z,                 faces[FTS].coors.x,   faces[FTS].size.y,
+                -cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                 faces[FTS].coors.x,   faces[FTS].coors.y,      
+
+
+                //  NORTH
+                -cubeScale + offset.x, -cubeScale + offset.y,  cubeScale + offset.z,                faces[FTN].coors.x,   faces[FTN].coors.y,
+                cubeScale + offset.x, -cubeScale + offset.y,  cubeScale + offset.z,                 faces[FTN].size.x,    faces[FTN].coors.y,
+                cubeScale + offset.x,  cubeScale + offset.y,  cubeScale + offset.z,                 faces[FTN].size.x,    faces[FTN].size.y,
+                
+                cubeScale + offset.x,  cubeScale + offset.y,  cubeScale + offset.z,                 faces[FTN].size.x,    faces[FTN].size.y,
+                -cubeScale + offset.x,  cubeScale + offset.y,  cubeScale + offset.z,                faces[FTN].coors.x,   faces[FTN].size.y,
+                -cubeScale + offset.x, -cubeScale + offset.y,   cubeScale + offset.z,               faces[FTN].coors.x,   faces[FTN].coors.y,
+
+                // WEST
+                -cubeScale + offset.x,  cubeScale + offset.y,  cubeScale + offset.z,                faces[FTW].size.x,    faces[FTW].size.y,
+                -cubeScale + offset.x,  cubeScale + offset.y, -cubeScale + offset.z,                faces[FTW].coors.x,   faces[FTW].size.y,
+                -cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                faces[FTW].coors.x,   faces[FTW].coors.y,
+
+                -cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                faces[FTW].coors.x,   faces[FTW].coors.y,
+                -cubeScale + offset.x, -cubeScale + offset.y,  cubeScale + offset.z,                faces[FTW].size.x,    faces[FTW].coors.y,
+                -cubeScale + offset.x,  cubeScale + offset.y,  cubeScale + offset.z,                faces[FTW].size.x,    faces[FTW].size.y,       
+
+
+                // EAST
+                cubeScale + offset.x,  cubeScale + offset.y,  cubeScale + offset.z,                 faces[FTE].size.x,    faces[FTE].size.y,
+                cubeScale + offset.x,  cubeScale + offset.y, -cubeScale + offset.z,                 faces[FTE].coors.x,   faces[FTE].size.y,
+                cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                 faces[FTE].coors.x,   faces[FTE].coors.y,
+
+                cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                 faces[FTE].coors.x,   faces[FTE].coors.y,
+                cubeScale + offset.x, -cubeScale + offset.y,  cubeScale + offset.z,                 faces[FTE].size.x,    faces[FTE].coors.y,
+                cubeScale + offset.x,  cubeScale + offset.y,  cubeScale + offset.z,                 faces[FTE].size.x,    faces[FTE].size.y,
+
+                // TOP
+                -cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                faces[FTT].size.x,    faces[FTT].size.y,
+                cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                 faces[FTT].coors.x,   faces[FTT].size.y,
+                cubeScale + offset.x, -cubeScale + offset.y,  cubeScale + offset.z,                 faces[FTT].coors.x,   faces[FTT].coors.y,
+
+                cubeScale + offset.x, -cubeScale + offset.y,  cubeScale + offset.z,                 faces[FTT].coors.x,   faces[FTT].coors.y,
+                -cubeScale + offset.x, -cubeScale + offset.y,  cubeScale + offset.z,                faces[FTT].size.x,    faces[FTT].coors.y,
+                -cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                faces[FTT].size.x,    faces[FTT].size.y,                
+
+            });
+            // mesh.vertn = 60;
         } break;
     }
     return mesh;
@@ -377,7 +489,7 @@ void CR::Map::Map::build(const CR::Vec2<int> _mapSize, float us){
                                                             this->atlasSingles[5],  // EAST
                                                             this->atlasSingles[1],  // TOP
                                                             this->atlasSingles[0],  // BOTTOM
-                                                        }, MeshType::UNIT_CUBE);
+                                                        }, MeshType::TALL_CUBE);
     this->sources["floor"] = buildTileSource("floor", us, {
                                                             this->atlasSingles[3],  // SOUTH
                                                             this->atlasSingles[3],  // NORTH
