@@ -289,7 +289,7 @@ struct Room {
 
 };
 
-static void generateMaze(std::vector<Cell> &src, unsigned width, unsigned height){
+static void generateMaze(std::vector<Cell> &src, Cell &startc, unsigned width, unsigned height){
     auto randodd = [](int from, int to){
         return CR::Math::odd(CR::Math::random(from, to));
     };    
@@ -354,6 +354,9 @@ static void generateMaze(std::vector<Cell> &src, unsigned width, unsigned height
         // choose a random start position
         unsigned start = 0;
         Cell spawn(dstart.x, dstart.y);    
+        startc.x = spawn.x;
+        startc.y = spawn.y;
+        startc.i = dstart.x + dstart.y * width;
      
         start = spawn.x + spawn.y * width;
         src[spawn.x + spawn.y * width].type = CellType::PATH;
@@ -446,7 +449,7 @@ CR::Map::Map::Map(){
 
 }
 
-void CR::Map::Map::build(const CR::Vec2<int> _mapSize, float us){
+void CR::Map::Map::build(const CR::Vec2<int> _mapSize, unsigned bpScale, float us){
 
     game = CR::Gfx::getRenderLayer("world", true);
 
@@ -499,18 +502,24 @@ void CR::Map::Map::build(const CR::Vec2<int> _mapSize, float us){
                                                             this->atlasSingles[3],  // BOTTOM
                                                         }, MeshType::PLANE);                                                        
 
-    unsigned scale = 8;
-
+    auto &scale = bpScale;
     CR::Vec2<int> mapSize (CR::Math::odd(_mapSize.x * scale), CR::Math::odd(_mapSize.y * scale));
-    
+
+    this->size.set(mapSize.x, mapSize.y);
+    this->tsize = CR::Vec2<float>(this->size.x, this->size.y) * CR::Vec2<float>(us);
+    this->usize = us;
     this->totalUnits = mapSize.x * mapSize.y;
+    this->bpScale = scale;
 
 
 
     auto maze = generateEmptyMaze(_mapSize.x, _mapSize.y);
 
-    generateMaze(maze, _mapSize.x, _mapSize.y);
+    Cell scell;
+    generateMaze(maze, scell, _mapSize.x, _mapSize.y);
 
+    
+    
     this->tiles = new Tile[this->totalUnits];
     
     // build tiles
@@ -522,6 +531,14 @@ void CR::Map::Map::build(const CR::Vec2<int> _mapSize, float us){
         this->tiles[i].height = 0;
         this->tiles[i].position.x = i % mapSize.x;
         this->tiles[i].position.y = i / mapSize.y;
+        
+        this->tiles[i].rposition.x = this->tiles[i].position.x * (us*2.0f);
+        this->tiles[i].rposition.y = -this->tiles[i].height * (us*2.0f);
+        this->tiles[i].rposition.z = this->tiles[i].position.y * (us*2.0f);
+        
+        if(mazeind == scell.i){
+            this->start = this->tiles[i];
+        }
 
     }
 
@@ -698,7 +715,7 @@ void CR::Map::Map::build(const CR::Vec2<int> _mapSize, float us){
         this->tiles[i].transform->shAttrsLoc = worldShader->shAttrs;
         
         auto position = CR::MAT4Identity
-                        .translate(CR::Vec3<float>(this->tiles[i].position.x * (us*2.0f), -this->tiles[i].height * (us*2.0f), this->tiles[i].position.y * (us*2.0f)))
+                        .translate(this->tiles[i].rposition)
                         .rotate(0, CR::Vec3<float>(1, 1, 1))
                         .scale(CR::Vec3<float>(1.0f));
 
@@ -716,7 +733,7 @@ void CR::Map::Map::build(const CR::Vec2<int> _mapSize, float us){
 
     this->rebuildBatch();
 
-    CR::log("build map %ix%i\n", mapSize.x, mapSize.y);
+    CR::log("built map %ix%i(%.0fx%.0f) | BP Scale: %i | Meshes: %i\n", this->size.x, this->size.y, this->tsize.x, this->tsize.y, this->bpScale, this->batchMesh.size());
   
 }
 
@@ -725,7 +742,7 @@ void CR::Map::Map::rebuildBatch(){
     this->batchTrans.clear();
     for(unsigned i = 0; i < this->totalUnits; ++i){
         auto &tile = this->tiles[i];
-        if(tile.type == TileType::EMPTY) { continue;}
+        if(tile.type == TileType::EMPTY) {continue;}
         this->batchMesh.push_back(&this->tiles[i].source->md);
         this->batchTrans.push_back(this->tiles[i].transform);
     }

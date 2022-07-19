@@ -52,6 +52,7 @@
                 unsigned type;
                 unsigned height; // Y
                 CR::Vec2<int> position;
+                CR::Vec3<float> rposition;
                 CR::Map::TileSource *source;
                 CR::Gfx::Transform *transform;
             };
@@ -71,19 +72,23 @@
                 std::vector<CR::Gfx::Transform*> batchTrans;
                 std::vector<CR::Gfx::MeshData*> batchMesh;
 
+                Tile start;
+
                 void rebuildBatch();
 
 
                 CR::Vec3<float> origin;
                 float usize;
-                CR::Vec2<int> size; // units * unitsize
+                CR::Vec2<float> tsize;  // units * unitsize
+                CR::Vec2<unsigned> size;
+                unsigned bpScale;
                 unsigned totalUnits;
 
                 unsigned width;
                 unsigned height;
 
                 Map();
-                void build(const CR::Vec2<int> mapSize, float us);
+                void build(const CR::Vec2<int> mapSize, unsigned bpScale, float us);
                 void render();
                 void clear();
             };

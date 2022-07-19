@@ -117,7 +117,7 @@ struct Character {
         }               
 
 
-        // game->camera.position = this->position - CR::Vec3<float>(CR::Gfx::getWidth(), CR::Gfx::getHeight(), -CR::Gfx::getHeight()) * CR::Vec3<float>(0.5f);         
+        game->camera.position = this->position - CR::Vec3<float>(CR::Gfx::getWidth(), CR::Gfx::getHeight(), -CR::Gfx::getHeight()) * CR::Vec3<float>(0.5f);         
 
         game->renderOn([&](CR::Gfx::RenderLayer *layer){
 
@@ -166,7 +166,7 @@ int main(int argc, char* argv[]){
 
     std::shared_ptr<CR::Map::Map> map = std::make_shared<CR::Map::Map>(CR::Map::Map()); 
 
-    map->build(CR::Vec2<int>(32, 32), 50);
+    map->build(CR::Vec2<int>(16, 16), 8, 50);
 
     Character player;
 
