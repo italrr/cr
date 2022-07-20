@@ -166,7 +166,7 @@ int main(int argc, char* argv[]){
 
     std::shared_ptr<CR::Map::Map> map = std::make_shared<CR::Map::Map>(CR::Map::Map()); 
 
-    map->build(CR::Vec2<int>(16, 16), 8, 50);
+    map->build(CR::Vec2<int>(32, 32), 8, 50);
 
     Character player;
 

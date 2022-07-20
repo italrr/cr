@@ -183,6 +183,7 @@
             float acos(float n);
             float atan(float y, float x);
             float rads(float deg);
+            float abs(float n);
             float degs(float rads);
             int odd(int n);
             int even(int n);

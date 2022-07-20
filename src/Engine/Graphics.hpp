@@ -125,7 +125,10 @@
 
             struct Transform {
                 std::shared_ptr<CR::Gfx::Shader> shader;
-				CR::Mat<4, 4, float> model;
+				// CR::Mat<4, 4, float> model;
+                CR::Vec3<float> position;
+                CR::Vec3<float> scale;
+                CR::Vec4<float> rotation;
 				// CR::Vec3<float> position;
 				// CR::Color color;
                 std::vector<unsigned> textures;

@@ -614,19 +614,35 @@ CR::Gfx::Renderable *CR::Gfx::Draw::MeshBatch(std::vector<CR::Gfx::MeshData*> &m
     self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
         auto *obj = static_cast<CR::Gfx::Renderable3DBatch*>(renobj);
   
-        glActiveTexture(GL_TEXTURE0);
+        auto camCent = rl->camera.getCenter();
+        bool shFirst = false;
+        bool texFirst = false;
 
+        CR::Vec3<unsigned> view = CR::Vec3<unsigned>(rl->size.x, rl->size.x  * 2, rl->size.y * 1.5f);
+
+        glActiveTexture(GL_TEXTURE0);
         for(unsigned i = 0; i < obj->md->size(); ++i){
-            if(!obj->shareShader || i == 0){
+
+            auto &mp = obj->transform->at(i)->position;
+            
+            if( CR::Math::abs(camCent.x-mp.x) > view.x ||
+                CR::Math::abs(camCent.y-mp.y) > view.y ||
+                CR::Math::abs(camCent.z-mp.z) > view.z){
+                continue;
+            }
+
+            if(!obj->shareShader || !shFirst){
                 static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->at(i)->shAttrsValVec[2])->mat = rl->camera.getView();
                 static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->at(i)->shAttrsValVec[3])->mat = rl->projection;
-                CR::Gfx::applyShader(obj->transform->at(i)->shader->getRsc()->shaderId, obj->transform->at(i)->shAttrsLocVec, obj->transform->at(i)->shAttrsValVec);                  
+                CR::Gfx::applyShader(obj->transform->at(i)->shader->getRsc()->shaderId, obj->transform->at(i)->shAttrsLocVec, obj->transform->at(i)->shAttrsValVec);     
+                shFirst = true;             
             }else
             if(obj->shareShader && obj->shareModelTrans){
                 CR::Gfx::applyShaderPartial(obj->transform->at(i)->shAttrsLocVec[obj->modelPos], obj->transform->at(i)->shAttrsValVec[obj->modelPos]);
             }            
-            if(!obj->shareTexture || i == 0){
+            if(!obj->shareTexture || !texFirst){
                 glBindTexture(GL_TEXTURE_2D, obj->transform->at(i)->textures[CR::Gfx::TextureRole::DIFFUSE]);
+                texFirst = true;
             }
 
             glBindVertexArray(obj->md->at(i)->vao);
@@ -1042,7 +1058,9 @@ void CR::Gfx::applyShader(unsigned shaderId, const std::vector<unsigned> &loc, c
 
 CR::Gfx::Transform::Transform(){
     this->textures = {0, 0, 0, 0};
-    this->model = CR::MAT4Identity;
+    this->position.set(0.0f);
+    this->rotation.set(0.0f);
+    this->scale.set(0.0f);
     this->shader = std::make_shared<CR::Gfx::Shader>(CR::Gfx::Shader());
 }
 

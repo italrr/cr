@@ -330,6 +330,9 @@ namespace CR {
 		float acos(float n){
 			return std::acos(n);
 		}		
+		float abs(float n){
+			return std::abs(n);
+		}
 		float atan(float y, float x){
 			return std::atan2(y, x);
 		}

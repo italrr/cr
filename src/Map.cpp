@@ -713,7 +713,10 @@ void CR::Map::Map::build(const CR::Vec2<int> _mapSize, unsigned bpScale, float u
         this->tiles[i].transform->shader = worldShader;
         this->tiles[i].transform->textures[CR::Gfx::TextureRole::DIFFUSE] = this->atlas->getRsc()->textureId;
         this->tiles[i].transform->shAttrsLoc = worldShader->shAttrs;
-        
+        this->tiles[i].transform->position = this->tiles[i].rposition;
+        this->tiles[i].transform->scale.set(1.0f);
+        this->tiles[i].transform->rotation.set(0, 0, 0, 0);
+
         auto position = CR::MAT4Identity
                         .translate(this->tiles[i].rposition)
                         .rotate(0, CR::Vec3<float>(1, 1, 1))
