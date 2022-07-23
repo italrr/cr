@@ -19,6 +19,8 @@ It's a 3D, randomly generated, multiplayer dungeon crawler.
 
 
 
+Bank can only withdraw without penalty after time
+If you didn't puck you get charged a penalty
 
 
 

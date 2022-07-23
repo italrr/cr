@@ -12,40 +12,40 @@
         
         namespace CharFace {
             enum CharFace : unsigned {
-                DOWN = 0,
-                DOWN_LEFT,
-                LEFT,
-                UP_LEFT,
-                UP,
-                UP_RIGHT,
-                RIGHT,
-                DOWN_RIGHT
+                SOUTH = 0,
+                SOUTH_WEST,
+                WEST,
+                NORTH_WEST,
+                NORTH,
+                NORTH_EAST,
+                EAST,
+                SOUTH_EAST
             };
             static std::string inline str(unsigned f){
                 switch(f){
-                    case CharFace::DOWN: {
-                        return "DOWN";
+                    case CharFace::SOUTH: {
+                        return "SOUTH";
                     } break;
-                    case CharFace::DOWN_LEFT: {
-                        return "DOWN_LEFT";
+                    case CharFace::SOUTH_WEST: {
+                        return "SOUTH_WEST";
                     } break;
-                    case CharFace::LEFT: {
-                        return "LEFT";
+                    case CharFace::WEST: {
+                        return "WEST";
                     } break;
-                    case CharFace::UP_LEFT: {
-                        return "UP_LEFT";
+                    case CharFace::NORTH_WEST: {
+                        return "NORTH_WEST";
                     } break;
-                    case CharFace::UP: {
-                        return "UP";
+                    case CharFace::NORTH: {
+                        return "NORTH";
                     } break;
-                    case CharFace::UP_RIGHT: {
-                        return "UP_RIGHT";
+                    case CharFace::NORTH_EAST: {
+                        return "NORTH_EAST";
                     } break;
-                    case CharFace::RIGHT: {
-                        return "RIGHT";
+                    case CharFace::EAST: {
+                        return "EAST";
                     } break;     
-                    case CharFace::DOWN_RIGHT: {
-                        return "DOWN_RIGHT";
+                    case CharFace::SOUTH_EAST: {
+                        return "SOUTH_EAST";
                     } break;    
                     default: {
                         return "[NO_FACE]";
@@ -54,34 +54,84 @@
             }
             static unsigned inline faceFromAngle(float deg){
                 if(deg <= 22.5 && deg > 337.5 && deg >= 0){
-                    return CharFace::RIGHT;
+                    return CharFace::EAST;
                 }else
                 if(deg > 22.5 && deg <= 67.5){
-                    return CharFace::UP_RIGHT;
+                    return CharFace::NORTH_EAST;
                 }else
                 if(deg > 67.5 && deg <= 112.5){
-                    return CharFace::UP;
+                    return CharFace::NORTH;
                 }else
                 if(deg > 112.5 && deg <= 157.5){
-                    return CharFace::UP_LEFT;
+                    return CharFace::NORTH_WEST;
                 }else
                 if(deg > 157.5 && deg <= 202.5){
-                    return CharFace::LEFT;
+                    return CharFace::WEST;
                 }else
                 if(deg > 202.5 && deg <= 247.5){
-                    return CharFace::DOWN_LEFT;
+                    return CharFace::SOUTH_WEST;
                 }else
                 if(deg > 247.5 && deg <= 292.5){
-                    return CharFace::DOWN;
+                    return CharFace::SOUTH;
                 }else
                 if(deg > 292.5 && deg <= 337.5){
-                    return CharFace::DOWN_RIGHT;
+                    return CharFace::SOUTH_EAST;
                 }else{
                     // DEFAULT
-                    return CharFace::DOWN;
+                    return CharFace::SOUTH;
                 }                    
             }
         }
+
+        namespace AnimType {
+            enum AnimType : uint8 {
+                STAND_SOUTH = 0,
+                STAND_SOUTH_WEST,
+                STAND_WEST,
+                STAND_NORTH_WEST,
+                STAND_NORTH,
+                STAND_NORTH_EAST,
+                STAND_EAST,
+                STAND_SOUTH_EAST,
+
+                SIT_SOUTH,
+                SIT_SOUTH_WEST,
+                SIT_WEST,
+                SIT_NORTH_WEST,
+                SIT_NORTH,
+                SIT_NORTH_EAST,
+                SIT_EAST,
+                SIT_SOUTH_EAST,
+                
+                WALKING_SOUTH,
+                WALKING_SOUTH_WEST,
+                WALKING_WEST,
+                WALKING_NORTH_WEST,
+                WALKING_NORTH,
+                WALKING_NORTH_EAST,
+                WALKING_EAST,
+                WALKING_SOUTH_EAST,
+
+            };
+            static const unsigned TOTAL = 24;
+            
+        }
+
+        struct AnimFrame {
+            std::string name;
+            bool flip;
+            std::vector<CR::Vec4<float>> frames;
+            AnimFrame();
+        };
+
+        struct EntityAnim {
+            float framerate;
+            CR::Vec2<float> frameSize;
+            std::shared_ptr<CR::Gfx::Texture> atlas;            
+            std::vector<CR::AnimFrame> anims;
+            EntityAnim();
+            bool load(const std::string &path);
+        };
 
 
         struct Entity : CR::Object {

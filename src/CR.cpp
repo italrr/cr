@@ -14,7 +14,7 @@ struct Character {
     CR::Vec2<float> frameSize;
     std::shared_ptr<CR::Gfx::Texture> atlas;
 
-    std::vector<CR::Gfx::MeshData> meshFrames;
+    CR::Gfx::MeshData meshFrame;
     CR::Gfx::Transform *transform;
     std::shared_ptr<CR::Gfx::Shader> charShader;
 
@@ -28,50 +28,24 @@ struct Character {
     }
     void load(){
 
-        lookAt = CR::CharFace::DOWN;
+        lookAt = CR::CharFace::SOUTH;
         atlas->load("data/texture/male_body_assassin.png");
         inTexSize.set(50, 90);
         frameSize = CR::Vec2<float>(50, 90) * CR::Vec2<float>(3.0f);
 
-        float inCoorsWidth = inTexSize.x / static_cast<float>(atlas->getRsc()->size.x);
-        float inCoorsHeight = inTexSize.y / static_cast<float>(atlas->getRsc()->size.y);
+        this->meshFrame = CR::Gfx::createMesh({
+            // POSITION                                                // TEXTURE COOR
+            -frameSize.x*0.5f,    frameSize.y*0.5f,     0,            1.0,  1.0,
+            -frameSize.x*0.5f,   -frameSize.y*0.5f,     0,            1.0,  0.0,
+            frameSize.x*0.5f,    -frameSize.y*0.5f,     0,            0.0,  0.0,
 
-        auto genMeshFrame = [&](unsigned texX,  unsigned texY, bool horFlip = false){
-            float coorsX = inCoorsWidth * texX;
-            float coorsY = inCoorsHeight * texY;
-            float coorsW = coorsX + inCoorsWidth;
-            float coorsH = coorsY + inCoorsHeight;            
-            meshFrames.push_back(CR::Gfx::createMesh({
-                // POSITION                                                 // TEXTURE COOR
-                -frameSize.x*0.5f,    frameSize.y*0.5f,     0,              (horFlip ? coorsX : coorsW),   coorsH,
-                -frameSize.x*0.5f,   -frameSize.y*0.5f,     0,              (horFlip ? coorsX : coorsW),   coorsY,
-                frameSize.x*0.5f,    -frameSize.y*0.5f,     0,              (horFlip ? coorsW : coorsX),   coorsY,
+            frameSize.x*0.5f,    -frameSize.y*0.5f,     0,            0.0,   0.0,
+            frameSize.x*0.5f,    frameSize.y*0.5f,      0,            0.0,   1.0,
+            -frameSize.x*0.5f,   frameSize.y*0.5f,      0,            1.0,   1.0        
+        });
 
-                frameSize.x*0.5f,    -frameSize.y*0.5f,     0,              (horFlip ? coorsW : coorsX),   coorsY,
-                frameSize.x*0.5f,    frameSize.y*0.5f,      0,              (horFlip ? coorsW : coorsX),   coorsH,
-                -frameSize.x*0.5f,    frameSize.y*0.5f,     0,              (horFlip ? coorsX : coorsW),   coorsH        
-            }));
-        };
-
-        // DOWN
-        genMeshFrame(0, 0, false);
-        // DOWN_LEFT
-        genMeshFrame(1, 0, false);
-        // LEFT
-        genMeshFrame(2, 0, false);
-        // UP_LEFT
-        genMeshFrame(3, 0, false);
-        // UP
-        genMeshFrame(4, 0, false);
-        // UP_RIGHT
-        genMeshFrame(3, 0, true);
-        // RIGHT
-        genMeshFrame(2, 0, true);
-        // DOWN_RIGHT
-        genMeshFrame(1, 0, true);
-
-        this->charShader->load("data/shader/b_cube_texture_f.glsl", "data/shader/b_cube_texture_v.glsl");
-        this->charShader->findAttrs({"color", "model", "projection", "image", "view"});         
+        this->charShader->load("data/shader/b_char_texture_f.glsl", "data/shader/b_char_texture_v.glsl");
+        this->charShader->findAttrs({"color", "model", "projection", "image", "view",  "inTexCoords", "inTexSize"});         
 
         this->transform = new CR::Gfx::Transform();
         this->transform->shader = charShader;
@@ -88,9 +62,11 @@ struct Character {
             {"model", std::make_shared<CR::Gfx::ShaderAttrMat4>(position)},
             {"view", std::make_shared<CR::Gfx::ShaderAttrMat4>(CR::MAT4Identity)},
             {"projection", std::make_shared<CR::Gfx::ShaderAttrMat4>(CR::MAT4Identity)},
-            {"color", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))}
+            {"color", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))},
+            {"inTexCoords", std::make_shared<CR::Gfx::ShaderAttrVec2>(CR::Vec2<float>(0.0f))},
+            {"inTexSize", std::make_shared<CR::Gfx::ShaderAttrVec2>(CR::Vec2<float>(0.0f))}            
         };    
-        this->transform->fixShaderAttributes({"image", "model", "view", "projection", "color"});
+        this->transform->fixShaderAttributes({"image", "model", "view", "projection", "color", "inTexCoords", "inTexSize"});
                
 
         this->position.set(50, -frameSize.y * 0.25f, -25);
@@ -101,23 +77,33 @@ struct Character {
 
         if(CR::Input::keyboardCheck(CR::Input::Key::W)){
             position.z += CR::getDelta() * 5000;
-            this->lookAt = CR::CharFace::UP;
+            this->lookAt = CR::CharFace::NORTH;
         }
         if(CR::Input::keyboardCheck(CR::Input::Key::S)){
             position.z -= CR::getDelta() * 5000;
-            this->lookAt = CR::CharFace::DOWN;
+            this->lookAt = CR::CharFace::SOUTH;
         }
         if(CR::Input::keyboardCheck(CR::Input::Key::A)){
             position.x -= CR::getDelta() * 5000;
-            this->lookAt = CR::CharFace::RIGHT;
+            this->lookAt = CR::CharFace::EAST;
         }
         if(CR::Input::keyboardCheck(CR::Input::Key::D)){
             position.x += CR::getDelta() * 5000;
-            this->lookAt = CR::CharFace::LEFT;
+            this->lookAt = CR::CharFace::WEST;
         }               
 
 
         game->camera.position = this->position - CR::Vec3<float>(CR::Gfx::getWidth(), CR::Gfx::getHeight(), -CR::Gfx::getHeight()) * CR::Vec3<float>(0.5f);         
+
+        static float inCoorsWidth = inTexSize.x / static_cast<float>(atlas->getRsc()->size.x);
+        static float inCoorsHeight = inTexSize.y / static_cast<float>(atlas->getRsc()->size.y);
+        static bool yes = false;
+
+        if(!yes){
+            CR::log("%f %f\n", inCoorsWidth, inCoorsHeight);
+            yes = true;
+        }
+
 
         game->renderOn([&](CR::Gfx::RenderLayer *layer){
 
@@ -128,7 +114,20 @@ struct Character {
 
             static_cast<CR::Gfx::ShaderAttrMat4*>(this->transform->shAttrsValVec[1])->mat = mposition;
 
-            layer->add(CR::Gfx::Draw::Mesh(this->meshFrames[this->lookAt], this->transform));
+
+            static_cast<CR::Gfx::ShaderAttrVec2*>(this->transform->shAttrsValVec[5])->vec[0] = 0.0f;
+            static_cast<CR::Gfx::ShaderAttrVec2*>(this->transform->shAttrsValVec[5])->vec[1] = 0.0f;
+            
+            static_cast<CR::Gfx::ShaderAttrVec2*>(this->transform->shAttrsValVec[6])->vec[0] = inCoorsWidth;
+            static_cast<CR::Gfx::ShaderAttrVec2*>(this->transform->shAttrsValVec[6])->vec[1] = inCoorsHeight;
+ 
+
+
+
+
+
+
+            layer->add(CR::Gfx::Draw::Mesh(this->meshFrame, this->transform));
 
 
 

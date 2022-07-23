@@ -18,8 +18,6 @@
         static const T_ENTID OBJ_ID_INVALID = 0;
 
 
-
-
         namespace ObjSigType {
             enum ObjSigType : T_OBJSIG {
                 UNDEFINED = 0,
