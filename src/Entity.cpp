@@ -37,6 +37,34 @@ bool CR::EntityAnim::load(const std::string &path){
     float inCoorsHeight = this->frameSize.y / atlaSize.y;
 
 
+    for(auto &it : node.get("frames")){
+        auto &frame = it.second;
+        unsigned type = CR::AnimType::fkeyToVal(it.first);
+        auto &target = this->anims[type];
+        
+        float iX = frame.get("x").toInt();
+        float iY = frame.get("y").toInt();
+        unsigned n = frame.get("n").toInt();
+        bool flipped = frame.get("f").toInt();
 
+        target.name = it.first;
+        target.flip = flipped;
+
+        target.frames.clear();
+        for(unsigned i = 0; i < n; ++i){
+            float x = iX * inCoorsWidth;
+            float y = iY * inCoorsHeight;
+            float wx = x + inCoorsWidth;
+            float hy = y + inCoorsHeight;
+            target.frames.push_back(CR::Vec4<float>(x, y, wx, hy));
+
+            if(it.first == "st_sw"){
+                CR::log("%i %f %f %f %f\n", type, x, y, wx, hy);
+            }
+
+        }
+
+    }
+    CR::log("Loaded EntityAnim  %s\n", path.c_str());
     return true;
 }

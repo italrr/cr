@@ -10,24 +10,11 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
-uniform vec2 inTexCoords;
-uniform vec2 inTexSize;
+uniform vec2 frameOffset;
 
 void main(){
-
-   if(aTexCoors.x == 0.0){
-      texCoords.x = inTexCoords.x;
-   }
-   if(aTexCoors.y == 0.0){
-      texCoords.x = inTexCoords.y;
-   }
-
-   if(aTexCoors.x == 1.0){
-      texCoords.x = inTexSize.x;
-   }
-   if(aTexCoors.y == 1.0){
-      texCoords.y = inTexSize.y;
-   }  
+   texCoords.x = aTexCoors.x + frameOffset.x;
+   texCoords.y = aTexCoors.y + frameOffset.y;
 
    gl_Position = (projection * view * model) * vec4(aVertex, 1.0);
 }

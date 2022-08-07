@@ -114,7 +114,82 @@
 
             };
             static const unsigned TOTAL = 24;
-            
+            static uint8 fkeyToVal(const std::string &key){
+                if(key == "st_s"){
+                    return CR::AnimType::STAND_SOUTH;
+                }else
+                if(key == "st_sw"){
+                    return CR::AnimType::STAND_SOUTH_WEST;
+                }else
+                if(key == "st_w"){
+                    return CR::AnimType::STAND_WEST;
+                }else
+                if(key == "st_nw"){
+                    return CR::AnimType::STAND_NORTH_WEST;
+                }else
+                if(key == "st_n"){
+                    return CR::AnimType::STAND_NORTH;
+                }else
+                if(key == "st_ne"){
+                    return CR::AnimType::STAND_NORTH_EAST;
+                }else
+                if(key == "st_e"){
+                    return CR::AnimType::STAND_EAST;
+                }else
+                if(key == "st_se"){
+                    return CR::AnimType::STAND_SOUTH_EAST;
+                }else
+                if(key == "s_s"){
+                    return CR::AnimType::SIT_SOUTH;
+                }else
+                if(key == "s_sw"){
+                    return CR::AnimType::SIT_SOUTH_WEST;
+                }else
+                if(key == "s_w"){
+                    return CR::AnimType::SIT_WEST;
+                }else
+                if(key == "s_nw"){
+                    return CR::AnimType::SIT_NORTH_WEST;
+                }else
+                if(key == "s_n"){
+                    return CR::AnimType::SIT_NORTH;
+                }else
+                if(key == "s_ne"){
+                    return CR::AnimType::SIT_NORTH_EAST;
+                }else
+                if(key == "s_e"){
+                    return CR::AnimType::SIT_EAST;
+                }else
+                if(key == "s_se"){
+                    return CR::AnimType::SIT_SOUTH_EAST;
+                }else
+                if(key == "w_s"){
+                    return CR::AnimType::WALKING_SOUTH;
+                }else
+                if(key == "w_sw"){
+                    return CR::AnimType::WALKING_SOUTH_WEST;
+                }else
+                if(key == "w_w"){
+                    return CR::AnimType::WALKING_WEST;
+                }else
+                if(key == "w_nw"){
+                    return CR::AnimType::WALKING_NORTH_WEST;
+                }else
+                if(key == "w_n"){
+                    return CR::AnimType::WALKING_NORTH;
+                }else
+                if(key == "w_ne"){
+                    return CR::AnimType::WALKING_NORTH_EAST;
+                }else
+                if(key == "w_e"){
+                    return CR::AnimType::WALKING_EAST;
+                }else
+                if(key == "w_se"){
+                    return CR::AnimType::WALKING_SOUTH_EAST;
+                }else{
+                    return CR::AnimType::STAND_SOUTH;
+                }               
+            }
         }
 
         struct AnimFrame {

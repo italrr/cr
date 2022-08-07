@@ -99,11 +99,14 @@
             }
 
             struct MeshData {
+                // unsigned vboPos;
+                // unsigned vboTex;
                 unsigned vbo;
                 unsigned vao;
                 unsigned ebo;
                 unsigned vertn;
                 MeshData(){
+                    // vboPos = 0;
                     vbo = 0;
                     vao = 0;
                     ebo = 0;
