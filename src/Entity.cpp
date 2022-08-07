@@ -4,7 +4,8 @@
 
 
 CR::AnimFrame::AnimFrame(){
-
+    vflip = false;
+    hflip = false;
 }
 
 CR::EntityAnim::EntityAnim(){
@@ -45,18 +46,20 @@ bool CR::EntityAnim::load(const std::string &path){
         float iX = frame.get("x").toInt();
         float iY = frame.get("y").toInt();
         unsigned n = frame.get("n").toInt();
-        bool flipped = frame.get("f").toInt();
+        bool hflip = frame.get("hf").toInt();
+        bool vflip = frame.get("vf").toInt();
 
         target.name = it.first;
-        target.flip = flipped;
+        target.vflip = vflip;
+        target.hflip = hflip;
 
         target.frames.clear();
         for(unsigned i = 0; i < n; ++i){
-            float x = iX * inCoorsWidth;
-            float y = iY * inCoorsHeight;
-            float wx = x + inCoorsWidth;
-            float hy = y + inCoorsHeight;
-            target.frames.push_back(CR::Vec4<float>(x, y, wx, hy));
+            float x = hflip ? iX * inCoorsWidth + inCoorsWidth : iX * inCoorsWidth;
+            float y = vflip ? iY * inCoorsHeight + inCoorsHeight : iY * inCoorsHeight;
+            float wx = hflip ? iX * inCoorsWidth : iX * inCoorsWidth + inCoorsWidth;
+            float hy = vflip ? iY * inCoorsHeight : iY * inCoorsHeight + inCoorsHeight;
+            target.frames.push_back(CR::Rect<float>(x, y, wx, hy));
 
             if(it.first == "st_sw"){
                 CR::log("%i %f %f %f %f\n", type, x, y, wx, hy);

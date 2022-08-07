@@ -48,22 +48,29 @@ struct Character {
 
 
             // POSITION                                                     // TEXTURE COOR
-            -frameSize.x*0.5f,      -frameSize.y*0.5f,      0,              0,           0,
+            -frameSize.x*0.5f,      -frameSize.y*0.5f,      0,    
 
-            -frameSize.x*0.5f,      frameSize.y*0.5f,       0,              0,          fheight,
+            -frameSize.x*0.5f,      frameSize.y*0.5f,       0,              
 
-            frameSize.x*0.5f,       frameSize.y*0.5f,       0,              fwith,      fheight,
-
-
-            frameSize.x*0.5f,       frameSize.y*0.5f,       0,              fwith,      fheight,
+            frameSize.x*0.5f,       frameSize.y*0.5f,       0,              
 
 
-            frameSize.x*0.5f,       -frameSize.y*0.5f,      0,              fwith,      0,
+            frameSize.x*0.5f,       frameSize.y*0.5f,       0,              
 
-            -frameSize.x*0.5f,      -frameSize.y*0.5f,      0,              0,          0               
+
+            frameSize.x*0.5f,       -frameSize.y*0.5f,      0,              
+
+            -frameSize.x*0.5f,      -frameSize.y*0.5f,      0,              
+        }, {
+          0,           0,
+          0,          fheight,
+          fwith,      fheight,
+          fwith,      fheight,
+          fwith,      0,
+          0,          0               
         });
 
-        this->charShader->load("data/shader/b_char_texture_f.glsl", "data/shader/b_char_texture_v.glsl");
+        this->charShader->load("data/shader/b_cube_texture_f.glsl", "data/shader/b_cube_texture_v.glsl");
         // this->charShader->load("data/shader/b_cube_texture_f.glsl", "data/shader/b_cube_texture_v.glsl");
         this->charShader->findAttrs({ "color", "model", "projection", "image", "view", "frameOffset" });         
 
@@ -82,10 +89,9 @@ struct Character {
             {"model", std::make_shared<CR::Gfx::ShaderAttrMat4>(position)},
             {"view", std::make_shared<CR::Gfx::ShaderAttrMat4>(CR::MAT4Identity)},
             {"projection", std::make_shared<CR::Gfx::ShaderAttrMat4>(CR::MAT4Identity)},
-            {"color", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))},
-            {"frameOffset", std::make_shared<CR::Gfx::ShaderAttrVec2>(CR::Vec2<float>(0.0f))}
+            {"color", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))}
         };    
-        this->transform->fixShaderAttributes({ "image", "model", "view", "projection", "color", "frameOffset" });
+        this->transform->fixShaderAttributes({ "image", "model", "view", "projection", "color" });
                
 
         this->position.set(50, -frameSize.y * 0.25f, -25);
@@ -129,6 +135,15 @@ struct Character {
         game->renderOn([&](CR::Gfx::RenderLayer *layer){
 
             
+            auto &animFrame = this->anim.anims[CR::AnimType::WALKING_EAST].frames[0];
+            CR::Gfx::updateMesh(this->meshFrame, CR::Gfx::VertexRole::TEXCOORD, {
+                animFrame.x,    animFrame.y,
+                animFrame.x,    animFrame.h,
+                animFrame.w,    animFrame.h,
+                animFrame.w,    animFrame.h,
+                animFrame.w,    animFrame.y,
+                animFrame.x,    animFrame.y               
+            });
             
 
             auto mposition = CR::MAT4Identity
@@ -140,8 +155,8 @@ struct Character {
 
 
 
-            static_cast<CR::Gfx::ShaderAttrVec2*>(this->transform->shAttrsValVec[5])->vec[0] = this->anim.anims[CR::AnimType::WALKING_EAST].frames[0].x;
-            static_cast<CR::Gfx::ShaderAttrVec2*>(this->transform->shAttrsValVec[5])->vec[1] = this->anim.anims[CR::AnimType::WALKING_EAST].frames[0].y;
+            // static_cast<CR::Gfx::ShaderAttrVec2*>(this->transform->shAttrsValVec[5])->vec[0] = this->anim.anims[CR::AnimType::WALKING_EAST].frames[0].x;
+            // static_cast<CR::Gfx::ShaderAttrVec2*>(this->transform->shAttrsValVec[5])->vec[1] = this->anim.anims[CR::AnimType::WALKING_EAST].frames[0].y;
             
             // static_cast<CR::Gfx::ShaderAttrVec2*>(this->transform->shAttrsValVec[6])->vec[0] = this->anim.anims[CR::AnimType::STAND_SOUTH_WEST].frames[0].z;
             // static_cast<CR::Gfx::ShaderAttrVec2*>(this->transform->shAttrsValVec[6])->vec[1] = this->anim.anims[CR::AnimType::STAND_SOUTH_WEST].frames[0].w;

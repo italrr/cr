@@ -61,13 +61,20 @@ static CR::Gfx::MeshData buildMesh(float cubeScale, const std::vector<CR::Map::A
             mesh = CR::Gfx::createMesh({
                 // POSITION                             // TEXTURE
                 // TOP
-                -cubeScale,  cubeScale, -cubeScale,     faces[FTB].coors.x,   faces[FTB].size.y,
-                cubeScale,  cubeScale, -cubeScale,     faces[FTB].size.x,    faces[FTB].size.y,
-                cubeScale,  cubeScale,  cubeScale,     faces[FTB].size.x,    faces[FTB].coors.y,
+                -cubeScale,  cubeScale, -cubeScale,
+                cubeScale,  cubeScale, -cubeScale,     
+                cubeScale,  cubeScale,  cubeScale,     
                 
-                cubeScale,  cubeScale,  cubeScale,     faces[FTB].size.x,    faces[FTB].coors.y,
-                -cubeScale,  cubeScale,  cubeScale,     faces[FTB].coors.x,   faces[FTB].coors.y,
-                -cubeScale,  cubeScale, -cubeScale,     faces[FTB].coors.x,   faces[FTB].size.y                
+                cubeScale,  cubeScale,  cubeScale,     
+                -cubeScale,  cubeScale,  cubeScale,     
+                -cubeScale,  cubeScale, -cubeScale,     
+            },{
+                faces[FTB].coors.x,   faces[FTB].size.y,
+                faces[FTB].size.x,    faces[FTB].size.y,
+                faces[FTB].size.x,    faces[FTB].coors.y,
+                faces[FTB].size.x,    faces[FTB].coors.y,
+                faces[FTB].coors.x,   faces[FTB].coors.y,
+                faces[FTB].coors.x,   faces[FTB].size.y                
             });
             mesh.vertn = 6;
         } break;
@@ -77,58 +84,95 @@ static CR::Gfx::MeshData buildMesh(float cubeScale, const std::vector<CR::Map::A
                 // POSITION                             // TEXTURE
 
                 // SOUTH
-                -cubeScale, -cubeScale, -cubeScale,     faces[FTS].coors.x,   faces[FTS].coors.y,
-                cubeScale, -cubeScale, -cubeScale,     faces[FTS].size.x,    faces[FTS].coors.y,
-                cubeScale,  cubeScale, -cubeScale,     faces[FTS].size.x,    faces[FTS].size.y,
+                -cubeScale, -cubeScale, -cubeScale,     
+                cubeScale, -cubeScale, -cubeScale,     
+                cubeScale,  cubeScale, -cubeScale,     
 
-                cubeScale,  cubeScale, -cubeScale,     faces[FTS].size.x,    faces[FTS].size.y,
-                -cubeScale,  cubeScale, -cubeScale,     faces[FTS].coors.x,   faces[FTS].size.y,
-                -cubeScale, -cubeScale, -cubeScale,     faces[FTS].coors.x,   faces[FTS].coors.y,
+                cubeScale,  cubeScale, -cubeScale,     
+                -cubeScale,  cubeScale, -cubeScale,     
+                -cubeScale, -cubeScale, -cubeScale,     
 
                 //  NORTH
-                -cubeScale, -cubeScale,  cubeScale,     faces[FTN].coors.x,   faces[FTN].coors.y,
-                cubeScale, -cubeScale,  cubeScale,     faces[FTN].size.x,    faces[FTN].coors.y,
-                cubeScale,  cubeScale,  cubeScale,     faces[FTN].size.x,    faces[FTN].size.y,
+                -cubeScale, -cubeScale,  cubeScale,     
+                cubeScale, -cubeScale,  cubeScale,     
+                cubeScale,  cubeScale,  cubeScale,     
                 
-                cubeScale,  cubeScale,  cubeScale,     faces[FTN].size.x,    faces[FTN].size.y,
-                -cubeScale,  cubeScale,  cubeScale,     faces[FTN].coors.x,   faces[FTN].size.y,
-                -cubeScale, -cubeScale,  cubeScale,     faces[FTN].coors.x,   faces[FTN].coors.y,
+                cubeScale,  cubeScale,  cubeScale,     
+                -cubeScale,  cubeScale,  cubeScale,     
+                -cubeScale, -cubeScale,  cubeScale,     
 
                 // WEST
-                -cubeScale,  cubeScale,  cubeScale,     faces[FTW].size.x,    faces[FTW].size.y,
-                -cubeScale,  cubeScale, -cubeScale,     faces[FTW].coors.x,   faces[FTW].size.y,
-                -cubeScale, -cubeScale, -cubeScale,     faces[FTW].coors.x,   faces[FTW].coors.y,
+                -cubeScale,  cubeScale,  cubeScale,     
+                -cubeScale,  cubeScale, -cubeScale,     
+                -cubeScale, -cubeScale, -cubeScale,     
 
-                -cubeScale, -cubeScale, -cubeScale,     faces[FTW].coors.x,   faces[FTW].coors.y,
-                -cubeScale, -cubeScale,  cubeScale,     faces[FTW].size.x,    faces[FTW].coors.y,
-                -cubeScale,  cubeScale,  cubeScale,     faces[FTW].size.x,    faces[FTW].size.y,
+                -cubeScale, -cubeScale, -cubeScale,     
+                -cubeScale, -cubeScale,  cubeScale,     
+                -cubeScale,  cubeScale,  cubeScale,     
 
                 // EAST
-                cubeScale,  cubeScale,  cubeScale,     faces[FTE].size.x,    faces[FTE].size.y,
-                cubeScale,  cubeScale, -cubeScale,     faces[FTE].coors.x,   faces[FTE].size.y,
-                cubeScale, -cubeScale, -cubeScale,     faces[FTE].coors.x,   faces[FTE].coors.y,
+                cubeScale,  cubeScale,  cubeScale,    
+                cubeScale,  cubeScale, -cubeScale,     
+                cubeScale, -cubeScale, -cubeScale,     
 
-                cubeScale, -cubeScale, -cubeScale,     faces[FTE].coors.x,   faces[FTE].coors.y,
-                cubeScale, -cubeScale,  cubeScale,     faces[FTE].size.x,    faces[FTE].coors.y,
-                cubeScale,  cubeScale,  cubeScale,     faces[FTE].size.x,    faces[FTE].size.y,
+                cubeScale, -cubeScale, -cubeScale,     
+                cubeScale, -cubeScale,  cubeScale,     
+                cubeScale,  cubeScale,  cubeScale,     
 
                 // TOP
-                -cubeScale, -cubeScale, -cubeScale,     faces[FTT].size.x,    faces[FTT].size.y,
-                cubeScale, -cubeScale, -cubeScale,     faces[FTT].coors.x,   faces[FTT].size.y,
-                cubeScale, -cubeScale,  cubeScale,     faces[FTT].coors.x,   faces[FTT].coors.y,
+                -cubeScale, -cubeScale, -cubeScale,     
+                cubeScale, -cubeScale, -cubeScale,     
+                cubeScale, -cubeScale,  cubeScale,     
 
-                cubeScale, -cubeScale,  cubeScale,     faces[FTT].coors.x,   faces[FTT].coors.y,
-                -cubeScale, -cubeScale,  cubeScale,     faces[FTT].size.x,    faces[FTT].coors.y,
-                -cubeScale, -cubeScale, -cubeScale,     faces[FTT].size.x,    faces[FTT].size.y,
+                cubeScale, -cubeScale,  cubeScale,     
+                -cubeScale, -cubeScale,  cubeScale,     
+                -cubeScale, -cubeScale, -cubeScale,     
 
                 // BOTTOM
-                -cubeScale,  cubeScale, -cubeScale,     faces[FTB].coors.x,   faces[FTB].size.y,
-                cubeScale,  cubeScale, -cubeScale,     faces[FTB].size.x,    faces[FTB].size.y,
-                cubeScale,  cubeScale,  cubeScale,     faces[FTB].size.x,    faces[FTB].coors.y,
+                -cubeScale,  cubeScale, -cubeScale,     
+                cubeScale,  cubeScale, -cubeScale,     
+                cubeScale,  cubeScale,  cubeScale,     
                 
-                cubeScale,  cubeScale,  cubeScale,     faces[FTB].size.x,    faces[FTB].coors.y,
-                -cubeScale,  cubeScale,  cubeScale,     faces[FTB].coors.x,   faces[FTB].coors.y,
-                -cubeScale,  cubeScale, -cubeScale,     faces[FTB].coors.x,   faces[FTB].size.y
+                cubeScale,  cubeScale,  cubeScale,     
+                -cubeScale,  cubeScale,  cubeScale,     
+                -cubeScale,  cubeScale, -cubeScale,     
+            }, {
+faces[FTS].coors.x,   faces[FTS].coors.y,
+faces[FTS].size.x,    faces[FTS].coors.y,
+faces[FTS].size.x,    faces[FTS].size.y,
+faces[FTS].size.x,    faces[FTS].size.y,
+faces[FTS].coors.x,   faces[FTS].size.y,
+faces[FTS].coors.x,   faces[FTS].coors.y,
+faces[FTN].coors.x,   faces[FTN].coors.y,
+faces[FTN].size.x,    faces[FTN].coors.y,
+faces[FTN].size.x,    faces[FTN].size.y,
+faces[FTN].size.x,    faces[FTN].size.y,
+faces[FTN].coors.x,   faces[FTN].size.y,
+faces[FTN].coors.x,   faces[FTN].coors.y,
+faces[FTW].size.x,    faces[FTW].size.y,
+faces[FTW].coors.x,   faces[FTW].size.y,
+faces[FTW].coors.x,   faces[FTW].coors.y,
+faces[FTW].coors.x,   faces[FTW].coors.y,
+faces[FTW].size.x,    faces[FTW].coors.y,
+faces[FTW].size.x,    faces[FTW].size.y,
+faces[FTE].size.x,    faces[FTE].size.y,
+faces[FTE].coors.x,   faces[FTE].size.y,
+faces[FTE].coors.x,   faces[FTE].coors.y,
+faces[FTE].coors.x,   faces[FTE].coors.y,
+faces[FTE].size.x,    faces[FTE].coors.y,
+faces[FTE].size.x,    faces[FTE].size.y,
+faces[FTT].size.x,    faces[FTT].size.y,
+faces[FTT].coors.x,   faces[FTT].size.y,
+faces[FTT].coors.x,   faces[FTT].coors.y,
+faces[FTT].coors.x,   faces[FTT].coors.y,
+faces[FTT].size.x,    faces[FTT].coors.y,
+faces[FTT].size.x,    faces[FTT].size.y,
+faces[FTB].coors.x,   faces[FTB].size.y,
+faces[FTB].size.x,    faces[FTB].size.y,
+faces[FTB].size.x,    faces[FTB].coors.y,
+faces[FTB].size.x,    faces[FTB].coors.y,
+faces[FTB].coors.x,   faces[FTB].coors.y,
+faces[FTB].coors.x,   faces[FTB].size.y
             });
 
         } break;        
@@ -139,107 +183,160 @@ static CR::Gfx::MeshData buildMesh(float cubeScale, const std::vector<CR::Map::A
                 // POSITION                             // TEXTURE
 
                 // SOUTH
-                -cubeScale, -cubeScale, -cubeScale,     faces[FTS].coors.x,   faces[FTS].coors.y,
-                cubeScale, -cubeScale, -cubeScale,     faces[FTS].size.x,    faces[FTS].coors.y,
-                cubeScale,  cubeScale, -cubeScale,     faces[FTS].size.x,    faces[FTS].size.y,
+                -cubeScale, -cubeScale, -cubeScale,     
+                cubeScale, -cubeScale, -cubeScale,     
+                cubeScale,  cubeScale, -cubeScale,     
 
-                cubeScale,  cubeScale, -cubeScale,     faces[FTS].size.x,    faces[FTS].size.y,
-                -cubeScale,  cubeScale, -cubeScale,     faces[FTS].coors.x,   faces[FTS].size.y,
-                -cubeScale, -cubeScale, -cubeScale,     faces[FTS].coors.x,   faces[FTS].coors.y,
+                cubeScale,  cubeScale, -cubeScale,     
+                -cubeScale,  cubeScale, -cubeScale,     
+                -cubeScale, -cubeScale, -cubeScale,     
 
                 //  NORTH
-                -cubeScale, -cubeScale,  cubeScale,     faces[FTN].coors.x,   faces[FTN].coors.y,
-                cubeScale, -cubeScale,  cubeScale,     faces[FTN].size.x,    faces[FTN].coors.y,
-                cubeScale,  cubeScale,  cubeScale,     faces[FTN].size.x,    faces[FTN].size.y,
+                -cubeScale, -cubeScale,  cubeScale,     
+                cubeScale, -cubeScale,  cubeScale,     
+                cubeScale,  cubeScale,  cubeScale,     
                 
-                cubeScale,  cubeScale,  cubeScale,     faces[FTN].size.x,    faces[FTN].size.y,
-                -cubeScale,  cubeScale,  cubeScale,     faces[FTN].coors.x,   faces[FTN].size.y,
-                -cubeScale, -cubeScale,  cubeScale,     faces[FTN].coors.x,   faces[FTN].coors.y,
+                cubeScale,  cubeScale,  cubeScale,     
+                -cubeScale,  cubeScale,  cubeScale,     
+                -cubeScale, -cubeScale,  cubeScale,     
 
                 // WEST
-                -cubeScale,  cubeScale,  cubeScale,     faces[FTW].size.x,    faces[FTW].size.y,
-                -cubeScale,  cubeScale, -cubeScale,     faces[FTW].coors.x,   faces[FTW].size.y,
-                -cubeScale, -cubeScale, -cubeScale,     faces[FTW].coors.x,   faces[FTW].coors.y,
+                -cubeScale,  cubeScale,  cubeScale,     
+                -cubeScale,  cubeScale, -cubeScale,     
+                -cubeScale, -cubeScale, -cubeScale,     
 
-                -cubeScale, -cubeScale, -cubeScale,     faces[FTW].coors.x,   faces[FTW].coors.y,
-                -cubeScale, -cubeScale,  cubeScale,     faces[FTW].size.x,    faces[FTW].coors.y,
-                -cubeScale,  cubeScale,  cubeScale,     faces[FTW].size.x,    faces[FTW].size.y,
+                -cubeScale, -cubeScale, -cubeScale,     
+                -cubeScale, -cubeScale,  cubeScale,     
+                -cubeScale,  cubeScale,  cubeScale,     
 
                 // EAST
-                cubeScale,  cubeScale,  cubeScale,     faces[FTE].size.x,    faces[FTE].size.y,
-                cubeScale,  cubeScale, -cubeScale,     faces[FTE].coors.x,   faces[FTE].size.y,
-                cubeScale, -cubeScale, -cubeScale,     faces[FTE].coors.x,   faces[FTE].coors.y,
+                cubeScale,  cubeScale,  cubeScale,     
+                cubeScale,  cubeScale, -cubeScale,     
+                cubeScale, -cubeScale, -cubeScale,     
 
-                cubeScale, -cubeScale, -cubeScale,     faces[FTE].coors.x,   faces[FTE].coors.y,
-                cubeScale, -cubeScale,  cubeScale,     faces[FTE].size.x,    faces[FTE].coors.y,
-                cubeScale,  cubeScale,  cubeScale,     faces[FTE].size.x,    faces[FTE].size.y,
+                cubeScale, -cubeScale, -cubeScale,     
+                cubeScale, -cubeScale,  cubeScale,     
+                cubeScale,  cubeScale,  cubeScale,     
 
-                // // TOP
-                // -cubeScale, -cubeScale, -cubeScale,     faces[FTT].size.x,    faces[FTT].size.y,
-                // cubeScale, -cubeScale, -cubeScale,     faces[FTT].coors.x,   faces[FTT].size.y,
-                // cubeScale, -cubeScale,  cubeScale,     faces[FTT].coors.x,   faces[FTT].coors.y,
-
-                // cubeScale, -cubeScale,  cubeScale,     faces[FTT].coors.x,   faces[FTT].coors.y,
-                // -cubeScale, -cubeScale,  cubeScale,     faces[FTT].size.x,    faces[FTT].coors.y,
-                // -cubeScale, -cubeScale, -cubeScale,     faces[FTT].size.x,    faces[FTT].size.y,
 
                 // BOTTOM
-                -cubeScale,  cubeScale, -cubeScale,     faces[FTB].coors.x,   faces[FTB].size.y,
-                cubeScale,  cubeScale, -cubeScale,     faces[FTB].size.x,    faces[FTB].size.y,
-                cubeScale,  cubeScale,  cubeScale,     faces[FTB].size.x,    faces[FTB].coors.y,
+                -cubeScale,  cubeScale, -cubeScale,     
+                cubeScale,  cubeScale, -cubeScale,     
+                cubeScale,  cubeScale,  cubeScale,     
                 
-                cubeScale,  cubeScale,  cubeScale,     faces[FTB].size.x,    faces[FTB].coors.y,
-                -cubeScale,  cubeScale,  cubeScale,     faces[FTB].coors.x,   faces[FTB].coors.y,
-                -cubeScale,  cubeScale, -cubeScale,     faces[FTB].coors.x,   faces[FTB].size.y,
+                cubeScale,  cubeScale,  cubeScale,     
+                -cubeScale,  cubeScale,  cubeScale,     
+                -cubeScale,  cubeScale, -cubeScale,     
 
                 // second level
                 // SOUTH
-                -cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                 faces[FTS].coors.x,   faces[FTS].coors.y,
-                cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                  faces[FTS].size.x,    faces[FTS].coors.y,
-                cubeScale + offset.x,  cubeScale + offset.y, -cubeScale + offset.z,                  faces[FTS].size.x,    faces[FTS].size.y,
+                -cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                 
+                cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                  
+                cubeScale + offset.x,  cubeScale + offset.y, -cubeScale + offset.z,                  
 
-                cubeScale + offset.x,  cubeScale + offset.y, -cubeScale + offset.z,                  faces[FTS].size.x,    faces[FTS].size.y,
-                -cubeScale + offset.x,  cubeScale + offset.y, -cubeScale + offset.z,                 faces[FTS].coors.x,   faces[FTS].size.y,
-                -cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                 faces[FTS].coors.x,   faces[FTS].coors.y,      
+                cubeScale + offset.x,  cubeScale + offset.y, -cubeScale + offset.z,                  
+                -cubeScale + offset.x,  cubeScale + offset.y, -cubeScale + offset.z,                 
+                -cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                 
 
 
                 //  NORTH
-                -cubeScale + offset.x, -cubeScale + offset.y,  cubeScale + offset.z,                faces[FTN].coors.x,   faces[FTN].coors.y,
-                cubeScale + offset.x, -cubeScale + offset.y,  cubeScale + offset.z,                 faces[FTN].size.x,    faces[FTN].coors.y,
-                cubeScale + offset.x,  cubeScale + offset.y,  cubeScale + offset.z,                 faces[FTN].size.x,    faces[FTN].size.y,
+                -cubeScale + offset.x, -cubeScale + offset.y,  cubeScale + offset.z,                
+                cubeScale + offset.x, -cubeScale + offset.y,  cubeScale + offset.z,                 
+                cubeScale + offset.x,  cubeScale + offset.y,  cubeScale + offset.z,                 
                 
-                cubeScale + offset.x,  cubeScale + offset.y,  cubeScale + offset.z,                 faces[FTN].size.x,    faces[FTN].size.y,
-                -cubeScale + offset.x,  cubeScale + offset.y,  cubeScale + offset.z,                faces[FTN].coors.x,   faces[FTN].size.y,
-                -cubeScale + offset.x, -cubeScale + offset.y,   cubeScale + offset.z,               faces[FTN].coors.x,   faces[FTN].coors.y,
+                cubeScale + offset.x,  cubeScale + offset.y,  cubeScale + offset.z,                 
+                -cubeScale + offset.x,  cubeScale + offset.y,  cubeScale + offset.z,                
+                -cubeScale + offset.x, -cubeScale + offset.y,   cubeScale + offset.z,               
 
                 // WEST
-                -cubeScale + offset.x,  cubeScale + offset.y,  cubeScale + offset.z,                faces[FTW].size.x,    faces[FTW].size.y,
-                -cubeScale + offset.x,  cubeScale + offset.y, -cubeScale + offset.z,                faces[FTW].coors.x,   faces[FTW].size.y,
-                -cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                faces[FTW].coors.x,   faces[FTW].coors.y,
+                -cubeScale + offset.x,  cubeScale + offset.y,  cubeScale + offset.z,                
+                -cubeScale + offset.x,  cubeScale + offset.y, -cubeScale + offset.z,                
+                -cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                
 
-                -cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                faces[FTW].coors.x,   faces[FTW].coors.y,
-                -cubeScale + offset.x, -cubeScale + offset.y,  cubeScale + offset.z,                faces[FTW].size.x,    faces[FTW].coors.y,
-                -cubeScale + offset.x,  cubeScale + offset.y,  cubeScale + offset.z,                faces[FTW].size.x,    faces[FTW].size.y,       
+                -cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                
+                -cubeScale + offset.x, -cubeScale + offset.y,  cubeScale + offset.z,                
+                -cubeScale + offset.x,  cubeScale + offset.y,  cubeScale + offset.z,                
 
 
                 // EAST
-                cubeScale + offset.x,  cubeScale + offset.y,  cubeScale + offset.z,                 faces[FTE].size.x,    faces[FTE].size.y,
-                cubeScale + offset.x,  cubeScale + offset.y, -cubeScale + offset.z,                 faces[FTE].coors.x,   faces[FTE].size.y,
-                cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                 faces[FTE].coors.x,   faces[FTE].coors.y,
+                cubeScale + offset.x,  cubeScale + offset.y,  cubeScale + offset.z,                 
+                cubeScale + offset.x,  cubeScale + offset.y, -cubeScale + offset.z,                 
+                cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                 
 
-                cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                 faces[FTE].coors.x,   faces[FTE].coors.y,
-                cubeScale + offset.x, -cubeScale + offset.y,  cubeScale + offset.z,                 faces[FTE].size.x,    faces[FTE].coors.y,
-                cubeScale + offset.x,  cubeScale + offset.y,  cubeScale + offset.z,                 faces[FTE].size.x,    faces[FTE].size.y,
+                cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                 
+                cubeScale + offset.x, -cubeScale + offset.y,  cubeScale + offset.z,                 
+                cubeScale + offset.x,  cubeScale + offset.y,  cubeScale + offset.z,                 
 
                 // TOP
-                -cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                faces[FTT].size.x,    faces[FTT].size.y,
-                cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                 faces[FTT].coors.x,   faces[FTT].size.y,
-                cubeScale + offset.x, -cubeScale + offset.y,  cubeScale + offset.z,                 faces[FTT].coors.x,   faces[FTT].coors.y,
+                -cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                
+                cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                 
+                cubeScale + offset.x, -cubeScale + offset.y,  cubeScale + offset.z,                 
 
-                cubeScale + offset.x, -cubeScale + offset.y,  cubeScale + offset.z,                 faces[FTT].coors.x,   faces[FTT].coors.y,
-                -cubeScale + offset.x, -cubeScale + offset.y,  cubeScale + offset.z,                faces[FTT].size.x,    faces[FTT].coors.y,
-                -cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                faces[FTT].size.x,    faces[FTT].size.y,                
+                cubeScale + offset.x, -cubeScale + offset.y,  cubeScale + offset.z,                 
+                -cubeScale + offset.x, -cubeScale + offset.y,  cubeScale + offset.z,                
+                -cubeScale + offset.x, -cubeScale + offset.y, -cubeScale + offset.z,                
 
+            }, {
+                faces[FTS].coors.x,   faces[FTS].coors.y,
+                faces[FTS].size.x,    faces[FTS].coors.y,
+                faces[FTS].size.x,    faces[FTS].size.y,
+                faces[FTS].size.x,    faces[FTS].size.y,
+                faces[FTS].coors.x,   faces[FTS].size.y,
+                faces[FTS].coors.x,   faces[FTS].coors.y,
+                faces[FTN].coors.x,   faces[FTN].coors.y,
+                faces[FTN].size.x,    faces[FTN].coors.y,
+                faces[FTN].size.x,    faces[FTN].size.y,
+                faces[FTN].size.x,    faces[FTN].size.y,
+                faces[FTN].coors.x,   faces[FTN].size.y,
+                faces[FTN].coors.x,   faces[FTN].coors.y,
+                faces[FTW].size.x,    faces[FTW].size.y,
+                faces[FTW].coors.x,   faces[FTW].size.y,
+                faces[FTW].coors.x,   faces[FTW].coors.y,
+                faces[FTW].coors.x,   faces[FTW].coors.y,
+                faces[FTW].size.x,    faces[FTW].coors.y,
+                faces[FTW].size.x,    faces[FTW].size.y,
+                faces[FTE].size.x,    faces[FTE].size.y,
+                faces[FTE].coors.x,   faces[FTE].size.y,
+                faces[FTE].coors.x,   faces[FTE].coors.y,
+                faces[FTE].coors.x,   faces[FTE].coors.y,
+                faces[FTE].size.x,    faces[FTE].coors.y,
+                faces[FTE].size.x,    faces[FTE].size.y,
+                faces[FTB].coors.x,   faces[FTB].size.y,
+                faces[FTB].size.x,    faces[FTB].size.y,
+                faces[FTB].size.x,    faces[FTB].coors.y,
+                faces[FTB].size.x,    faces[FTB].coors.y,
+                faces[FTB].coors.x,   faces[FTB].coors.y,
+                faces[FTB].coors.x,   faces[FTB].size.y,
+                faces[FTS].coors.x,   faces[FTS].coors.y,
+                faces[FTS].size.x,    faces[FTS].coors.y,
+                faces[FTS].size.x,    faces[FTS].size.y,
+                faces[FTS].size.x,    faces[FTS].size.y,
+                faces[FTS].coors.x,   faces[FTS].size.y,
+                faces[FTS].coors.x,   faces[FTS].coors.y,      
+                faces[FTN].coors.x,   faces[FTN].coors.y,
+                faces[FTN].size.x,    faces[FTN].coors.y,
+                faces[FTN].size.x,    faces[FTN].size.y,
+                faces[FTN].size.x,    faces[FTN].size.y,
+                faces[FTN].coors.x,   faces[FTN].size.y,
+                faces[FTN].coors.x,   faces[FTN].coors.y,
+                faces[FTW].size.x,    faces[FTW].size.y,
+                faces[FTW].coors.x,   faces[FTW].size.y,
+                faces[FTW].coors.x,   faces[FTW].coors.y,
+                faces[FTW].coors.x,   faces[FTW].coors.y,
+                faces[FTW].size.x,    faces[FTW].coors.y,
+                faces[FTW].size.x,    faces[FTW].size.y,  
+                faces[FTE].size.x,    faces[FTE].size.y,   
+                faces[FTE].coors.x,   faces[FTE].size.y,  
+                faces[FTE].coors.x,   faces[FTE].coors.y,
+                faces[FTE].coors.x,   faces[FTE].coors.y,
+                faces[FTE].size.x,    faces[FTE].coors.y,
+                faces[FTE].size.x,    faces[FTE].size.y,
+                faces[FTT].size.x,    faces[FTT].size.y,
+                faces[FTT].coors.x,   faces[FTT].size.y,
+                faces[FTT].coors.x,   faces[FTT].coors.y,
+                faces[FTT].coors.x,   faces[FTT].coors.y,
+                faces[FTT].size.x,    faces[FTT].coors.y,
+                faces[FTT].size.x,    faces[FTT].size.y,                
             });
             // mesh.vertn = 60;
         } break;

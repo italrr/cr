@@ -98,16 +98,20 @@
                 }
             }
 
+            namespace VertexRole {
+                enum VertexRole : unsigned {
+                    POSITION = 0,
+                    TEXCOORD
+                };
+            }
+
             struct MeshData {
-                // unsigned vboPos;
-                // unsigned vboTex;
-                unsigned vbo;
+                unsigned vbo[2];
                 unsigned vao;
                 unsigned ebo;
                 unsigned vertn;
                 MeshData(){
-                    // vboPos = 0;
-                    vbo = 0;
+                    vbo[0] = vbo[1] = 0;
                     vao = 0;
                     ebo = 0;
                     vertn = 0;
@@ -266,7 +270,8 @@
             std::shared_ptr<FramebufferObj> createFramebuffer(unsigned w, unsigned h);
             bool deleteFramebuffer(unsigned id);
             
-            CR::Gfx::MeshData createMesh(const std::vector<float> &vertices);
+            CR::Gfx::MeshData createMesh(const std::vector<float> &pos, const std::vector<float> &tex);
+            bool updateMesh(CR::Gfx::MeshData &md, unsigned vrole, const std::vector<float> &vertex);
 
             unsigned createShader(const std::string &vert, const std::string &frag);
             int findShaderAttr(unsigned shaderId, const std::string &name);

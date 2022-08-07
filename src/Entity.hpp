@@ -194,8 +194,9 @@
 
         struct AnimFrame {
             std::string name;
-            bool flip;
-            std::vector<CR::Vec4<float>> frames;
+            bool vflip;
+            bool hflip;
+            std::vector<CR::Rect<float>> frames;
             AnimFrame();
         };
 

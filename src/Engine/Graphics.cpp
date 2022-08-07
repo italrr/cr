@@ -554,14 +554,24 @@ bool CR::Gfx::init(){
     trans2DTexture.fixShaderAttributes({"image", "model", "projection", "color"});
 
     mBRect = createMesh({ 
-        // pos              // tex
-        0.0f, 1.0f, 0.0f,   0.0f, 1.0f,
-        1.0f, 0.0f, 0.0f,   1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f,   0.0f, 0.0f, 
+        // pos
+        0.0f, 1.0f, 0.0f,
+        1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f,
     
-        0.0f, 1.0f, 0.0f,   0.0f, 1.0f,
-        1.0f, 1.0f, 0.0f,   1.0f, 1.0f,
-        1.0f, 0.0f, 0.0f,   1.0f, 0.0f
+        0.0f, 1.0f, 0.0f,
+        1.0f, 1.0f, 0.0f,
+        1.0f, 0.0f, 0.0f,
+    },
+    {
+        // tex
+        0.0f, 1.0f,
+        1.0f, 0.0f,
+        0.0f, 0.0f, 
+    
+        0.0f, 1.0f,
+        1.0f, 1.0f,
+        1.0f, 0.0f        
     });
 
 
@@ -859,25 +869,46 @@ bool CR::Gfx::deleteFramebuffer(unsigned id){
     return true;    
 }
 
+bool CR::Gfx::updateMesh(CR::Gfx::MeshData &md, unsigned vrole, const std::vector<float> &vertex){
 
-CR::Gfx::MeshData CR::Gfx::createMesh(const std::vector<float> &vertices){
+    if(vrole != VertexRole::POSITION && vrole != VertexRole::TEXCOORD){
+        return false;
+    }
 
-    unsigned vbo, vao;
+    glBindBuffer(GL_ARRAY_BUFFER, md.vbo[vrole]);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, vertex.size() * sizeof(float), &vertex[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    return true;
+}
+
+
+CR::Gfx::MeshData CR::Gfx::createMesh(const std::vector<float> &pos, const std::vector<float> &tex){
+
+    unsigned vbo[2], vao;
 
     glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
+    glGenBuffers(2, vbo);
     
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
+    // GENERATE POSITION BUFFER
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[VertexRole::POSITION]);
+    glBufferData(GL_ARRAY_BUFFER, pos.size() * sizeof(float), &pos[0], GL_STATIC_DRAW);
+
+    // GENERATE TEXTURE COORDINATES
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[VertexRole::TEXCOORD]);
+    glBufferData(GL_ARRAY_BUFFER, pos.size() * sizeof(float), &tex[0], GL_DYNAMIC_DRAW);
+
 
     glBindVertexArray(vao);
 
-    // position
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    // BIND POSITION TO VAO
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[VertexRole::POSITION]);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // texcoords
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    // BIND TEXCOORDS TO VAO
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[VertexRole::TEXCOORD]);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);    
     
 
@@ -887,8 +918,10 @@ CR::Gfx::MeshData CR::Gfx::createMesh(const std::vector<float> &vertices){
 
     CR::Gfx::MeshData md;
     md.vao = vao;
-    md.vbo = vbo;
-    md.vertn = static_cast<float>(vertices.size()) / 5.0f; // assume a vertex is 5 floats
+    // memcpy(md.vbo, vbo, sizeof(vbo));
+    md.vbo[0] = vbo[0];
+    md.vbo[1] = vbo[1];
+    md.vertn = static_cast<float>(pos.size()) / 3.0f;
     return md;
 }
 
