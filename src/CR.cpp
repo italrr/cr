@@ -92,41 +92,112 @@ struct Character {
 
     void render(bool nagger = false){
 
+        static auto currentAnim = CR::AnimType::STAND_SOUTH;
+        static auto frame = 0;
+        static float inCoorsWidth = 90.0f / 1350.0f;
+        static float inCoorsHeight = 90.0f / 1350.0f;
+        static auto lastF = CR::ticks();        
+        static float rate = 1.0f;
+        static float speedo = 450 * rate;
+
+        if(CR::Input::keyboardCheck(CR::Input::Key::SPACE)){
+            rate = 5.0f;
+            speedo = 450 * rate;
+        }else{
+            rate = 1.0f;
+            speedo = 450;
+        }
+
+        if(CR::Input::keyboardCheck(CR::Input::Key::W) && CR::Input::keyboardCheck(CR::Input::Key::A)){
+            position.z += CR::getDelta() * speedo;
+            position.x -= CR::getDelta() * speedo;
+            this->lookAt = CR::CharFace::NORTH_WEST;
+            currentAnim = CR::AnimType::WALKING_NORTH_WEST;
+        }else     
+        if(CR::Input::keyboardCheck(CR::Input::Key::W) && CR::Input::keyboardCheck(CR::Input::Key::D)){
+            position.z += CR::getDelta() * speedo;
+            position.x += CR::getDelta() * speedo;
+            this->lookAt = CR::CharFace::NORTH_EAST;
+            currentAnim = CR::AnimType::WALKING_NORTH_EAST;
+        }else 
         if(CR::Input::keyboardCheck(CR::Input::Key::W)){
-            position.z += CR::getDelta() * 5000;
+            position.z += CR::getDelta() * speedo;
             this->lookAt = CR::CharFace::NORTH;
-        }
+            currentAnim = CR::AnimType::WALKING_NORTH;
+        }else
+           
+
+        if(CR::Input::keyboardCheck(CR::Input::Key::S) && CR::Input::keyboardCheck(CR::Input::Key::A)){
+            position.z -= CR::getDelta() * speedo;
+            position.x -= CR::getDelta() * speedo;
+            this->lookAt = CR::CharFace::SOUTH_WEST;
+            currentAnim = CR::AnimType::WALKING_SOUTH_WEST;
+        }else 
+        if(CR::Input::keyboardCheck(CR::Input::Key::S) && CR::Input::keyboardCheck(CR::Input::Key::D)){
+            position.z -= CR::getDelta() * speedo;
+            position.x += CR::getDelta() * speedo;
+            this->lookAt = CR::CharFace::SOUTH_EAST;
+            currentAnim = CR::AnimType::WALKING_SOUTH_EAST;
+        }else  
         if(CR::Input::keyboardCheck(CR::Input::Key::S)){
-            position.z -= CR::getDelta() * 5000;
+            position.z -= CR::getDelta() * speedo;
             this->lookAt = CR::CharFace::SOUTH;
-        }
+            currentAnim = CR::AnimType::WALKING_SOUTH;
+        }else       
         if(CR::Input::keyboardCheck(CR::Input::Key::A)){
-            position.x -= CR::getDelta() * 5000;
-            this->lookAt = CR::CharFace::EAST;
-        }
-        if(CR::Input::keyboardCheck(CR::Input::Key::D)){
-            position.x += CR::getDelta() * 5000;
+            position.x -= CR::getDelta() * speedo;
             this->lookAt = CR::CharFace::WEST;
-        }               
+            currentAnim = CR::AnimType::WALKING_WEST;
+        }else
+        if(CR::Input::keyboardCheck(CR::Input::Key::D)){
+            position.x += CR::getDelta() * speedo;
+            this->lookAt = CR::CharFace::EAST;
+            currentAnim = CR::AnimType::WALKING_EAST;
+        }else{
+            frame = 0;
+            switch(lookAt){
+                case CR::CharFace::NORTH: {
+                    currentAnim = CR::AnimType::STAND_NORTH;
+                } break;
+                case CR::CharFace::NORTH_EAST: {
+                    currentAnim = CR::AnimType::STAND_NORTH_EAST;
+                } break;
+                case CR::CharFace::NORTH_WEST: {
+                    currentAnim = CR::AnimType::STAND_NORTH_WEST;
+                } break;    
+                case CR::CharFace::SOUTH_EAST: {
+                    currentAnim = CR::AnimType::STAND_SOUTH_EAST;
+                } break;
+                case CR::CharFace::SOUTH_WEST: {
+                    currentAnim = CR::AnimType::STAND_SOUTH_WEST;
+                } break; 
+                case CR::CharFace::SOUTH: {
+                    currentAnim = CR::AnimType::STAND_SOUTH;
+                } break;      
+                case CR::CharFace::EAST: {
+                    currentAnim = CR::AnimType::STAND_EAST;
+                } break;          
+                case CR::CharFace::WEST: {
+                    currentAnim = CR::AnimType::STAND_WEST;
+                } break;                                 
+            }
+        }           
+
+
 
 
         game->camera.position = this->position - CR::Vec3<float>(CR::Gfx::getWidth(), CR::Gfx::getHeight(), -CR::Gfx::getHeight()) * CR::Vec3<float>(0.5f);         
 
-        static float inCoorsWidth = 90.0f / 1350.0f;
-        static float inCoorsHeight = 90.0f / 1350.0f;
-        static auto lastF = CR::ticks();
-        static auto frame = 0;
-
-        if(CR::ticks()-lastF > this->anim.framerate){
+        if(CR::ticks()-lastF > static_cast<float>(this->anim.framerate) * (1.0f / rate)){
             ++frame;
-            frame = frame % this->anim.anims[CR::AnimType::WALKING_EAST].frames.size();
+            frame = frame % this->anim.anims[currentAnim].frames.size();
             lastF = CR::ticks();
         }
 
         game->renderOn([&](CR::Gfx::RenderLayer *layer){
 
             
-            auto &animFrame = this->anim.anims[CR::AnimType::WALKING_EAST].frames[frame];
+            auto &animFrame = this->anim.anims[currentAnim].frames[frame];
             CR::Gfx::updateMesh(this->meshFrame, CR::Gfx::VertexRole::TEXCOORD, {
                 animFrame.x,    animFrame.y,
                 animFrame.x,    animFrame.h,

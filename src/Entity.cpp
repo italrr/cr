@@ -42,21 +42,17 @@ bool CR::EntityAnim::load(const std::string &path){
         auto &frame = it.second;
         unsigned type = CR::AnimType::fkeyToVal(it.first);
         auto &target = this->anims[type];
-        
         float iX = frame.get("x").toInt();
         float iY = frame.get("y").toInt();
         unsigned n = frame.get("n").toInt();
         bool hflip = frame.get("hf").toInt();
         bool vflip = frame.get("vf").toInt();
         unsigned dir = frame.get("dir").toInt();
-
         target.name = it.first;
         target.vflip = vflip;
         target.hflip = hflip;
         target.dir = dir;
-
         target.frames.clear();
-
         float xCursor = 0;
         float yCursor = 0;
         for(unsigned i = 0; i < n; ++i){
@@ -65,8 +61,8 @@ bool CR::EntityAnim::load(const std::string &path){
             float wx = xCursor  + (hflip ? iX * inCoorsWidth : iX * inCoorsWidth + inCoorsWidth);
             float hy = yCursor  + (vflip ? iY * inCoorsHeight : iY * inCoorsHeight + inCoorsHeight);
             target.frames.push_back(CR::Rect<float>(x, y, wx, hy));
-            xCursor += dir == 0 ? inCoorsWidth : 0;
-            yCursor += dir == 1 ? inCoorsHeight : 0;
+            xCursor += dir == 0 || dir == 3 ? inCoorsWidth : 0;
+            yCursor += dir == 1 || dir == 3 ? inCoorsHeight : 0;
         }
 
     }
