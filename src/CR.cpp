@@ -37,17 +37,7 @@ struct Character {
         float fwith = inTexSize.x / static_cast<float>(atlas->getRsc()->size.x);
         float fheight = inTexSize.y / static_cast<float>(atlas->getRsc()->size.y);
         this->meshFrame = CR::Gfx::createMesh({
-            // // POSITION                                                // TEXTURE COOR
-            // -frameSize.x*0.5f,    frameSize.y*0.5f,     0,            fwith,    fheight,
-            // -frameSize.x*0.5f,   -frameSize.y*0.5f,     0,            fwith,    0.0,
-            // frameSize.x*0.5f,    -frameSize.y*0.5f,     0,            0.0,      0.0,
-
-            // frameSize.x*0.5f,    -frameSize.y*0.5f,     0,            0.0,      0.0,
-            // frameSize.x*0.5f,    frameSize.y*0.5f,      0,            0.0,      fheight,
-            // -frameSize.x*0.5f,   frameSize.y*0.5f,      0,            fwith,    fheight        
-
-
-            // POSITION                                                     // TEXTURE COOR
+            // POSITION
             -frameSize.x*0.5f,      -frameSize.y*0.5f,      0,    
 
             -frameSize.x*0.5f,      frameSize.y*0.5f,       0,              
@@ -62,16 +52,16 @@ struct Character {
 
             -frameSize.x*0.5f,      -frameSize.y*0.5f,      0,              
         }, {
-          0,           0,
-          0,          fheight,
-          fwith,      fheight,
-          fwith,      fheight,
-          fwith,      0,
-          0,          0               
+            // TEXTURE COORs
+            0,         0,
+            0,         1.0f,
+            1.0f,      1.0f,
+            1.0f,      1.0f,
+            1.0f,      0,
+            0,         0               
         });
 
         this->charShader->load("data/shader/b_cube_texture_f.glsl", "data/shader/b_cube_texture_v.glsl");
-        // this->charShader->load("data/shader/b_cube_texture_f.glsl", "data/shader/b_cube_texture_v.glsl");
         this->charShader->findAttrs({ "color", "model", "projection", "image", "view", "frameOffset" });         
 
         this->transform = new CR::Gfx::Transform();
@@ -124,18 +114,19 @@ struct Character {
 
         static float inCoorsWidth = 90.0f / 1350.0f;
         static float inCoorsHeight = 90.0f / 1350.0f;
-        static bool yes = false;
+        static auto lastF = CR::ticks();
+        static auto frame = 0;
 
-        if(!yes){
-            CR::log("%f %f\n", inCoorsWidth, inCoorsHeight);
-            yes = true;
+        if(CR::ticks()-lastF > this->anim.framerate){
+            ++frame;
+            frame = frame % this->anim.anims[CR::AnimType::WALKING_EAST].frames.size();
+            lastF = CR::ticks();
         }
-
 
         game->renderOn([&](CR::Gfx::RenderLayer *layer){
 
             
-            auto &animFrame = this->anim.anims[CR::AnimType::WALKING_EAST].frames[0];
+            auto &animFrame = this->anim.anims[CR::AnimType::WALKING_EAST].frames[frame];
             CR::Gfx::updateMesh(this->meshFrame, CR::Gfx::VertexRole::TEXCOORD, {
                 animFrame.x,    animFrame.y,
                 animFrame.x,    animFrame.h,
@@ -154,28 +145,7 @@ struct Character {
             static_cast<CR::Gfx::ShaderAttrMat4*>(this->transform->shAttrsValVec[1])->mat = mposition;
 
 
-
-            // static_cast<CR::Gfx::ShaderAttrVec2*>(this->transform->shAttrsValVec[5])->vec[0] = this->anim.anims[CR::AnimType::WALKING_EAST].frames[0].x;
-            // static_cast<CR::Gfx::ShaderAttrVec2*>(this->transform->shAttrsValVec[5])->vec[1] = this->anim.anims[CR::AnimType::WALKING_EAST].frames[0].y;
-            
-            // static_cast<CR::Gfx::ShaderAttrVec2*>(this->transform->shAttrsValVec[6])->vec[0] = this->anim.anims[CR::AnimType::STAND_SOUTH_WEST].frames[0].z;
-            // static_cast<CR::Gfx::ShaderAttrVec2*>(this->transform->shAttrsValVec[6])->vec[1] = this->anim.anims[CR::AnimType::STAND_SOUTH_WEST].frames[0].w;
-
-
-            // static_cast<CR::Gfx::ShaderAttrVec2*>(this->transform->shAttrsValVec[5])->vec[0] = 0;
-            // static_cast<CR::Gfx::ShaderAttrVec2*>(this->transform->shAttrsValVec[5])->vec[1] = 0;
- 
-
-
-
-
-
-
             layer->add(CR::Gfx::Draw::Mesh(this->meshFrame, this->transform));
-
-
-
-
         });  
 
     };

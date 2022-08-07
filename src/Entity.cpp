@@ -48,23 +48,25 @@ bool CR::EntityAnim::load(const std::string &path){
         unsigned n = frame.get("n").toInt();
         bool hflip = frame.get("hf").toInt();
         bool vflip = frame.get("vf").toInt();
+        unsigned dir = frame.get("dir").toInt();
 
         target.name = it.first;
         target.vflip = vflip;
         target.hflip = hflip;
+        target.dir = dir;
 
         target.frames.clear();
+
+        float xCursor = 0;
+        float yCursor = 0;
         for(unsigned i = 0; i < n; ++i){
-            float x = hflip ? iX * inCoorsWidth + inCoorsWidth : iX * inCoorsWidth;
-            float y = vflip ? iY * inCoorsHeight + inCoorsHeight : iY * inCoorsHeight;
-            float wx = hflip ? iX * inCoorsWidth : iX * inCoorsWidth + inCoorsWidth;
-            float hy = vflip ? iY * inCoorsHeight : iY * inCoorsHeight + inCoorsHeight;
+            float x = xCursor   + (hflip ? iX * inCoorsWidth + inCoorsWidth : iX * inCoorsWidth);
+            float y = yCursor   + (vflip ? iY * inCoorsHeight + inCoorsHeight : iY * inCoorsHeight);
+            float wx = xCursor  + (hflip ? iX * inCoorsWidth : iX * inCoorsWidth + inCoorsWidth);
+            float hy = yCursor  + (vflip ? iY * inCoorsHeight : iY * inCoorsHeight + inCoorsHeight);
             target.frames.push_back(CR::Rect<float>(x, y, wx, hy));
-
-            if(it.first == "st_sw"){
-                CR::log("%i %f %f %f %f\n", type, x, y, wx, hy);
-            }
-
+            xCursor += dir == 0 ? inCoorsWidth : 0;
+            yCursor += dir == 1 ? inCoorsHeight : 0;
         }
 
     }

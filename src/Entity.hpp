@@ -196,6 +196,7 @@
             std::string name;
             bool vflip;
             bool hflip;
+            unsigned dir;
             std::vector<CR::Rect<float>> frames;
             AnimFrame();
         };
