@@ -884,6 +884,11 @@ bool CR::Gfx::updateMesh(CR::Gfx::MeshData &md, unsigned vrole, const std::vecto
 
 
 CR::Gfx::MeshData CR::Gfx::createMesh(const std::vector<float> &pos, const std::vector<float> &tex){
+    return CR::Gfx::createMesh(pos, tex, VertexStoreType::STATIC, VertexStoreType::STATIC);
+}
+
+
+CR::Gfx::MeshData CR::Gfx::createMesh(const std::vector<float> &pos, const std::vector<float> &tex, unsigned vPosStType, unsigned vTexStType){
 
     unsigned vbo[2], vao;
 
@@ -892,11 +897,11 @@ CR::Gfx::MeshData CR::Gfx::createMesh(const std::vector<float> &pos, const std::
     
     // GENERATE POSITION BUFFER
     glBindBuffer(GL_ARRAY_BUFFER, vbo[VertexRole::POSITION]);
-    glBufferData(GL_ARRAY_BUFFER, pos.size() * sizeof(float), &pos[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, pos.size() * sizeof(float), &pos[0], vPosStType == VertexStoreType::DYNAMIC ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 
     // GENERATE TEXTURE COORDINATES
     glBindBuffer(GL_ARRAY_BUFFER, vbo[VertexRole::TEXCOORD]);
-    glBufferData(GL_ARRAY_BUFFER, pos.size() * sizeof(float), &tex[0], GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, pos.size() * sizeof(float), &tex[0], vTexStType == VertexStoreType::DYNAMIC ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 
 
     glBindVertexArray(vao);

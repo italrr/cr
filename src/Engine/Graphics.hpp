@@ -105,6 +105,14 @@
                 };
             }
 
+            namespace VertexStoreType {
+                enum VertexStoreType : unsigned {
+                    STATIC = 1,
+                    DYNAMIC = 2
+                };
+
+            }
+
             struct MeshData {
                 unsigned vbo[2];
                 unsigned vao;
@@ -271,6 +279,7 @@
             bool deleteFramebuffer(unsigned id);
             
             CR::Gfx::MeshData createMesh(const std::vector<float> &pos, const std::vector<float> &tex);
+            CR::Gfx::MeshData createMesh(const std::vector<float> &pos, const std::vector<float> &tex, unsigned vPosStType, unsigned vTexStType);
             bool updateMesh(CR::Gfx::MeshData &md, unsigned vrole, const std::vector<float> &vertex);
 
             unsigned createShader(const std::string &vert, const std::string &frag);

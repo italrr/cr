@@ -59,10 +59,10 @@ struct Character {
             1.0f,      1.0f,
             1.0f,      0,
             0,         0               
-        });
+        }, CR::Gfx::VertexStoreType::STATIC, CR::Gfx::VertexStoreType::DYNAMIC);
 
         this->charShader->load("data/shader/b_cube_texture_f.glsl", "data/shader/b_cube_texture_v.glsl");
-        this->charShader->findAttrs({ "color", "model", "projection", "image", "view", "frameOffset" });         
+        this->charShader->findAttrs({ "color", "model", "projection", "image", "view" });         
 
         this->transform = new CR::Gfx::Transform();
         this->transform->shader = charShader;
@@ -99,6 +99,7 @@ struct Character {
         static auto lastF = CR::ticks();        
         static float rate = 1.0f;
         static float speedo = 450 * rate;
+
 
         if(CR::Input::keyboardCheck(CR::Input::Key::SPACE)){
             rate = 5.0f;
@@ -187,6 +188,21 @@ struct Character {
 
 
         game->camera.position = this->position - CR::Vec3<float>(CR::Gfx::getWidth(), CR::Gfx::getHeight(), -CR::Gfx::getHeight()) * CR::Vec3<float>(0.5f);         
+
+
+
+        auto diff = (game->camera.getCenter());
+
+        auto normal = diff.normalize();
+
+
+        // auto theta = CR::Math::asin(normal.dot(front));
+        auto theta = CR::Math::degs(CR::Math::atan(game->camera.targetBias.z, game->camera.targetBias.x));
+
+        CR::log("%f\n", theta);
+
+
+
 
         if(CR::ticks()-lastF > static_cast<float>(this->anim.framerate) * (1.0f / rate)){
             ++frame;
