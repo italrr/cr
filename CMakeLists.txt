@@ -16,6 +16,7 @@ set (cr_src
     src/Engine/Types.cpp
     src/Engine/Input.cpp
     src/Engine/Shader.cpp
+    src/Engine/Network.cpp
     src/Engine/Texture.cpp
     src/Engine/Resource.cpp
     src/Engine/3rdparty/glad.c
@@ -40,7 +41,7 @@ IF(LINUX)
 ENDIF(LINUX)
 
 IF(MINGW)
-	target_link_libraries(cr_bin -m64 -lglfw3 -pthread -lgdi32 -lopengl32 -lassimp -lz)
+	target_link_libraries(cr_bin -m64 -lglfw3 -pthread -lgdi32 -lopengl32 -lassimp -lz -lws2_32)
 ENDIF(MINGW)
 
 # Apple most likely won't work

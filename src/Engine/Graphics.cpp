@@ -74,6 +74,9 @@ double CR::getDelta(){
 void __CR_init_input(GLFWwindow *window);
 void __CR_end_input();
 
+void __CR_init_network();
+void __CR_end_network();
+
 void __CR_init_job();
 void __CR_end_job();
 void __CR_update_job();
@@ -537,6 +540,7 @@ bool CR::Gfx::init(){
     glfwSwapInterval(1);
     __CR_init_input(window);
     __CR_init_job();
+    __CR_init_network();
 
     // basic rectangle for 2d rendering
     shBRect->load("data/shader/b_rect_texture_f.glsl", "data/shader/b_rect_texture_v.glsl");
@@ -744,6 +748,7 @@ void CR::Gfx::end(){
 void CR::Gfx::onEnd(){
     running = false;
     __CR_end_input();
+    __CR_end_network();
     __CR_end_job();    
     CR::log("Bye!\n");
 }
