@@ -1,5 +1,5 @@
-#ifndef CR_ENTITY_HPP
-    #define CR_ENTITY_HPP
+#ifndef CR_GAME_ENTITY_HPP
+    #define CR_GAME_ENTITY_HPP
 
     #include "Engine/Types.hpp"
     #include "Engine/Graphics.hpp"

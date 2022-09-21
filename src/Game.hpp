@@ -2,20 +2,23 @@
     #define CR_GAME_BASE_HPP
 
     #include "Engine/Types.hpp"
+    #include "Engine/Tools.hpp"
 
 
     namespace CR {
-
         
-        typedef uint8   T_OBJSIG;
-        typedef uint8   T_ENTTYPE;
-        typedef uint8   T_ENTID;
-        typedef uint16  T_FRAME;
-        typedef uint16  T_FRAMEORD;
-        typedef uint32  T_WORLDPOS;
-        typedef uint64  T_TIME;
+        typedef uint8       T_OBJSIG;
+        typedef uint8       T_ENTTYPE;
+        typedef uint8       T_STATUS;
+        typedef uint16      T_OBJID;
+        typedef uint16      T_FRAME;
+        typedef uint32      T_FRAMEORD;
+        typedef uint32      T_WORLDPOS;
+        typedef uint64      T_TIME;
+        typedef uint8       T_VERSION_SEG;
 
-        static const T_ENTID OBJ_ID_INVALID = 0;
+        static const T_OBJID OBJ_ID_INVALID = 0;
+        static const T_VERSION_SEG GAME_VERSION[3] =  { 0, 0, 0 };
 
 
         namespace ObjSigType {
@@ -24,8 +27,22 @@
                 PROP,
                 ENTITY,
                 INTERACTABLE,
-                EVENT_TRIGGER
+                TRIGGER
             };
+            static std::string str(T_OBJSIG t){
+                switch(t){
+                    case PROP:
+                        return "PROP";
+                    case ENTITY:
+                        return "ENTITY";
+                    case INTERACTABLE:
+                        return "INTERACTABLE";
+                    case TRIGGER:
+                        return "TRIGGER";   
+                    default:
+                        return "UNDEFINED";
+                }
+            }
         }
 
         namespace EntityType {
@@ -40,21 +57,32 @@
         namespace FrameType {
             enum FrameType : T_FRAME {
                 UNDEFINED = 0,
-                PLAYER_JOINS,
-                PLAYER_DISCONNECT,
-                PLAYER_INPUT,
-                PLAYER_CHAT_MESSAGE,
-                PLAYER_USE_ITEM,
-                PLAYER_COMMAND_ACTION,
-                PLAYER_KICK,
 
-                OBJECT_CREATE,
-                OBJECT_DESTROY,
-                OBJECT_MOVE,
-                ENTITY_STATE_CHANGE,
-                ENTITY_STATUS_CHANGE,
-                ENTITY_DAMAGE,
-                ENTITY_KILL
+                GAME_CLOCK_TICK,
+                GAME_SIM_CREATED,
+                GAME_SIM_STARTED,
+                GAME_SIM_ENDED,
+                GAME_SIM_MESSAGE,
+                GAME_SIM_SETTING_CHANGED,
+
+                WORLD_WEATHER_STATUS,
+
+                CLIENT_CONNECTED,
+                CLIENT_DISCONNECTED,
+
+                PLAYER_CHAT_MESSAGE,
+                PLAYER_JOINED,
+                PLAYER_KICKED,
+
+                OBJECT_CREATED,
+                OBJECT_DESTROYED,
+                OBJECT_MOVED,
+
+                ENTITY_STATE_CHANGED,
+                ENTITY_STATUS_CHANGED,
+                ENTITY_DAMAGED,
+                ENTITY_KILLED,
+                ENTITY_MOVED
             };
         }
 
@@ -72,13 +100,16 @@
             }
         };
 
+        struct World;
         struct Object {
             
-            T_ENTID id;
+            T_OBJID id;
             T_OBJSIG sigType;
             std::string name;
             std::shared_ptr<GridLoc> loc;
             bool solid;
+            bool destroyed;
+            CR::World *world;            
 
             Object(){
                 this->id = OBJ_ID_INVALID; 
@@ -86,6 +117,7 @@
                 this->loc = std::make_shared<GridLoc>(GridLoc());
                 this->name = "NO_NAME";
                 this->solid = false;
+                this->world = NULL;
             }
 
             virtual void onCreate(){
@@ -107,9 +139,30 @@
 
         struct Frame {
             T_FRAME type;
+            T_FRAMEORD tick;
             T_FRAMEORD order;
-            T_TIME createdAt;
+            T_TIME time;
+            std::string msg;
+            std::vector<T_OBJID> affEnt;
+            CR::SmallPacket data;
         };
+
+        static std::shared_ptr<Frame> createFrame(T_FRAME type){
+            auto frame = std::make_shared<Frame>(Frame());
+            frame->type = type;
+            frame->order = 0;
+            frame->time = CR::ticks();
+            return frame;
+        }
+
+        static std::shared_ptr<Frame> createFrame(const std::string &msg){
+            auto frame = std::make_shared<Frame>(Frame());
+            frame->type = FrameType::GAME_SIM_MESSAGE;
+            frame->order = 0;
+            frame->msg = msg;
+            frame->time = CR::ticks();
+            return frame;
+        }        
     }
 
 #endif

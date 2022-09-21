@@ -1,5 +1,5 @@
-#ifndef CR_MAP_HPP
-    #define CR_MAP_HPP
+#ifndef CR_GAME_MAP_HPP
+    #define CR_GAME_MAP_HPP
 
     #include "Engine/Types.hpp"
     #include "Engine/Graphics.hpp"
