@@ -7,6 +7,7 @@
 #else
     #include <stdio.h>
 	#include <errno.h> 
+	#include <unistd.h>
 	#include <netdb.h>
 	#include <arpa/inet.h>
 	#include <sys/socket.h>
