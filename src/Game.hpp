@@ -9,7 +9,7 @@
         
         typedef uint8       T_OBJSIG;
         typedef uint8       T_ENTTYPE;
-        typedef uint8       T_STATUS;
+        typedef uint8       T_STATE;
         typedef uint16      T_OBJID;
         typedef uint16      T_FRAME;
         typedef uint32      T_FRAMEORD;
@@ -64,6 +64,7 @@
                 GAME_SIM_ENDED,
                 GAME_SIM_MESSAGE,
                 GAME_SIM_SETTING_CHANGED,
+                GAME_SIM_STATE_CHANGED,
 
                 WORLD_WEATHER_STATUS,
 
@@ -142,6 +143,7 @@
             T_FRAMEORD tick;
             T_FRAMEORD order;
             T_TIME time;
+            T_STATE state;
             std::string msg;
             std::vector<T_OBJID> affEnt;
             CR::SmallPacket data;

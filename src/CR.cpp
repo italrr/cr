@@ -4,8 +4,8 @@
 #include "Engine/Job.hpp"
 #include "Engine/Input.hpp"
 #include "Map.hpp"
-
 #include "Entity.hpp"
+#include "World.hpp"
 
 static std::shared_ptr<CR::Gfx::RenderLayer> game;
 
@@ -199,7 +199,7 @@ struct Character {
         // auto theta = CR::Math::asin(normal.dot(front));
         auto theta = CR::Math::degs(CR::Math::atan(game->camera.targetBias.z, game->camera.targetBias.x));
 
-        CR::log("%f\n", theta);
+        // CR::log("%f\n", theta);
 
 
 
@@ -271,6 +271,10 @@ int main(int argc, char* argv[]){
     Character player;
 
     player.load();
+
+    auto world = std::make_shared<CR::World>(CR::World());
+
+    world->start();
 
     while(CR::Gfx::isRunning()){
 
@@ -354,6 +358,8 @@ int main(int argc, char* argv[]){
         if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD6)){
             gameL->camera.position.x += CR::getDelta() * 2000;
         }    
+
+        world->run(1);
 
         map->render();
         player.render();
