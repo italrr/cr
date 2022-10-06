@@ -1,5 +1,6 @@
 #define GLFW_INCLUDE_NONE
 
+#include <stdio.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <algorithm>
@@ -13,6 +14,13 @@
 #include "Log.hpp"
 #include "Shader.hpp"
 #include "Texture.hpp"
+
+#if CR_ENABLE_DEBUG_BUILD == 1
+    #define INC_OPGL_DEBUG handleOpenGLError(CR::String::format("%s | Line %i",  __func__, __LINE__));
+    #define INC_OPGLSHADER_DEBUG handleOpenGLError(CR::String::format("%s | Line %i | Uniform '%s'",  __func__, __LINE__, attr->name.c_str()));
+#elif
+    #define INC_OPGL_DEBUG
+#endif
 
 static GLFWwindow *window = NULL;
 static bool running = true;
@@ -107,8 +115,7 @@ static std::string getOpenGLError(int v){
 	}
 }
 
-static std::string handleOpenGLFrameBufferError(){
-	GLuint status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+static std::string handleOpenGLFrameBufferError(GLuint status){
 	switch(status) {
 		case GL_FRAMEBUFFER_COMPLETE:
 		    return "[FB OK]";
@@ -133,11 +140,20 @@ static std::string handleOpenGLFrameBufferError(){
 
 static void handleOpenGLError(const std::string &at){
 	static GLenum err;
-	std::string fbError = handleOpenGLFrameBufferError();
+    bool reqExit = false;
 	while ((err = glGetError()) != GL_NO_ERROR){
-            auto msg = std::string("OpenGL"+(at.length() > 0 ? " '"+at+"' " : "")+": "+getOpenGLError(err)+" "+fbError);
+            GLuint fbStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+            std::string fbError = "";
+            if(fbStatus != GL_FRAMEBUFFER_COMPLETE){
+                fbError = handleOpenGLFrameBufferError(fbStatus);
+            }
+            auto msg = std::string("[DEBUG] OpenGL Error at "+(at.length() > 0 ? " '"+at+"' " : "")+": "+getOpenGLError(err))+" "+fbError;
 			CR::log("%s\n", msg.c_str());
+            reqExit = true;
 	}
+    if(reqExit){
+        CR::Core::exit(1);
+    }
 }
 
 
@@ -226,29 +242,31 @@ void CR::Gfx::RenderLayer::renderOn(const std::function<void(CR::Gfx::RenderLaye
 void CR::Gfx::RenderLayer::clear(){
     std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
     if(type == RenderLayerType::T_3D){
-        glEnable(GL_DEPTH_TEST);   
+        glEnable(GL_DEPTH_TEST); INC_OPGL_DEBUG;  
     }    
-    glBindFramebuffer(GL_FRAMEBUFFER, this->fb->framebufferId);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);      
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  
-    glViewport(0, 0, this->size.x, this->size.y);   
+    glBindFramebuffer(GL_FRAMEBUFFER, this->fb->framebufferId); INC_OPGL_DEBUG;
+    
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f); INC_OPGL_DEBUG; 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); INC_OPGL_DEBUG;  
+    glViewport(0, 0, this->size.x, this->size.y); INC_OPGL_DEBUG;   
     if(type == RenderLayerType::T_3D){
-        glDisable(GL_DEPTH_TEST);
-    }else    
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDisable(GL_DEPTH_TEST); INC_OPGL_DEBUG;
+    }    
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0); INC_OPGL_DEBUG;
     fblock.unlock();
 }   
 
 void CR::Gfx::RenderLayer::flush(){
     std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
-    glBindFramebuffer(GL_FRAMEBUFFER, this->fb->framebufferId);
+    glBindFramebuffer(GL_FRAMEBUFFER, this->fb->framebufferId); INC_OPGL_DEBUG;
     if(type == RenderLayerType::T_3D){
-        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_DEPTH_TEST); INC_OPGL_DEBUG;
         
     }else
     if(type == RenderLayerType::T_2D){
-        glEnable(GL_BLEND);
-        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        glEnable(GL_BLEND); INC_OPGL_DEBUG;
+        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA); INC_OPGL_DEBUG;
     }
     // TODO: solve depth for T_2D
     for(int i = 0; i < this->objects.size(); ++i){
@@ -260,12 +278,12 @@ void CR::Gfx::RenderLayer::flush(){
     }    
     this->objects.clear();
     if(type == RenderLayerType::T_3D){
-        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_DEPTH_TEST); INC_OPGL_DEBUG;
     }else
     if(type == RenderLayerType::T_2D){
-        glDisable(GL_BLEND);
+        glDisable(GL_BLEND); INC_OPGL_DEBUG;
     }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0); INC_OPGL_DEBUG;
     fblock.unlock();
 }
 
@@ -277,9 +295,9 @@ static void drawRLImmediate(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, con
 
     const auto &position = pos;
 
-    glEnable(GL_BLEND);
-    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-    
+    glEnable(GL_BLEND); INC_OPGL_DEBUG;  
+    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA); INC_OPGL_DEBUG;  
+
     // Apply transformations to model
     static_cast<CR::Gfx::ShaderAttrMat4*>(trans2DTexture.shAttrsValVec[1])->mat = CR::MAT4Identity
                 .translate(CR::Vec3<float>(position.x - origin.x * static_cast<float>(size.x), position.y - origin.y * static_cast<float>(size.y), 0.0f))
@@ -288,20 +306,23 @@ static void drawRLImmediate(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, con
                 .translate(CR::Vec3<float>(-origin.x * static_cast<float>(size.x), -origin.y * static_cast<float>(size.y), 0.0f))
                 .scale(CR::Vec3<float>(size.x, size.y, 1.0f));
 
+
     // Use generic projection
     static_cast<CR::Gfx::ShaderAttrMat4*>(trans2DTexture.shAttrsValVec[2])->mat = projection;
 
+    
     CR::Gfx::applyShader(trans2DTexture.shader->getRsc()->shaderId, trans2DTexture.shAttrsLocVec, trans2DTexture.shAttrsValVec);
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, rl->fb->textureId);
+    glActiveTexture(GL_TEXTURE0); INC_OPGL_DEBUG;
+    glBindTexture(GL_TEXTURE_2D, rl->fb->textureId);INC_OPGL_DEBUG;  
+     
 
-    glBindVertexArray(mBRect.vao);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glBindVertexArray(0);  
-    glUseProgram(0);
+    glBindVertexArray(mBRect.vao); INC_OPGL_DEBUG;  
+    glDrawArrays(GL_TRIANGLES, 0, 6); INC_OPGL_DEBUG;  
+    glBindVertexArray(0);   INC_OPGL_DEBUG;  
+    glUseProgram(0); INC_OPGL_DEBUG;  
 
-    glDisable(GL_BLEND);    
+    glDisable(GL_BLEND);   INC_OPGL_DEBUG;    
 }
 
 CR::Gfx::Renderable *CR::Gfx::Draw::RenderLayer(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle){
@@ -340,13 +361,13 @@ CR::Gfx::Renderable *CR::Gfx::Draw::RenderLayer(const std::shared_ptr<CR::Gfx::R
 
         CR::Gfx::applyShader(trans2DTexture.shader->getRsc()->shaderId, trans2DTexture.shAttrsLocVec, trans2DTexture.shAttrsValVec);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, fbId);
+        glActiveTexture(GL_TEXTURE0); INC_OPGL_DEBUG;
+        glBindTexture(GL_TEXTURE_2D, fbId); INC_OPGL_DEBUG;
 
-        glBindVertexArray(mBRect.vao);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);         
-        glUseProgram(0);   
+        glBindVertexArray(mBRect.vao); INC_OPGL_DEBUG;
+        glDrawArrays(GL_TRIANGLES, 0, 6); INC_OPGL_DEBUG;
+        glBindVertexArray(0); INC_OPGL_DEBUG;
+        glUseProgram(0); INC_OPGL_DEBUG;
     };
 
     return self;
@@ -386,13 +407,14 @@ CR::Gfx::Renderable *CR::Gfx::Draw::Texture(const std::shared_ptr<CR::Gfx::Textu
 
         CR::Gfx::applyShader(trans2DTexture.shader->getRsc()->shaderId, trans2DTexture.shAttrsLocVec, trans2DTexture.shAttrsValVec);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, obj->handleId);
 
-        glBindVertexArray(mBRect.vao);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);       
-        glUseProgram(0);     
+        glActiveTexture(GL_TEXTURE0); INC_OPGL_DEBUG;
+        glBindTexture(GL_TEXTURE_2D, obj->handleId); INC_OPGL_DEBUG;
+
+        glBindVertexArray(mBRect.vao); INC_OPGL_DEBUG;
+        glDrawArrays(GL_TRIANGLES, 0, 6); INC_OPGL_DEBUG;
+        glBindVertexArray(0); INC_OPGL_DEBUG;      
+        glUseProgram(0); INC_OPGL_DEBUG;
     };
 
     return self;
@@ -601,13 +623,13 @@ CR::Gfx::Renderable *CR::Gfx::Draw::Mesh(CR::Gfx::MeshData &md, CR::Gfx::Transfo
 
         CR::Gfx::applyShader(obj->transform->shader->getRsc()->shaderId, obj->transform->shAttrsLocVec, obj->transform->shAttrsValVec);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, obj->transform->textures[CR::Gfx::TextureRole::DIFFUSE]);
+        glActiveTexture(GL_TEXTURE0); INC_OPGL_DEBUG;
+        glBindTexture(GL_TEXTURE_2D, obj->transform->textures[CR::Gfx::TextureRole::DIFFUSE]); INC_OPGL_DEBUG;
 
-        glBindVertexArray(obj->md.vao);
-        glDrawArrays(GL_TRIANGLES, 0, obj->md.vertn);
-        glBindVertexArray(0);       
-        glUseProgram(0);      
+        glBindVertexArray(obj->md.vao); INC_OPGL_DEBUG;
+        glDrawArrays(GL_TRIANGLES, 0, obj->md.vertn); INC_OPGL_DEBUG;
+        glBindVertexArray(0); INC_OPGL_DEBUG;       
+        glUseProgram(0); INC_OPGL_DEBUG;     
     };
 
     return self;
@@ -634,7 +656,7 @@ CR::Gfx::Renderable *CR::Gfx::Draw::MeshBatch(std::vector<CR::Gfx::MeshData*> &m
 
         CR::Vec3<unsigned> view = CR::Vec3<unsigned>(rl->size.x, rl->size.x  * 2, rl->size.y * 1.5f);
 
-        glActiveTexture(GL_TEXTURE0);
+        glActiveTexture(GL_TEXTURE0); INC_OPGL_DEBUG;
         for(unsigned i = 0; i < obj->md->size(); ++i){
 
             auto &mp = obj->transform->at(i)->position;
@@ -655,17 +677,17 @@ CR::Gfx::Renderable *CR::Gfx::Draw::MeshBatch(std::vector<CR::Gfx::MeshData*> &m
                 CR::Gfx::applyShaderPartial(obj->transform->at(i)->shAttrsLocVec[obj->modelPos], obj->transform->at(i)->shAttrsValVec[obj->modelPos]);
             }            
             if(!obj->shareTexture || !texFirst){
-                glBindTexture(GL_TEXTURE_2D, obj->transform->at(i)->textures[CR::Gfx::TextureRole::DIFFUSE]);
+                glBindTexture(GL_TEXTURE_2D, obj->transform->at(i)->textures[CR::Gfx::TextureRole::DIFFUSE]); INC_OPGL_DEBUG;
                 texFirst = true;
             }
 
-            glBindVertexArray(obj->md->at(i)->vao);
-            glDrawArrays(GL_TRIANGLES, 0, obj->md->at(i)->vertn);            
+            glBindVertexArray(obj->md->at(i)->vao); INC_OPGL_DEBUG;
+            glDrawArrays(GL_TRIANGLES, 0, obj->md->at(i)->vertn); INC_OPGL_DEBUG;          
 
         }
 
-        glBindVertexArray(0);       
-        glUseProgram(0);     
+        glBindVertexArray(0); INC_OPGL_DEBUG;       
+        glUseProgram(0); INC_OPGL_DEBUG;     
     };
 
 
@@ -688,7 +710,7 @@ void CR::Gfx::render(){
     lastDeltaCheck = currentTime;
 
 
-    // dummyLayer = CR::Gfx::createRenderLayer(CR::Vec2<int>(dummyTexture->getRsc()->size), CR::Gfx::RenderLayerType::T_2D);
+    // static auto dummyLayer = CR::Gfx::createRenderLayer(CR::Vec2<int>(dummyTexture->getRsc()->size), CR::Gfx::RenderLayerType::T_2D);
     // dummyLayer->renderOn([](CR::Gfx::RenderLayer *lyr){
     //     lyr->add(Draw::Texture(dummyTexture, CR::Vec2<float>(), dummyTexture->getRsc()->size, CR::Vec2<float>(0.0f), CR::Math::rads(0)));
     // });
@@ -701,11 +723,13 @@ void CR::Gfx::render(){
     static std::shared_ptr<CR::Gfx::RenderLayer> wL = CR::Gfx::getRenderLayer("world");
 
 
-
+    // uiL->clear();
     // uiL->renderOn([](CR::Gfx::RenderLayer *layer){    
+    //     layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->getRsc()->size, CR::Vec2<float>(0.0f), CR::Math::rads(0)));
     //     // layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->size, CR::Vec2<float>(0.5f), CR::Math::rads(0)));
-    //     layer->add(CR::Gfx::Draw::RenderLayer(dummyLayer, CR::Vec2<float>(layer->size.x - dummyLayer->size.x,layer->size.y - dummyLayer->size.y), CR::Vec2<int>(dummyLayer->size), CR::Vec2<float>(0.0f), 0.0f));
+    //     // layer->add(CR::Gfx::Draw::RenderLayer(dummyLayer, CR::Vec2<float>(layer->size.x - dummyLayer->size.x,layer->size.y - dummyLayer->size.y), CR::Vec2<int>(dummyLayer->size), CR::Vec2<float>(0.0f), 0.0f));
     // });
+    // uiL->flush();
 
     
     // Flush system layers
@@ -723,9 +747,9 @@ void CR::Gfx::render(){
     });         
 
     // Render onto screen
-    glClear(GL_COLOR_BUFFER_BIT);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glViewport(0, 0, size.x, size.y);  
+    glClear(GL_COLOR_BUFFER_BIT); INC_OPGL_DEBUG;
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); INC_OPGL_DEBUG;
+    glViewport(0, 0, size.x, size.y);  INC_OPGL_DEBUG;
     for(int i = 0; i < layerList.size(); ++i){
         auto &layer = layerList[i];
         drawRLImmediate(layer, Vec2<float>(0), layer->size, Vec2<float>(0.0f), CR::Math::rads(0));
@@ -772,12 +796,12 @@ CR::Vec2<int> CR::Gfx::getSize(){
 unsigned CR::Gfx::createTexture2D(unsigned char *data, unsigned w, unsigned h, unsigned format){
     unsigned texture;
     std::unique_lock<std::mutex> texLock(textureRenderMutex);
-    glGenTextures(1, &texture);  
-    glBindTexture(GL_TEXTURE_2D, texture);  
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glGenTextures(1, &texture); INC_OPGL_DEBUG;
+    glBindTexture(GL_TEXTURE_2D, texture); INC_OPGL_DEBUG; 
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); INC_OPGL_DEBUG;
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); INC_OPGL_DEBUG;
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); INC_OPGL_DEBUG;
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); INC_OPGL_DEBUG;
 
     GLenum glformat;
     switch(format){
@@ -797,9 +821,9 @@ unsigned CR::Gfx::createTexture2D(unsigned char *data, unsigned w, unsigned h, u
             glformat = GL_RGBA;
         } break;                
     }
-    glTexImage2D(GL_TEXTURE_2D, 0, glformat, w, h, 0, glformat, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, glformat, w, h, 0, glformat, GL_UNSIGNED_BYTE, data); INC_OPGL_DEBUG;
+    glGenerateMipmap(GL_TEXTURE_2D); INC_OPGL_DEBUG;
+    glBindTexture(GL_TEXTURE_2D, 0); INC_OPGL_DEBUG;
     texLock.unlock();
     std::unique_lock<std::mutex> lock(textureListMutex);
     textureList.push_back(texture);
@@ -813,7 +837,7 @@ bool CR::Gfx::deleteTexture2D(unsigned id){
     for(int i = 0; i < textureList.size(); ++i){
         if(textureList[i] == id){
             std::unique_lock<std::mutex> texLock(textureRenderMutex);
-            glDeleteTextures(1, &id);
+            glDeleteTextures(1, &id); INC_OPGL_DEBUG;
             texLock.unlock();
             textureList.erase(textureList.begin() + i);
             return true;
@@ -828,20 +852,20 @@ std::shared_ptr<CR::Gfx::FramebufferObj> CR::Gfx::createFramebuffer(unsigned w, 
     std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
 
     unsigned renderbufferId;
-    glGenRenderbuffers(1, &renderbufferId);
-    glBindRenderbuffer(GL_RENDERBUFFER, renderbufferId);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, w, h);
-
-    glGenFramebuffers(1, &id);
-    glBindFramebuffer(GL_FRAMEBUFFER, id);
-    unsigned texture = CR::Gfx::createTexture2D(0, w, h, ImageFormat::RGBA);
     
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+    glGenRenderbuffers(1, &renderbufferId); INC_OPGL_DEBUG;
+    glBindRenderbuffer(GL_RENDERBUFFER, renderbufferId); INC_OPGL_DEBUG;
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, w, h); INC_OPGL_DEBUG;
+    glGenFramebuffers(1, &id); INC_OPGL_DEBUG;
+    glBindFramebuffer(GL_FRAMEBUFFER, id); INC_OPGL_DEBUG;
+    unsigned texture = CR::Gfx::createTexture2D(0, w, h, ImageFormat::RGBA); 
     
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderbufferId);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0); INC_OPGL_DEBUG;
+    
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderbufferId); INC_OPGL_DEBUG;
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);    
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0); INC_OPGL_DEBUG;   
+    glBindRenderbuffer(GL_RENDERBUFFER, 0); INC_OPGL_DEBUG;
     fblock.unlock();
 
     std::unique_lock<std::mutex> lock(framebufferListMutex);
@@ -863,7 +887,7 @@ bool CR::Gfx::deleteFramebuffer(unsigned id){
     }
     
     std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
-    glDeleteFramebuffers(1, &it->second->framebufferId);
+    glDeleteFramebuffers(1, &it->second->framebufferId); INC_OPGL_DEBUG;
     fblock.unlock();
 
     deleteTexture2D(it->second->textureId);
@@ -880,9 +904,9 @@ bool CR::Gfx::updateMesh(CR::Gfx::MeshData &md, unsigned vrole, const std::vecto
         return false;
     }
 
-    glBindBuffer(GL_ARRAY_BUFFER, md.vbo[vrole]);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, vertex.size() * sizeof(float), &vertex[0]);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, md.vbo[vrole]); INC_OPGL_DEBUG;
+    glBufferSubData(GL_ARRAY_BUFFER, 0, vertex.size() * sizeof(float), &vertex[0]); INC_OPGL_DEBUG;
+    glBindBuffer(GL_ARRAY_BUFFER, 0); INC_OPGL_DEBUG;
 
     return true;
 }
@@ -897,33 +921,33 @@ CR::Gfx::MeshData CR::Gfx::createMesh(const std::vector<float> &pos, const std::
 
     unsigned vbo[2], vao;
 
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(2, vbo);
+    glGenVertexArrays(1, &vao); INC_OPGL_DEBUG;
+    glGenBuffers(2, vbo); INC_OPGL_DEBUG;
     
     // GENERATE POSITION BUFFER
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[VertexRole::POSITION]);
-    glBufferData(GL_ARRAY_BUFFER, pos.size() * sizeof(float), &pos[0], vPosStType == VertexStoreType::DYNAMIC ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[VertexRole::POSITION]); INC_OPGL_DEBUG;
+    glBufferData(GL_ARRAY_BUFFER, pos.size() * sizeof(float), &pos[0], vPosStType == VertexStoreType::DYNAMIC ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW); INC_OPGL_DEBUG;
 
     // GENERATE TEXTURE COORDINATES
     glBindBuffer(GL_ARRAY_BUFFER, vbo[VertexRole::TEXCOORD]);
-    glBufferData(GL_ARRAY_BUFFER, pos.size() * sizeof(float), &tex[0], vTexStType == VertexStoreType::DYNAMIC ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, pos.size() * sizeof(float), &tex[0], vTexStType == VertexStoreType::DYNAMIC ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW); INC_OPGL_DEBUG;
 
 
-    glBindVertexArray(vao);
+    glBindVertexArray(vao); INC_OPGL_DEBUG;
 
     // BIND POSITION TO VAO
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[VertexRole::POSITION]);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[VertexRole::POSITION]); INC_OPGL_DEBUG;
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); INC_OPGL_DEBUG;
+    glEnableVertexAttribArray(0); INC_OPGL_DEBUG;
 
     // BIND TEXCOORDS TO VAO
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[VertexRole::TEXCOORD]);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);    
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[VertexRole::TEXCOORD]); INC_OPGL_DEBUG;
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0); INC_OPGL_DEBUG;
+    glEnableVertexAttribArray(1); INC_OPGL_DEBUG;
     
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);  
-    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0); INC_OPGL_DEBUG;
+    glBindVertexArray(0); INC_OPGL_DEBUG;
 
 
     CR::Gfx::MeshData md;
@@ -941,8 +965,8 @@ unsigned CR::Gfx::createShader(const std::string &vert, const std::string &frag)
     const char *fragSrc = frag.c_str();
     const char *vertSrc = vert.c_str();
     // create shaders
-    GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
-    GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+    GLuint vertShader = glCreateShader(GL_VERTEX_SHADER); INC_OPGL_DEBUG;
+    GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER); INC_OPGL_DEBUG;
     GLint gResult = GL_FALSE;
     int logLength = 1024 * 5;
     char *buffer = new char[logLength];
@@ -991,8 +1015,8 @@ unsigned CR::Gfx::createShader(const std::string &vert, const std::string &frag)
     }
     str = "";
     // clean
-    glDeleteShader(vertShader);
-    glDeleteShader(fragShader);
+    glDeleteShader(vertShader); INC_OPGL_DEBUG;
+    glDeleteShader(fragShader); INC_OPGL_DEBUG;
     shaderlk.unlock();
     delete buffer;
     std::unique_lock<std::mutex> lock(shaderListMutex);
@@ -1006,7 +1030,7 @@ bool CR::Gfx::deleteShader(unsigned id){
     for(int i = 0; i < shaderList.size(); ++i){
         if(shaderList[i] == id){
             std::unique_lock<std::mutex> shaderlk(shaderUseMutex);
-            glDeleteShader(id);
+            glDeleteShader(id); INC_OPGL_DEBUG;
             shaderlk.unlock();
             shaderList.erase(shaderList.begin() + i);
             return true;
@@ -1019,42 +1043,42 @@ bool CR::Gfx::deleteShader(unsigned id){
 int CR::Gfx::findShaderAttr(unsigned shaderId, const std::string &name){
     int locId = 0;
     std::unique_lock<std::mutex> lock(shaderUseMutex);
-    glUseProgram(shaderId);
-    locId = glGetUniformLocation(shaderId, name.c_str());
-    glUseProgram(0);
+    glUseProgram(shaderId); INC_OPGL_DEBUG;
+    locId = glGetUniformLocation(shaderId, name.c_str()); INC_OPGL_DEBUG;
+    glUseProgram(0); INC_OPGL_DEBUG;
     lock.unlock();
     if(locId == -1){
         CR::log("CR::Gfx::findShaderAttr: Failed to find attribute '%s'\n", name.c_str());
     }
     return locId;
 }
-#include <stdio.h>
+
 
 void CR::Gfx::applyShaderPartial(unsigned loc, CR::Gfx::ShaderAttr* attrv){
     switch(attrv->type){
         case CR::Gfx::ShaderAttrType::FLOAT: {
             CR::Gfx::ShaderAttrFloat *attr = static_cast<CR::Gfx::ShaderAttrFloat*>(attrv);
-            glUniform1f(loc, attr->n);
+            glUniform1f(loc, attr->n); INC_OPGLSHADER_DEBUG;
         } break;
         case CR::Gfx::ShaderAttrType::INT: {
             CR::Gfx::ShaderAttrInt *attr = static_cast<CR::Gfx::ShaderAttrInt*>(attrv);
-            glUniform1f(loc, attr->n);
+            glUniform1i(loc, attr->n); INC_OPGLSHADER_DEBUG;
         } break;                 
         case CR::Gfx::ShaderAttrType::COLOR: {
             CR::Gfx::ShaderAttrColor *attr = static_cast<CR::Gfx::ShaderAttrColor*>(attrv);
-            glUniform3fv(loc, 1, attr->color);
+            glUniform3fv(loc, 1, attr->color); INC_OPGLSHADER_DEBUG;
         } break;
         case CR::Gfx::ShaderAttrType::VEC2: {
             CR::Gfx::ShaderAttrVec2 *attr = static_cast<CR::Gfx::ShaderAttrVec2*>(attrv);
-            glUniform2fv(loc, 1, attr->vec);
+            glUniform2fv(loc, 1, attr->vec); INC_OPGLSHADER_DEBUG;
         } break;     
         case CR::Gfx::ShaderAttrType::VEC3: {
             CR::Gfx::ShaderAttrVec3 *attr = static_cast<CR::Gfx::ShaderAttrVec3*>(attrv);
-            glUniform3fv(loc, 1, attr->vec);
+            glUniform3fv(loc, 1, attr->vec); INC_OPGLSHADER_DEBUG;
         } break; 
         case CR::Gfx::ShaderAttrType::MAT4: {
             CR::Gfx::ShaderAttrMat4 *attr = static_cast<CR::Gfx::ShaderAttrMat4*>(attrv);
-            glUniformMatrix4fv(loc, 1, GL_FALSE, attr->mat.mat);          
+            glUniformMatrix4fv(loc, 1, GL_FALSE, attr->mat.mat); INC_OPGLSHADER_DEBUG;         
         } break;                                                           
         default: {
             CR::log("[GFX] undefined shader type to apply '%s'\n", attrv->type);
@@ -1069,27 +1093,27 @@ void CR::Gfx::applyShader(unsigned shaderId, const std::vector<unsigned> &loc, c
         switch(attributes[i]->type){
             case CR::Gfx::ShaderAttrType::FLOAT: {
                 auto attr = static_cast<CR::Gfx::ShaderAttrFloat*>(attributes[i]);
-                glUniform1f(loc[i], attr->n);
+                glUniform1f(loc[i], attr->n); INC_OPGLSHADER_DEBUG;
             } break;
             case CR::Gfx::ShaderAttrType::INT: {
                 auto attr = static_cast<CR::Gfx::ShaderAttrInt*>(attributes[i]);
-                glUniform1f(loc[i], attr->n);
+                glUniform1i(loc[i], attr->n); INC_OPGLSHADER_DEBUG;
             } break;                 
             case CR::Gfx::ShaderAttrType::COLOR: {
                 auto attr = static_cast<CR::Gfx::ShaderAttrColor*>(attributes[i]);
-                glUniform3fv(loc[i], 1, attr->color);
+                glUniform3fv(loc[i], 1, attr->color); INC_OPGLSHADER_DEBUG;
             } break;
             case CR::Gfx::ShaderAttrType::VEC2: {
                 auto attr = static_cast<CR::Gfx::ShaderAttrVec2*>(attributes[i]);
-                glUniform2fv(loc[i], 1, attr->vec);
+                glUniform2fv(loc[i], 1, attr->vec); INC_OPGLSHADER_DEBUG;
             } break;     
             case CR::Gfx::ShaderAttrType::VEC3: {
                 auto attr = static_cast<CR::Gfx::ShaderAttrVec3*>(attributes[i]);
-                glUniform3fv(loc[i], 1, attr->vec);
+                glUniform3fv(loc[i], 1, attr->vec); INC_OPGLSHADER_DEBUG;
             } break; 
             case CR::Gfx::ShaderAttrType::MAT4: {
                 auto attr = static_cast<CR::Gfx::ShaderAttrMat4*>(attributes[i]);
-                glUniformMatrix4fv(loc[i], 1, GL_FALSE, attr->mat.mat);                        
+                glUniformMatrix4fv(loc[i], 1, GL_FALSE, attr->mat.mat); INC_OPGLSHADER_DEBUG;                      
             } break;                                                           
             default: {
                 CR::log("[GFX] undefined shader type to apply '%s'\n", attributes[i]->type);
@@ -1111,6 +1135,7 @@ void CR::Gfx::Transform::fixShaderAttributes(const std::vector<std::string> &loc
     shAttrsLocVec.clear();
     shAttrsValVec.clear();
     for(unsigned i = 0; i < locOrder.size(); ++i){
+        shAttrsVal[locOrder[i]]->name = locOrder[i];
         auto &attr = shAttrsVal[locOrder[i]];
         auto &loc = shAttrsLoc[locOrder[i]];
         shAttrsLocVec.push_back(loc);

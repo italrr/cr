@@ -27,6 +27,7 @@ CR::World::World(){
 
 void CR::World::start(){
     this->auditBacklog.push_back(this->createFrame(FrameType::GAME_SIM_STARTED));    
+    CR::log("World[%i] started simulation\n", this->wId);    
 }
 
 void CR::World::reqEnd(){
@@ -49,7 +50,7 @@ std::shared_ptr<CR::Frame> CR::World::createFrame(const std::string &msg){
 
 
 bool CR::World::apply(const std::shared_ptr<CR::Frame> &audit){
-
+    return true;
 }
 
 

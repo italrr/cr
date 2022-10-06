@@ -4,6 +4,8 @@
     #include "Types.hpp"
     #include "Resource.hpp"
 
+    #define CR_ENABLE_DEBUG_BUILD 1
+
     namespace CR {
 
         double getDelta();

@@ -285,6 +285,7 @@ int main(int argc, char* argv[]){
             float amnt = CR::getDelta() * 2000;
             gameL->camera.position.z += amnt;
             gameL->camera.position.x -= amnt;
+            CR::log("%s\n", gameL->camera.position.str().c_str());
         }
         //DOWN_LEFT
         if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD3)){
@@ -294,6 +295,7 @@ int main(int argc, char* argv[]){
 
             gameL->camera.position.z -= amnt;
             gameL->camera.position.x += amnt;            
+            CR::log("%s\n", gameL->camera.position.str().c_str());
         }
         // UP_RIGHT    
         if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD9)){
@@ -301,6 +303,7 @@ int main(int argc, char* argv[]){
 
             gameL->camera.position.z += amnt;
             gameL->camera.position.x += amnt;
+            CR::log("%s\n", gameL->camera.position.str().c_str());
         }
         // DOWN_RIGHTH
         if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD1)){
@@ -308,6 +311,7 @@ int main(int argc, char* argv[]){
 
             gameL->camera.position.z -= CR::getDelta() * 2000;
             gameL->camera.position.x -= CR::getDelta() * 2000;
+            CR::log("%s\n", gameL->camera.position.str().c_str());
         }  
 
 
