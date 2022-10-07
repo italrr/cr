@@ -24,6 +24,7 @@
 
 static GLFWwindow *window = NULL;
 static bool running = true;
+static bool reqExit = false;
 static std::shared_ptr<CR::Gfx::Settings> settings = std::shared_ptr<CR::Gfx::Settings>(new CR::Gfx::Settings());
 static double lastDeltaCheck = 0;
 static double currentDelta = 0;
@@ -32,8 +33,10 @@ static CR::Vec2<int> size = CR::Vec2<int>(1920, 1080);
 // Garbage collection
 static std::vector<int> textureList;
 static std::mutex textureListMutex;
+
 static std::vector<int> shaderList;
 static std::mutex shaderListMutex;
+
 static std::unordered_map<int, std::shared_ptr<CR::Gfx::FramebufferObj>> framebufferList;
 static std::mutex framebufferListMutex;
 
@@ -287,7 +290,14 @@ void CR::Gfx::RenderLayer::flush(){
     fblock.unlock();
 }
 
-
+void CR::Gfx::RenderLayer::end(){
+    for(int i = 0; i < this->objects.size(); ++i){
+        this->objects[i]->~Renderable();
+        delete this->objects[i];
+    }    
+    this->objects.clear();  
+    CR::Gfx::deleteFramebuffer(this->fb->framebufferId); 
+}
 
 static void drawRLImmediate(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle){
 
@@ -516,8 +526,13 @@ void CR::Gfx::loadSettings(const std::vector<std::string> &params, const std::st
 }
 
 static void ctrlC(int s){
-    CR::log("Caught Ctrl+C: Requested exit\n");
-	CR::Gfx::end();
+    if(reqExit){
+        CR::log("Caught Ctrl+C: Requested shutdown again: Forcing exit (Data loss may occur)...\n");
+        CR::Core::exit(1);
+    }else{
+        CR::log("Caught Ctrl+C: Requesting shutdown...\n");
+	    reqExit = true;
+    }
 }
 
 bool CR::Gfx::init(){
@@ -636,11 +651,11 @@ CR::Gfx::Renderable *CR::Gfx::Draw::Mesh(CR::Gfx::MeshData &md, CR::Gfx::Transfo
 }
 
 // gotta go fasto optimization
-CR::Gfx::Renderable *CR::Gfx::Draw::MeshBatch(std::vector<CR::Gfx::MeshData*> &md, std::vector<CR::Gfx::Transform*> &transform, bool shareTexture, bool shareShader, bool shareModelTrans, unsigned modelPos){
+CR::Gfx::Renderable *CR::Gfx::Draw::MeshBatch(std::vector<CR::Gfx::MeshData*> *md, std::vector<CR::Gfx::Transform*> *transform, bool shareTexture, bool shareShader, bool shareModelTrans, unsigned modelPos){
     auto *self = new CR::Gfx::Renderable3DBatch(); // layer's flush is in charge of deleting this
 
-    self->md = &md;
-    self->transform = &transform;
+    self->md = md;
+    self->transform = transform;
 
     self->shareShader = shareShader;
     self->shareShader = shareShader;
@@ -699,7 +714,7 @@ void CR::Gfx::render(){
         return;
     }
 
-    if(glfwWindowShouldClose(window)){
+    if(glfwWindowShouldClose(window) || reqExit){
         end();
         return;
     }
@@ -765,12 +780,31 @@ void CR::Gfx::render(){
 void CR::Gfx::end(){
     running = false;
     CR::log("Exiting...\n");
-    glfwDestroyWindow(window);
-    glfwTerminate();
 }
 
 void CR::Gfx::onEnd(){
     running = false;
+    // Manually clear layers
+    for(auto &it : systemLayers){
+        auto &layer = it.second;
+        layer->end();
+    }
+    for(auto &it : userLayers){
+        auto &layer = it.second;
+        layer->end();
+    }    
+    // clear textures
+    auto texListCopy = textureList;
+    for(unsigned i = 0; i < texListCopy.size(); ++i){
+        CR::Gfx::deleteTexture2D(texListCopy[i]);
+    }
+    // clear shaders
+        auto shListCopy = shaderList;
+    for(unsigned i = 0; i < shListCopy.size(); ++i){
+        CR::Gfx::deleteShader(texListCopy[i]);
+    }
+    glfwDestroyWindow(window);
+    glfwTerminate();    
     __CR_end_input();
     __CR_end_network();
     __CR_end_job();    
@@ -888,6 +922,7 @@ bool CR::Gfx::deleteFramebuffer(unsigned id){
     
     std::unique_lock<std::mutex> fblock(framebufferRenderMutex);
     glDeleteFramebuffers(1, &it->second->framebufferId); INC_OPGL_DEBUG;
+    glDeleteRenderbuffers(1, &it->second->renderbufferId); INC_OPGL_DEBUG;
     fblock.unlock();
 
     deleteTexture2D(it->second->textureId);
@@ -929,7 +964,7 @@ CR::Gfx::MeshData CR::Gfx::createMesh(const std::vector<float> &pos, const std::
     glBufferData(GL_ARRAY_BUFFER, pos.size() * sizeof(float), &pos[0], vPosStType == VertexStoreType::DYNAMIC ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW); INC_OPGL_DEBUG;
 
     // GENERATE TEXTURE COORDINATES
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[VertexRole::TEXCOORD]);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[VertexRole::TEXCOORD]); INC_OPGL_DEBUG;
     glBufferData(GL_ARRAY_BUFFER, pos.size() * sizeof(float), &tex[0], vTexStType == VertexStoreType::DYNAMIC ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW); INC_OPGL_DEBUG;
 
 

@@ -250,6 +250,7 @@
                 void renderOn(const std::function<void(RenderLayer *layer)> &whatr);
                 void clear(); 
                 void flush();
+                void end();
             };
             
             std::shared_ptr<RenderLayer> createRenderLayer(const CR::Vec2<int> &size, int type);
@@ -261,7 +262,7 @@
                 CR::Gfx::Renderable *RenderLayer(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle);        
                 CR::Gfx::Renderable *Texture(const std::shared_ptr<CR::Gfx::Texture> &tex, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle); 
                 CR::Gfx::Renderable *Mesh(CR::Gfx::MeshData &md, CR::Gfx::Transform *transform); 
-                CR::Gfx::Renderable *MeshBatch(std::vector<CR::Gfx::MeshData*> &md, std::vector<CR::Gfx::Transform*> &trans, bool shareTexture, bool shareShader, bool shareModel, unsigned modelPos = 0); 
+                CR::Gfx::Renderable *MeshBatch(std::vector<CR::Gfx::MeshData*> *md, std::vector<CR::Gfx::Transform*> *trans, bool shareTexture, bool shareShader, bool shareModel, unsigned modelPos = 0); 
 
             } 
 

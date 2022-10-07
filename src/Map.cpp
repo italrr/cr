@@ -833,7 +833,7 @@ void CR::Map::Map::build(const CR::Vec2<int> _mapSize, unsigned bpScale, float u
 
     this->rebuildBatch();
 
-    CR::log("built map %ix%i(%.0fx%.0f) | BP Scale: %i | Meshes: %i\n", this->size.x, this->size.y, this->tsize.x, this->tsize.y, this->bpScale, this->batchMesh.size());
+    CR::log("Built map %ix%i(%.0fx%.0f) | BP Scale: %i | Meshes: %i\n", this->size.x, this->size.y, this->tsize.x, this->tsize.y, this->bpScale, this->batchMesh.size());
   
 }
 
@@ -854,10 +854,10 @@ void CR::Map::Map::render(){
     game->renderOn([&](CR::Gfx::RenderLayer *layer){    
 
         // for(unsigned i = 0; i < totalUnits; ++i){
-            // layer->add(CR::Gfx::Draw::Mesh(this->tiles[i].source->md, this->tiles[i].transform));
+        //     layer->add(CR::Gfx::Draw::Mesh(this->tiles[i].source->md, this->tiles[i].transform));
         // }
 
-        layer->add(CR::Gfx::Draw::MeshBatch(this->batchMesh, this->batchTrans, true, true, true, 1));
+        layer->add(CR::Gfx::Draw::MeshBatch(&this->batchMesh, &this->batchTrans, true, true, true, 1));
 
 
     });    
