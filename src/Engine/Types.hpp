@@ -372,19 +372,19 @@
 
 			Mat(const Mat<3, 3, T> &mat3){
 				if(w == 4 && h == 4){
-					mat[0 + 0*4] = mat3.mat[0 + 0*3];// AssimpMatrix.a1;
-					mat[0 + 1*4] = mat3.mat[1 + 0*3]; //AssimpMatrix.a2;
-					mat[0 + 2*4] = mat3.mat[2 + 0*3]; // AssimpMatrix.a3;
+					mat[0 + 0*4] = mat3.mat[0 + 0*3];
+					mat[0 + 1*4] = mat3.mat[1 + 0*3];
+					mat[0 + 2*4] = mat3.mat[2 + 0*3];
 					mat[0 + 3*4] = 0.0f;
 					
-					mat[1 + 0*4] = mat3.mat[0 + 1*3]; //AssimpMatrix.b1;
-					mat[1 + 1*4] = mat3.mat[1 + 1*3]; //AssimpMatrix.b2;
-					mat[1 + 2*4] = mat3.mat[2 + 1*3]; // AssimpMatrix.b3;
+					mat[1 + 0*4] = mat3.mat[0 + 1*3]; 
+					mat[1 + 1*4] = mat3.mat[1 + 1*3];
+					mat[1 + 2*4] = mat3.mat[2 + 1*3]; 
 					mat[1 + 3*4] = 0.0f;
 
-					mat[2 + 0*4] = mat3.mat[0 + 2*3]; //AssimpMatrix.c1;
-					mat[2 + 1*4] = mat3.mat[1 + 2*3]; //AssimpMatrix.c2;
-					mat[2 + 2*4] = mat3.mat[2 + 2*3]; // AssimpMatrix.c3;
+					mat[2 + 0*4] = mat3.mat[0 + 2*3]; 
+					mat[2 + 1*4] = mat3.mat[1 + 2*3];
+					mat[2 + 2*4] = mat3.mat[2 + 2*3];
 					mat[2 + 3*4] = 0.0f;
 
 					mat[3 + 0*4] = 0.0f;
@@ -431,8 +431,8 @@
 			}			
 
 			CR::Mat<4, 4, T> translate(const CR::Vec3<T> &vec) const{
-				Mat<4, 4, T> out(*this);
-				
+				Mat<4, 4, T> out(*this);					
+
 				out.mat[3*4 + 0] = this->mat[0*4 + 0] * vec.x + this->mat[1*4 + 0] * vec.y + this->mat[2*4 + 0] * vec.z + this->mat[3*4 + 0];
 				out.mat[3*4 + 1] = this->mat[0*4 + 1] * vec.x + this->mat[1*4 + 1] * vec.y + this->mat[2*4 + 1] * vec.z + this->mat[3*4 + 1];
 				out.mat[3*4 + 2] = this->mat[0*4 + 2] * vec.x + this->mat[1*4 + 2] * vec.y + this->mat[2*4 + 2] * vec.z + this->mat[3*4 + 2];
@@ -599,6 +599,17 @@
 				out.mat[3*4 + 3] = m[3*4 + 3];
 				return out;
 			}
+
+			std::string str() const{
+				std::string out = "[";
+				for(unsigned i = 0; i < w * h; ++i){
+					out += std::to_string(this->mat[i]);
+					if(i < w*h){
+						out += ", ";
+					}
+				}
+				return out + "]";
+			}	
 
 			CR::Vec4<T> operator*(const CR::Vec4<T> &vec) const{
 				CR::Vec4<T> out;

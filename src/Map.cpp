@@ -854,10 +854,11 @@ void CR::Map::Map::render(){
     game->renderOn([&](CR::Gfx::RenderLayer *layer){    
 
         // for(unsigned i = 0; i < totalUnits; ++i){
+        //     if(this->tiles[i].type == TileType::EMPTY) {continue;}
         //     layer->add(CR::Gfx::Draw::Mesh(this->tiles[i].source->md, this->tiles[i].transform));
         // }
 
-        layer->add(CR::Gfx::Draw::MeshBatch(&this->batchMesh, &this->batchTrans, true, true, true, 1));
+        // layer->add(CR::Gfx::Draw::MeshBatch(&this->batchMesh, &this->batchTrans, true, true, true, 1));
 
 
     });    

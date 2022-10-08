@@ -18,8 +18,9 @@
 #if CR_ENABLE_DEBUG_BUILD == 1
     #define INC_OPGL_DEBUG handleOpenGLError(CR::String::format("%s | Line %i",  __func__, __LINE__));
     #define INC_OPGLSHADER_DEBUG handleOpenGLError(CR::String::format("%s | Line %i | Uniform '%s'",  __func__, __LINE__, attr->name.c_str()));
-#elif
-    #define INC_OPGL_DEBUG
+#else
+    #define INC_OPGL_DEBUG ""
+    #define INC_OPGLSHADER_DEBUG ""
 #endif
 
 static GLFWwindow *window = NULL;
@@ -177,6 +178,7 @@ bool CR::Gfx::RenderLayer::init(unsigned type, int width, int height){
 
     switch(this->type){
         case RenderLayerType::T_3D: {
+            CR::log("\n\n\n\n\n%ix%i\n\n\n\n\n", size.x, size.y);
             this->projection = CR::Math::orthogonal(0, size.x, 0.0f, size.y, -5000.0f, 5000.0f);
             // this->projection = CR::Math::perspective(45.0f, static_cast<float>(this->size.x) /  static_cast<float>(this->size.y), -2500.0f, 2500.0f);
         } break;
@@ -254,8 +256,7 @@ void CR::Gfx::RenderLayer::clear(){
     glViewport(0, 0, this->size.x, this->size.y); INC_OPGL_DEBUG;   
     if(type == RenderLayerType::T_3D){
         glDisable(GL_DEPTH_TEST); INC_OPGL_DEBUG;
-    }    
-
+    }
     glBindFramebuffer(GL_FRAMEBUFFER, 0); INC_OPGL_DEBUG;
     fblock.unlock();
 }   
@@ -265,7 +266,6 @@ void CR::Gfx::RenderLayer::flush(){
     glBindFramebuffer(GL_FRAMEBUFFER, this->fb->framebufferId); INC_OPGL_DEBUG;
     if(type == RenderLayerType::T_3D){
         glEnable(GL_DEPTH_TEST); INC_OPGL_DEBUG;
-        
     }else
     if(type == RenderLayerType::T_2D){
         glEnable(GL_BLEND); INC_OPGL_DEBUG;
@@ -298,6 +298,7 @@ void CR::Gfx::RenderLayer::end(){
     this->objects.clear();  
     CR::Gfx::deleteFramebuffer(this->fb->framebufferId); 
 }
+
 
 static void drawRLImmediate(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle){
 
@@ -335,6 +336,51 @@ static void drawRLImmediate(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, con
     glDisable(GL_BLEND);   INC_OPGL_DEBUG;    
 }
 
+
+
+
+
+
+
+
+static void __RENDER_LAYER(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
+    auto *obj = static_cast<CR::Gfx::Renderable2D*>(renobj);
+
+    auto &position = obj->position;
+    auto &size = obj->size;
+    auto &scale = obj->scale;
+    auto &origin = obj->origin;
+    auto &region = obj->region;
+    auto &origSize = obj->origSize;
+    auto &angle = obj->angle;
+    auto &fbId = obj->handleId;
+
+    static_cast<CR::Gfx::ShaderAttrMat4*>(trans2DTexture.shAttrsValVec[1])->mat = CR::MAT4Identity
+            .translate(CR::Vec3<float>(position.x - origin.x * static_cast<float>(size.x), position.y - origin.y * static_cast<float>(size.y), 0.0f))
+            .translate(CR::Vec3<float>(origin.x * static_cast<float>(size.x), origin.y * static_cast<float>(size.y), 0.0f))
+            .rotate(angle, CR::Vec3<float>(0.0f, 0.0f, 1.0f))
+            .translate(CR::Vec3<float>(-origin.x * static_cast<float>(size.x), -origin.y * static_cast<float>(size.y), 0.0f))
+            .scale(CR::Vec3<float>(size.x, size.y, 1.0f));
+
+
+    static_cast<CR::Gfx::ShaderAttrMat4*>(trans2DTexture.shAttrsValVec[2])->mat = rl->projection;
+
+    CR::Gfx::applyShader(trans2DTexture.shader->getRsc()->shaderId, trans2DTexture.shAttrsLocVec, trans2DTexture.shAttrsValVec);
+
+    glActiveTexture(GL_TEXTURE0); INC_OPGL_DEBUG;
+    glBindTexture(GL_TEXTURE_2D, fbId); INC_OPGL_DEBUG;
+
+    glBindVertexArray(mBRect.vao); INC_OPGL_DEBUG;
+    glDrawArrays(GL_TRIANGLES, 0, 6); INC_OPGL_DEBUG;
+    glBindVertexArray(0); INC_OPGL_DEBUG;
+    glUseProgram(0); INC_OPGL_DEBUG;
+
+    return;
+}
+
+
+
+
 CR::Gfx::Renderable *CR::Gfx::Draw::RenderLayer(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle){
     CR::Gfx::Renderable2D *self = new CR::Gfx::Renderable2D(); // layer's flush is in charge of deleting this
 
@@ -346,42 +392,55 @@ CR::Gfx::Renderable *CR::Gfx::Draw::RenderLayer(const std::shared_ptr<CR::Gfx::R
     self->region = CR::Rect<float>(0, 0, rl->size.x, rl->size.y);
     self->type = RenderableType::TEXTURE;
     self->handleId = rl->fb->textureId;
+    self->render = &__RENDER_LAYER;
 
-    self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
-        auto *obj = static_cast<Renderable2D*>(renobj);
+    return self;
+}
 
-        auto &position = obj->position;
-        auto &size = obj->size;
-        auto &scale = obj->scale;
-        auto &origin = obj->origin;
-        auto &region = obj->region;
-        auto &origSize = obj->origSize;
-        auto &angle = obj->angle;
-        auto &fbId = obj->handleId;
 
-        static_cast<CR::Gfx::ShaderAttrMat4*>(trans2DTexture.shAttrsValVec[1])->mat = CR::MAT4Identity
+
+
+
+
+
+
+static void __RENDER_TEXTURE(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
+    auto *obj = static_cast<CR::Gfx::Renderable2D*>(renobj);
+    
+    auto &position = obj->position;
+    auto &size = obj->size;
+    auto &scale = obj->scale;
+    auto &origin = obj->origin;
+    auto &region = obj->region;
+    auto &origSize = obj->origSize;
+    auto &angle = obj->angle;
+
+    static_cast<CR::Gfx::ShaderAttrMat4*>(trans2DTexture.shAttrsValVec[1])->mat = CR::MAT4Identity
                 .translate(CR::Vec3<float>(position.x - origin.x * static_cast<float>(size.x), position.y - origin.y * static_cast<float>(size.y), 0.0f))
                 .translate(CR::Vec3<float>(origin.x * static_cast<float>(size.x), origin.y * static_cast<float>(size.y), 0.0f))
                 .rotate(angle, CR::Vec3<float>(0.0f, 0.0f, 1.0f))
                 .translate(CR::Vec3<float>(-origin.x * static_cast<float>(size.x), -origin.y * static_cast<float>(size.y), 0.0f))
                 .scale(CR::Vec3<float>(size.x, size.y, 1.0f));
 
+    static_cast<CR::Gfx::ShaderAttrMat4*>(trans2DTexture.shAttrsValVec[2])->mat = rl->projection;
 
-        static_cast<CR::Gfx::ShaderAttrMat4*>(trans2DTexture.shAttrsValVec[2])->mat = rl->projection;
+    CR::Gfx::applyShader(trans2DTexture.shader->getRsc()->shaderId, trans2DTexture.shAttrsLocVec, trans2DTexture.shAttrsValVec);
 
-        CR::Gfx::applyShader(trans2DTexture.shader->getRsc()->shaderId, trans2DTexture.shAttrsLocVec, trans2DTexture.shAttrsValVec);
 
-        glActiveTexture(GL_TEXTURE0); INC_OPGL_DEBUG;
-        glBindTexture(GL_TEXTURE_2D, fbId); INC_OPGL_DEBUG;
+    glActiveTexture(GL_TEXTURE0); INC_OPGL_DEBUG;
+    glBindTexture(GL_TEXTURE_2D, obj->handleId); INC_OPGL_DEBUG;
 
-        glBindVertexArray(mBRect.vao); INC_OPGL_DEBUG;
-        glDrawArrays(GL_TRIANGLES, 0, 6); INC_OPGL_DEBUG;
-        glBindVertexArray(0); INC_OPGL_DEBUG;
-        glUseProgram(0); INC_OPGL_DEBUG;
-    };
+    glBindVertexArray(mBRect.vao); INC_OPGL_DEBUG;
+    glDrawArrays(GL_TRIANGLES, 0, 6); INC_OPGL_DEBUG;
+    glBindVertexArray(0); INC_OPGL_DEBUG;      
+    glUseProgram(0); INC_OPGL_DEBUG;
 
-    return self;
+    return;
 }
+
+
+
+
 
 CR::Gfx::Renderable *CR::Gfx::Draw::Texture(const std::shared_ptr<CR::Gfx::Texture> &tex, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle){
     CR::Gfx::Renderable2D *self = new CR::Gfx::Renderable2D(); // layer's flush is in charge of deleting this
@@ -394,41 +453,18 @@ CR::Gfx::Renderable *CR::Gfx::Draw::Texture(const std::shared_ptr<CR::Gfx::Textu
     self->region = CR::Rect<float>(0, 0, size.x, size.y);
     self->type = RenderableType::TEXTURE;
     self->handleId = tex->getRsc()->textureId;
-
-    self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
-        auto *obj = static_cast<Renderable2D*>(renobj);
-        
-        auto &position = obj->position;
-        auto &size = obj->size;
-        auto &scale = obj->scale;
-        auto &origin = obj->origin;
-        auto &region = obj->region;
-        auto &origSize = obj->origSize;
-        auto &angle = obj->angle;
-
-        static_cast<CR::Gfx::ShaderAttrMat4*>(trans2DTexture.shAttrsValVec[1])->mat = CR::MAT4Identity
-                    .translate(CR::Vec3<float>(position.x - origin.x * static_cast<float>(size.x), position.y - origin.y * static_cast<float>(size.y), 0.0f))
-                    .translate(CR::Vec3<float>(origin.x * static_cast<float>(size.x), origin.y * static_cast<float>(size.y), 0.0f))
-                    .rotate(angle, CR::Vec3<float>(0.0f, 0.0f, 1.0f))
-                    .translate(CR::Vec3<float>(-origin.x * static_cast<float>(size.x), -origin.y * static_cast<float>(size.y), 0.0f))
-                    .scale(CR::Vec3<float>(size.x, size.y, 1.0f));
-
-        static_cast<CR::Gfx::ShaderAttrMat4*>(trans2DTexture.shAttrsValVec[2])->mat = rl->projection;
-
-        CR::Gfx::applyShader(trans2DTexture.shader->getRsc()->shaderId, trans2DTexture.shAttrsLocVec, trans2DTexture.shAttrsValVec);
-
-
-        glActiveTexture(GL_TEXTURE0); INC_OPGL_DEBUG;
-        glBindTexture(GL_TEXTURE_2D, obj->handleId); INC_OPGL_DEBUG;
-
-        glBindVertexArray(mBRect.vao); INC_OPGL_DEBUG;
-        glDrawArrays(GL_TRIANGLES, 0, 6); INC_OPGL_DEBUG;
-        glBindVertexArray(0); INC_OPGL_DEBUG;      
-        glUseProgram(0); INC_OPGL_DEBUG;
-    };
+    self->render = &__RENDER_TEXTURE;
 
     return self;
 }
+
+
+
+
+
+
+
+
 
 std::shared_ptr<CR::Gfx::RenderLayer> CR::Gfx::createRenderLayer(const CR::Vec2<int> &size, int type){
     return createRenderLayer(size, type, "", false, -1);
@@ -624,87 +660,111 @@ bool CR::Gfx::init(){
 
 static float add = 0.0f;
 
+static void __RENDER_MESH(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
+    auto *obj = static_cast<CR::Gfx::Renderable3D*>(renobj);
+
+    static auto projection = CR::Math::orthogonal(0, 1920, 0.0f, 1080, -5000.0f, 5000.0f);
+    static bool showthing = false;
+
+    static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->shAttrsValVec[2])->mat = CR::MAT4Identity;
+    static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->shAttrsValVec[3])->mat = projection;
+
+    CR::Gfx::applyShader(obj->transform->shader->getRsc()->shaderId, obj->transform->shAttrsLocVec, obj->transform->shAttrsValVec);
+
+    glActiveTexture(GL_TEXTURE0); INC_OPGL_DEBUG;
+    glBindTexture(GL_TEXTURE_2D, obj->transform->textures[CR::Gfx::TextureRole::DIFFUSE]); INC_OPGL_DEBUG;
+
+    
+
+    glBindVertexArray(obj->md.vao); INC_OPGL_DEBUG;
+    glDrawArrays(GL_TRIANGLES, 0, obj->md.vertn); INC_OPGL_DEBUG;
+    glBindVertexArray(0); INC_OPGL_DEBUG;       
+    glUseProgram(0); INC_OPGL_DEBUG;  
+
+    if(!showthing){
+        // CR::log("PROJECTION %s\n", projection.str().c_str());
+        CR::log("MODEL (RENDER) %s\n", static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->shAttrsValVec[1])->mat.str().c_str());
+        // CR::log("VIEW %s\n", static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->shAttrsValVec[2])->mat.str().c_str());
+        // CR::log("IMAGE %i\n", static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->shAttrsValVec[0])->n);
+        // CR::log("VAO %i\n", obj->md.vao);
+        // CR::log("VBO %i %i\n", obj->md.vbo[0],obj->md.vbo[1]);
+        // CR::log("EBO %i\n", obj->md.ebo);
+        // CR::log("VERTN %i\n", obj->md.vertn);       
+        showthing = true;
+    }
+
+
+    return;
+}
+
 CR::Gfx::Renderable *CR::Gfx::Draw::Mesh(CR::Gfx::MeshData &md, CR::Gfx::Transform *transform){
     CR::Gfx::Renderable3D *self = new CR::Gfx::Renderable3D(); // layer's flush is in charge of deleting this
 
     self->transform = transform;
-    self->md = md;
-
-    self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
-        auto *obj = static_cast<CR::Gfx::Renderable3D*>(renobj);
-
-        static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->shAttrsValVec[2])->mat = rl->camera.getView();
-        static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->shAttrsValVec[3])->mat = rl->projection;
-
-        CR::Gfx::applyShader(obj->transform->shader->getRsc()->shaderId, obj->transform->shAttrsLocVec, obj->transform->shAttrsValVec);
-
-        glActiveTexture(GL_TEXTURE0); INC_OPGL_DEBUG;
-        glBindTexture(GL_TEXTURE_2D, obj->transform->textures[CR::Gfx::TextureRole::DIFFUSE]); INC_OPGL_DEBUG;
-
-        glBindVertexArray(obj->md.vao); INC_OPGL_DEBUG;
-        glDrawArrays(GL_TRIANGLES, 0, obj->md.vertn); INC_OPGL_DEBUG;
-        glBindVertexArray(0); INC_OPGL_DEBUG;       
-        glUseProgram(0); INC_OPGL_DEBUG;     
-    };
+    self->md.copy(md);
+    self->render = &__RENDER_MESH;
 
     return self;
 }
 
+
+static void __RENDER_MESH_BATCH(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
+    auto *obj = static_cast<CR::Gfx::Renderable3DBatch*>(renobj);
+
+    auto camCent = rl->camera.getCenter();
+    bool shFirst = false;
+    bool texFirst = false;
+
+    CR::Vec3<unsigned> view = CR::Vec3<unsigned>(rl->size.x, rl->size.x  * 2, rl->size.y * 1.5f);
+
+    glActiveTexture(GL_TEXTURE0); INC_OPGL_DEBUG;
+    for(unsigned i = 0; i < obj->md->size(); ++i){
+
+        auto &mp = obj->transform->at(i)->position;
+        
+        if( CR::Math::abs(camCent.x-mp.x) > view.x ||
+            CR::Math::abs(camCent.y-mp.y) > view.y ||
+            CR::Math::abs(camCent.z-mp.z) > view.z){
+            continue;
+        }
+
+        if(!obj->shareShader || !shFirst){
+            static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->at(i)->shAttrsValVec[2])->mat = rl->camera.getView();
+            static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->at(i)->shAttrsValVec[3])->mat = rl->projection;
+            CR::Gfx::applyShader(obj->transform->at(i)->shader->getRsc()->shaderId, obj->transform->at(i)->shAttrsLocVec, obj->transform->at(i)->shAttrsValVec);     
+            shFirst = true;             
+        }else
+        if(obj->shareShader && obj->shareModelTrans){
+            CR::Gfx::applyShaderPartial(obj->transform->at(i)->shAttrsLocVec[obj->modelPos], obj->transform->at(i)->shAttrsValVec[obj->modelPos]);
+        }            
+        if(!obj->shareTexture || !texFirst){
+            glBindTexture(GL_TEXTURE_2D, obj->transform->at(i)->textures[CR::Gfx::TextureRole::DIFFUSE]); INC_OPGL_DEBUG;
+            texFirst = true;
+        }
+
+        glBindVertexArray(obj->md->at(i)->vao); INC_OPGL_DEBUG;
+        glDrawArrays(GL_TRIANGLES, 0, obj->md->at(i)->vertn); INC_OPGL_DEBUG;          
+
+    }
+
+    glBindVertexArray(0); INC_OPGL_DEBUG;       
+    glUseProgram(0); INC_OPGL_DEBUG; 
+
+    return;
+}
+
+
 // gotta go fasto optimization
 CR::Gfx::Renderable *CR::Gfx::Draw::MeshBatch(std::vector<CR::Gfx::MeshData*> *md, std::vector<CR::Gfx::Transform*> *transform, bool shareTexture, bool shareShader, bool shareModelTrans, unsigned modelPos){
     auto *self = new CR::Gfx::Renderable3DBatch(); // layer's flush is in charge of deleting this
-
+    
     self->md = md;
     self->transform = transform;
-
     self->shareShader = shareShader;
     self->shareShader = shareShader;
     self->shareModelTrans = shareModelTrans;
     self->modelPos = modelPos;
-
-    self->render = [](CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
-        auto *obj = static_cast<CR::Gfx::Renderable3DBatch*>(renobj);
-  
-        auto camCent = rl->camera.getCenter();
-        bool shFirst = false;
-        bool texFirst = false;
-
-        CR::Vec3<unsigned> view = CR::Vec3<unsigned>(rl->size.x, rl->size.x  * 2, rl->size.y * 1.5f);
-
-        glActiveTexture(GL_TEXTURE0); INC_OPGL_DEBUG;
-        for(unsigned i = 0; i < obj->md->size(); ++i){
-
-            auto &mp = obj->transform->at(i)->position;
-            
-            if( CR::Math::abs(camCent.x-mp.x) > view.x ||
-                CR::Math::abs(camCent.y-mp.y) > view.y ||
-                CR::Math::abs(camCent.z-mp.z) > view.z){
-                continue;
-            }
-
-            if(!obj->shareShader || !shFirst){
-                static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->at(i)->shAttrsValVec[2])->mat = rl->camera.getView();
-                static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->at(i)->shAttrsValVec[3])->mat = rl->projection;
-                CR::Gfx::applyShader(obj->transform->at(i)->shader->getRsc()->shaderId, obj->transform->at(i)->shAttrsLocVec, obj->transform->at(i)->shAttrsValVec);     
-                shFirst = true;             
-            }else
-            if(obj->shareShader && obj->shareModelTrans){
-                CR::Gfx::applyShaderPartial(obj->transform->at(i)->shAttrsLocVec[obj->modelPos], obj->transform->at(i)->shAttrsValVec[obj->modelPos]);
-            }            
-            if(!obj->shareTexture || !texFirst){
-                glBindTexture(GL_TEXTURE_2D, obj->transform->at(i)->textures[CR::Gfx::TextureRole::DIFFUSE]); INC_OPGL_DEBUG;
-                texFirst = true;
-            }
-
-            glBindVertexArray(obj->md->at(i)->vao); INC_OPGL_DEBUG;
-            glDrawArrays(GL_TRIANGLES, 0, obj->md->at(i)->vertn); INC_OPGL_DEBUG;          
-
-        }
-
-        glBindVertexArray(0); INC_OPGL_DEBUG;       
-        glUseProgram(0); INC_OPGL_DEBUG;     
-    };
-
+    self->render = &__RENDER_MESH_BATCH;
 
     return self;
 }
@@ -734,8 +794,8 @@ void CR::Gfx::render(){
 
 
 
-    static std::shared_ptr<CR::Gfx::RenderLayer> uiL = CR::Gfx::getRenderLayer("ui");
-    static std::shared_ptr<CR::Gfx::RenderLayer> wL = CR::Gfx::getRenderLayer("world");
+    // static std::shared_ptr<CR::Gfx::RenderLayer> uiL = CR::Gfx::getRenderLayer("ui");
+    // static std::shared_ptr<CR::Gfx::RenderLayer> wL = CR::Gfx::getRenderLayer("world");
 
 
     // uiL->clear();
@@ -779,17 +839,19 @@ void CR::Gfx::render(){
 
 void CR::Gfx::end(){
     running = false;
-    CR::log("Exiting...\n");
+    CR::log("Shutting down...\n");
 }
 
 void CR::Gfx::onEnd(){
-    running = false;
+    CR::log("[GFX] Unloading resources...\n");
     // Manually clear layers
-    for(auto &it : systemLayers){
+    auto sysLayerListCopy = systemLayers;
+    for(auto &it : sysLayerListCopy){
         auto &layer = it.second;
         layer->end();
     }
-    for(auto &it : userLayers){
+    auto userLayerListCopy = userLayers;
+    for(auto &it : userLayerListCopy){
         auto &layer = it.second;
         layer->end();
     }    
@@ -799,12 +861,13 @@ void CR::Gfx::onEnd(){
         CR::Gfx::deleteTexture2D(texListCopy[i]);
     }
     // clear shaders
-        auto shListCopy = shaderList;
+    auto shListCopy = shaderList;
     for(unsigned i = 0; i < shListCopy.size(); ++i){
         CR::Gfx::deleteShader(texListCopy[i]);
     }
     glfwDestroyWindow(window);
     glfwTerminate();    
+    CR::log("[GFX] Done\n");
     __CR_end_input();
     __CR_end_network();
     __CR_end_job();    
@@ -1207,7 +1270,7 @@ CR::Vec3<float> CR::Gfx::Camera::getCenter(){
 
 CR::Mat<4, 4, float> CR::Gfx::Camera::getView(){
     
-    return Math::lookAt(this->position, this->position + this->targetBias, CR::Vec3<float>(0.0f, 1.0f, 0.0f));
+    return CR::MAT4Identity;
 
     // return Math::lookAt(this->position, this->position + this->targetBias, CR::Vec3<float>(0.0f, 1.0f, 0.0f));
     // return Math::lookAt(this->position, CR::Vec3<float>(0.0f, 0.0f, 0.0f), CR::Vec3<float>(0.0f, 1.0f, 0.0f));

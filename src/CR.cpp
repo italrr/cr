@@ -87,6 +87,8 @@ struct Character {
         this->position.set(50, -frameSize.y * 0.25f, -25);
 
         anim.load("data/entity/base_human.json");
+
+        // CR::log("%i\n", this->transform->shAttrsValVec[1]->type);
         
     }
 
@@ -187,7 +189,9 @@ struct Character {
 
 
 
-        game->camera.position = this->position - CR::Vec3<float>(CR::Gfx::getWidth(), CR::Gfx::getHeight(), -CR::Gfx::getHeight()) * CR::Vec3<float>(0.5f);         
+        // game->camera.position = this->position - CR::Vec3<float>(CR::Gfx::getWidth(), CR::Gfx::getHeight(), -CR::Gfx::getHeight()) * CR::Vec3<float>(0.5f);         
+        game->camera.target = this->position;
+        game->camera.position = CR::Vec3<float>(CR::Gfx::getWidth(), CR::Gfx::getHeight(), 0);
 
 
 
@@ -226,11 +230,20 @@ struct Character {
 
             auto mposition = CR::MAT4Identity
                             .translate(position)
-                            .rotate(0, CR::Vec3<float>(0, 1, 0))
-                            .scale(CR::Vec3<float>(1.0f));            
+                            .scale(CR::Vec3<float>(10.0f));            
+
+
+                            static bool once = false;
+
+
+        if(!once){
+        CR::log("MODEL (CREATION) %s\n", mposition.str().c_str());
+        once = true;
+        }
+
+
 
             static_cast<CR::Gfx::ShaderAttrMat4*>(this->transform->shAttrsValVec[1])->mat = mposition;
-
 
             layer->add(CR::Gfx::Draw::Mesh(this->meshFrame, this->transform));
         });  

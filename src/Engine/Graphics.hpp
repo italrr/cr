@@ -120,6 +120,13 @@
                 unsigned vao;
                 unsigned ebo;
                 unsigned vertn;
+                void copy(const CR::Gfx::MeshData &other){
+                    this->vbo[0] = other.vbo[0];
+                    this->vbo[1] = other.vbo[1];
+                    this->vao = other.vao;
+                    this->ebo = other.ebo;
+                    this->vertn = other.vertn;
+                }
                 MeshData(){
                     vbo[0] = vbo[1] = 0;
                     vao = 0;
@@ -165,7 +172,8 @@
             
             struct Renderable {
                 unsigned type;
-                std::function<void(Renderable*, RenderLayer *rl)> render;
+                void (*render)(Renderable*, RenderLayer *rl);
+                // std::function<void(Renderable*, RenderLayer *rl)> render;
             };
 
             struct Renderable2D : Renderable {
@@ -263,7 +271,6 @@
                 CR::Gfx::Renderable *Texture(const std::shared_ptr<CR::Gfx::Texture> &tex, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle); 
                 CR::Gfx::Renderable *Mesh(CR::Gfx::MeshData &md, CR::Gfx::Transform *transform); 
                 CR::Gfx::Renderable *MeshBatch(std::vector<CR::Gfx::MeshData*> *md, std::vector<CR::Gfx::Transform*> *trans, bool shareTexture, bool shareShader, bool shareModel, unsigned modelPos = 0); 
-
             } 
 
             bool init();
