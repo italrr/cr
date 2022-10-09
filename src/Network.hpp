@@ -6,13 +6,54 @@
 
     namespace CR {
 
+        /*
+            Some definitions:
+
+            A game session can be private or public to join.
+
+            A game session can be Cloud only (Meaning the session is essentially run on the servers even when playing single player story mode).
+            Characters and save games when Cloud only are stored in the servers. You may download a copy of the character, but it'll be recognized
+            as such (a copy).
+            
+            So essentially there are 2 types of character info:
+            - Cloud Only: People whose character was created online, and therefore play from a server even when playing single player
+            - Local: People whose character was created locally/offline
+
+            When creating a game session, the leader can decide whether the server would allow any of the 2 to join.
+            Some people would prefer Online only characters to avoid encountering cheaters,
+            Some other people wouldn't mind Local characters to join.
+
+            Cloud only should to create some form of trust that other players aren't cheating. Of course this is not guaranteed, but
+            it should reduce it a little bit. Local saves are encrypted.
+
+
+            When a new character is created, it's registered in the backend.
+
+        */
+
         namespace Net {
             static const uint32 CLIENT_UNRESPONSIVE_TIMEOUT = 30 * 1000; // 30 seconds before dropping unresponsive client
             static const uint32 CLIENT_CONNECT_TRY_TIMEOUT_INTERVAL = 3;  // retries 3 times
             static const uint64 CLIENT_CONNECT_TIMEOUT = 1000 * 3;
         }
 
+        namespace ClientOriginType {
+            enum ClientOriginType : T_GENERICTYPE {
+                CLOUD_ONLY,
+                LOCAL,
+                ANY
+            };            
+        }
 
+        namespace SessionType {
+            enum SessionType : T_GENERICTYPE {
+                FREEROAM = 0,
+                BATTLE_ROLAYE,
+                TEAM_DEATHMATCH,
+                ONE_VS_ONE,
+                SEAMLESS_COOP
+            };
+        }        
 
         struct PersisentDelivey {
             CR::Packet packet;
@@ -57,7 +98,7 @@
 
         enum PacketType : uint16 {
 
-            SV_MULTI_PART_PACKET = 0,
+            MULTI_PART_PACKET = 0,
             /*
                 UINT8 N
                 { 
@@ -68,20 +109,113 @@
                 }
             */
 
-            SV_ACK,
+            ACK,
             /*
                 UINT32 ORDER
             */
 
-            SV_PING,
+            PING,
             /*
 
             */
 
-            SV_PONG,
+            PONG,
             /*
 
             */           
+
+            REQ_SESSION_INFO
+            /*
+                STRING AUTH TOKEN (IF REQUIRED. 64 BYTES MAX. ASCII)
+            */
+
+            SESSION_INFO
+            /*
+                STRING SESSION MAME (MAX 24 B)
+                UINT8 GAME TYPE/SESSION TYPE
+                UINT8 CLIENT ORIGIN
+                UINT64 RUNTIME
+                BOOL PASSWORDREQ
+                BOOL STARTED/AT LOBBY
+                UINT8 CURRENT PLAYER NUMBER
+                UINT8 MAX PLAYER NUMBER
+
+            */
+
+            CONNECT_REQUEST,
+            /*
+                UINT8[3] CLIENT VERSION
+                STRING NICKNAME (MAX 24 B)
+                STRING AUTH TOKEN 
+                STRING PASSWORD 
+            */
+
+            CONNECT_ACCEPT,
+            /*
+                STRING SESSION MAME (MAX 24 B)
+                UINT64 SESSION ID
+                UINT32 CLIENT ID
+            */
+
+            CONNECT_REJECT,
+            /*
+                STRING REASON (MAX 300 B)
+            */
+
+            CLIENT_DROP,
+            /*
+                UINT32 CLIENT ID
+                STRING REASON (MAX 300 B)
+            */
+
+            CLIENT_DISCONNECT,
+            /*
+                UINT32 CLIENT ID
+                STRING REASON (MAX 300 B)
+            */
+
+            CLIENT_AWAIT_CLIENT_LOAD,
+            /*
+                STRING MAP ID (HASH)
+            */
+
+            CLIENT_LOAD_READY,
+            /*
+                STRING MAP ID (HASH)
+            */
+
+            CLIENT_LIST,
+            /*
+                UINT8 N
+                0: {
+                    UINT32 CLIENT ID
+                    STRING NICKNAME (MAX 24 B)
+                    UINT8 PING
+                }
+                ...
+            */
+
+            BROADCAST_MESSAGE, // From the server
+            /*
+                STRING MESSAGE (MAX 250 B)
+                UINT8[3] COLOR
+            */
+
+            CHAT_MESSAGE,
+            /*
+                UINT32 CLIENT ID
+                STRING MESSAGE (MAX 250 B)
+            */
+
+            CHARACTER_SHEET,
+            /*
+                
+
+            */
+
+
+
+
 
         };      
 

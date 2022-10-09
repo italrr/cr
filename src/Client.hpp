@@ -3,4 +3,8 @@
 
     #include "Network.hpp"
 
+    struct Client : NetHandle {
+
+    };
+
 #endif

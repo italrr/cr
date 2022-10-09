@@ -9,9 +9,11 @@
         
         typedef uint8       T_OBJSIG;
         typedef uint8       T_ENTTYPE;
+        typedef uint8       T_GENERICTYPE;
         typedef uint8       T_STATE;
         typedef uint16      T_OBJID;
         typedef uint16      T_FRAME;
+        typedef uint32      T_CLIENTID;
         typedef uint32      T_FRAMEORD;
         typedef uint32      T_WORLDPOS;
         typedef uint64      T_TIME;
