@@ -178,7 +178,6 @@ bool CR::Gfx::RenderLayer::init(unsigned type, int width, int height){
 
     switch(this->type){
         case RenderLayerType::T_3D: {
-            CR::log("\n\n\n\n\n%ix%i\n\n\n\n\n", size.x, size.y);
             this->projection = CR::Math::orthogonal(0, size.x, 0.0f, size.y, -5000.0f, 5000.0f);
             // this->projection = CR::Math::perspective(45.0f, static_cast<float>(this->size.x) /  static_cast<float>(this->size.y), -2500.0f, 2500.0f);
         } break;
@@ -658,41 +657,21 @@ bool CR::Gfx::init(){
 }
 
 
-static float add = 0.0f;
-
 static void __RENDER_MESH(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
     auto *obj = static_cast<CR::Gfx::Renderable3D*>(renobj);
 
-    static auto projection = CR::Math::orthogonal(0, 1920, 0.0f, 1080, -5000.0f, 5000.0f);
-    static bool showthing = false;
-
-    static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->shAttrsValVec[2])->mat = CR::MAT4Identity;
-    static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->shAttrsValVec[3])->mat = projection;
+    static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->shAttrsValVec[2])->mat = rl->camera.getView();
+    static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->shAttrsValVec[3])->mat = rl->projection;
 
     CR::Gfx::applyShader(obj->transform->shader->getRsc()->shaderId, obj->transform->shAttrsLocVec, obj->transform->shAttrsValVec);
 
     glActiveTexture(GL_TEXTURE0); INC_OPGL_DEBUG;
     glBindTexture(GL_TEXTURE_2D, obj->transform->textures[CR::Gfx::TextureRole::DIFFUSE]); INC_OPGL_DEBUG;
 
-    
-
     glBindVertexArray(obj->md.vao); INC_OPGL_DEBUG;
     glDrawArrays(GL_TRIANGLES, 0, obj->md.vertn); INC_OPGL_DEBUG;
     glBindVertexArray(0); INC_OPGL_DEBUG;       
     glUseProgram(0); INC_OPGL_DEBUG;  
-
-    if(!showthing){
-        // CR::log("PROJECTION %s\n", projection.str().c_str());
-        CR::log("MODEL (RENDER) %s\n", static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->shAttrsValVec[1])->mat.str().c_str());
-        // CR::log("VIEW %s\n", static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->shAttrsValVec[2])->mat.str().c_str());
-        // CR::log("IMAGE %i\n", static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->shAttrsValVec[0])->n);
-        // CR::log("VAO %i\n", obj->md.vao);
-        // CR::log("VBO %i %i\n", obj->md.vbo[0],obj->md.vbo[1]);
-        // CR::log("EBO %i\n", obj->md.ebo);
-        // CR::log("VERTN %i\n", obj->md.vertn);       
-        showthing = true;
-    }
-
 
     return;
 }
@@ -1270,7 +1249,7 @@ CR::Vec3<float> CR::Gfx::Camera::getCenter(){
 
 CR::Mat<4, 4, float> CR::Gfx::Camera::getView(){
     
-    return CR::MAT4Identity;
+     return Math::lookAt(this->position, this->position + this->targetBias, CR::Vec3<float>(0.0f, 1.0f, 0.0f));
 
     // return Math::lookAt(this->position, this->position + this->targetBias, CR::Vec3<float>(0.0f, 1.0f, 0.0f));
     // return Math::lookAt(this->position, CR::Vec3<float>(0.0f, 0.0f, 0.0f), CR::Vec3<float>(0.0f, 1.0f, 0.0f));

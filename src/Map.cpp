@@ -858,7 +858,7 @@ void CR::Map::Map::render(){
         //     layer->add(CR::Gfx::Draw::Mesh(this->tiles[i].source->md, this->tiles[i].transform));
         // }
 
-        // layer->add(CR::Gfx::Draw::MeshBatch(&this->batchMesh, &this->batchTrans, true, true, true, 1));
+        layer->add(CR::Gfx::Draw::MeshBatch(&this->batchMesh, &this->batchTrans, true, true, true, 1));
 
 
     });    

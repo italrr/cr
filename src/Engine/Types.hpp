@@ -340,6 +340,7 @@
 			0, 0, 1, 0,
 			0, 0, 0, 1		
 		};		
+		bool log(const std::string &format, ...);
 
 		template<unsigned w, unsigned h, typename T>
 		struct Mat {
@@ -351,7 +352,7 @@
             }
 
 			Mat(){
-				
+				set(static_cast<T>(0));
             }			
 
             Mat(const T mat[w*h]){
@@ -553,13 +554,13 @@
 				return reversed;
 			}
 
-			CR::Mat<4, 4, T> rotate(T angle, const CR::Vec3<T> &vec) const{
+			CR::Mat<4, 4, T> rotate(T angle, const CR::Vec3<T> &vec, bool show = false) const{
 				T const a = angle;
 				T const c = Math::cos(a);
 				T const s = Math::sin(a);
 
 				CR::Vec3<T> axis = vec.normalize();
-				float cdiff = (T)1 - c;
+				T cdiff = (T)1 - c;
 				CR::Vec3<T> temp(axis.x * cdiff, axis.y * cdiff, axis.z * cdiff);
 
 				Mat<4, 4, T> rotate;

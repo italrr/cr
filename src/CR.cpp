@@ -4,8 +4,8 @@
 #include "Engine/Job.hpp"
 #include "Engine/Input.hpp"
 #include "Map.hpp"
+
 #include "Entity.hpp"
-#include "World.hpp"
 
 static std::shared_ptr<CR::Gfx::RenderLayer> game;
 
@@ -69,9 +69,10 @@ struct Character {
         this->transform->textures[CR::Gfx::TextureRole::DIFFUSE] = this->atlas->getRsc()->textureId;
         this->transform->shAttrsLoc = charShader->shAttrs;
         
+
         auto position = CR::MAT4Identity
                         .translate(CR::Vec3<float>(0.0f, -30.0f, 0.0f))
-                        .rotate(0, CR::Vec3<float>(1, 1, 1))
+                        .rotate(0, CR::Vec3<float>(0, 0, 0))
                         .scale(CR::Vec3<float>(1.0f));
 
         this->transform->shAttrsVal = {
@@ -87,8 +88,6 @@ struct Character {
         this->position.set(50, -frameSize.y * 0.25f, -25);
 
         anim.load("data/entity/base_human.json");
-
-        // CR::log("%i\n", this->transform->shAttrsValVec[1]->type);
         
     }
 
@@ -189,9 +188,7 @@ struct Character {
 
 
 
-        // game->camera.position = this->position - CR::Vec3<float>(CR::Gfx::getWidth(), CR::Gfx::getHeight(), -CR::Gfx::getHeight()) * CR::Vec3<float>(0.5f);         
-        game->camera.target = this->position;
-        game->camera.position = CR::Vec3<float>(CR::Gfx::getWidth(), CR::Gfx::getHeight(), 0);
+        game->camera.position = this->position - CR::Vec3<float>(CR::Gfx::getWidth(), CR::Gfx::getHeight(), -CR::Gfx::getHeight()) * CR::Vec3<float>(0.5f);         
 
 
 
@@ -204,8 +201,6 @@ struct Character {
         auto theta = CR::Math::degs(CR::Math::atan(game->camera.targetBias.z, game->camera.targetBias.x));
 
         // CR::log("%f\n", theta);
-
-
 
 
         if(CR::ticks()-lastF > static_cast<float>(this->anim.framerate) * (1.0f / rate)){
@@ -230,20 +225,11 @@ struct Character {
 
             auto mposition = CR::MAT4Identity
                             .translate(position)
-                            .scale(CR::Vec3<float>(10.0f));            
-
-
-                            static bool once = false;
-
-
-        if(!once){
-        CR::log("MODEL (CREATION) %s\n", mposition.str().c_str());
-        once = true;
-        }
-
-
+                            .rotate(0, CR::Vec3<float>(0, 1, 0))
+                            .scale(CR::Vec3<float>(1.0f));            
 
             static_cast<CR::Gfx::ShaderAttrMat4*>(this->transform->shAttrsValVec[1])->mat = mposition;
+
 
             layer->add(CR::Gfx::Draw::Mesh(this->meshFrame, this->transform));
         });  
@@ -285,10 +271,6 @@ int main(int argc, char* argv[]){
 
     player.load();
 
-    auto world = std::make_shared<CR::World>(CR::World());
-
-    world->start();
-
     while(CR::Gfx::isRunning()){
 
 
@@ -298,7 +280,6 @@ int main(int argc, char* argv[]){
             float amnt = CR::getDelta() * 2000;
             gameL->camera.position.z += amnt;
             gameL->camera.position.x -= amnt;
-            CR::log("%s\n", gameL->camera.position.str().c_str());
         }
         //DOWN_LEFT
         if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD3)){
@@ -308,7 +289,6 @@ int main(int argc, char* argv[]){
 
             gameL->camera.position.z -= amnt;
             gameL->camera.position.x += amnt;            
-            CR::log("%s\n", gameL->camera.position.str().c_str());
         }
         // UP_RIGHT    
         if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD9)){
@@ -316,7 +296,6 @@ int main(int argc, char* argv[]){
 
             gameL->camera.position.z += amnt;
             gameL->camera.position.x += amnt;
-            CR::log("%s\n", gameL->camera.position.str().c_str());
         }
         // DOWN_RIGHTH
         if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD1)){
@@ -324,7 +303,6 @@ int main(int argc, char* argv[]){
 
             gameL->camera.position.z -= CR::getDelta() * 2000;
             gameL->camera.position.x -= CR::getDelta() * 2000;
-            CR::log("%s\n", gameL->camera.position.str().c_str());
         }  
 
 
@@ -375,8 +353,6 @@ int main(int argc, char* argv[]){
         if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD6)){
             gameL->camera.position.x += CR::getDelta() * 2000;
         }    
-
-        world->run(1);
 
         map->render();
         player.render();
