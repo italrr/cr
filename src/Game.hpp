@@ -67,11 +67,11 @@
                 GAME_SIM_MESSAGE,
                 GAME_SIM_SETTING_CHANGED,
                 GAME_SIM_STATE_CHANGED,
-
-                WORLD_WEATHER_STATUS,
+                GAME_SIM_WEATHER_STATUS,
 
                 CLIENT_CONNECTED,
                 CLIENT_DISCONNECTED,
+                CLIENT_DROPPED,
 
                 PLAYER_CHAT_MESSAGE,
                 PLAYER_JOINED,
