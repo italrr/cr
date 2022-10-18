@@ -14,6 +14,7 @@
             CR::IP_Port svAddress;
             bool isHandleRunning;
             uint64 connReqAt;
+            unsigned connRet;
             Client();
             bool connect(const std::string &ip, unsigned port, CR::World *world);
             void end();
