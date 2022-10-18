@@ -91,7 +91,7 @@ void CR::NetHandle::ack(CR::Packet &packet){
 }
 
 void CR::NetHandle::sendAck(CR::IP_Port &ip, uint32 ackId){
-    CR::Packet ack(CR::PacketType::SV_ACK);
+    CR::Packet ack(CR::PacketType::ACK);
     ack.setAck(ackId);
     sendPacketFor(ip, ack);
 }

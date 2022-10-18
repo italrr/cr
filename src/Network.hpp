@@ -2,6 +2,7 @@
     #define CR_GAME_NETWORK_HPP
 
     #include "Engine/Network.hpp"
+    #include "Game.hpp"
 
 
     namespace CR {
@@ -124,12 +125,12 @@
 
             */           
 
-            REQ_SESSION_INFO
+            REQ_SESSION_INFO,
             /*
                 STRING AUTH TOKEN (IF REQUIRED. 64 BYTES MAX. ASCII)
             */
 
-            SESSION_INFO
+            SESSION_INFO,
             /*
                 STRING SESSION MAME (MAX 24 B)
                 UINT8 GAME TYPE/SESSION TYPE
@@ -207,7 +208,7 @@
                 STRING MESSAGE (MAX 250 B)
             */
 
-            CHARACTER_SHEET,
+            CHARACTER_SHEET
             /*
                 
 
