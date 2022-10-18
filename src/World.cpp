@@ -64,9 +64,8 @@ void CR::World::setState(T_STATE nstate){
 }
 
 void CR::World::run(unsigned ticks){
-    // game & sim
+    // run sim per tick
     for(unsigned i = 0; i < ticks; ++i){
-
         ++currentTick;
     }
     // audits

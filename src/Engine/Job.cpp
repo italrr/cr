@@ -126,7 +126,7 @@ struct _Scheduler {
         if(spec.threaded){
             int rc  = pthread_create(&pool[id].thread, NULL, thread_job, (void*)&pool[id]);
             if (rc){
-                CR::log("[JOB] Attention: failed to spawn thread id '%i'. return code: '%i'\n", id, rc);
+                CR::log("[JOB] Warning: failed to spawn thread id '%i'. return code: '%i'\n", id, rc);
                 handle->status = CR::JobStatus::Stopped;
             }            
         }
@@ -153,7 +153,7 @@ struct _Scheduler {
         if(spec.threaded){
             int rc  = pthread_create(&pool[id].thread, NULL, thread_job, (void*)&pool[id]);
             if (rc){
-                CR::log("[JOB] Attention: failed to spawn thread id '%i'. return code: '%i'\n", id, rc);
+                CR::log("[JOB] Warning: failed to spawn thread id '%i'. return code: '%i'\n", id, rc);
                 handle->status = CR::JobStatus::Stopped;
             }            
         }

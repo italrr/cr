@@ -4,8 +4,9 @@
 #include "Engine/Job.hpp"
 #include "Engine/Input.hpp"
 #include "Map.hpp"
-
 #include "Entity.hpp"
+#include "Client.hpp"
+#include "World.hpp"
 
 static std::shared_ptr<CR::Gfx::RenderLayer> game;
 
@@ -263,9 +264,14 @@ int main(int argc, char* argv[]){
 
     game = CR::Gfx::getRenderLayer("world", true);
 
-    std::shared_ptr<CR::Map::Map> map = std::make_shared<CR::Map::Map>(CR::Map::Map()); 
+    // std::shared_ptr<CR::Map::Map> map = std::make_shared<CR::Map::Map>(CR::Map::Map()); 
 
-    map->build(CR::Vec2<int>(32, 32), 8, 50);
+    // map->build(CR::Vec2<int>(32, 32), 8, 50);
+
+    CR::Client client;
+
+    CR::World world;
+    client.connect("127.0.0.1", CR::NetworkDefaultPort, &world);
 
     Character player;
 
@@ -354,13 +360,13 @@ int main(int argc, char* argv[]){
             gameL->camera.position.x += CR::getDelta() * 2000;
         }    
 
-        map->render();
+        // map->render();
         player.render();
         
         CR::Gfx::render();
     }
 
-    map->clear();
+    // map->clear();
 
     CR::Gfx::onEnd();
 

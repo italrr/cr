@@ -45,7 +45,7 @@ void CR::IP_Port::set(const std::string &ip, uint16 port){
 	this->address = inet_addr(ip.c_str());
 }
 
-bool CR::IP_Port::isBlack(){
+bool CR::IP_Port::isBlank(){
 	return address == 0 && port == 0;
 }
 

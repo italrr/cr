@@ -4,6 +4,8 @@
 CR::NetHandle::NetHandle(){
     packetQueue.reserve(1024);
     rcvPackets.reserve(1024);
+    netState = NetHandleState::IDLE;
+    isServer = false;
 }
 
 void CR::NetHandle::sendPacketFor(const CR::IP_Port &ip, CR::Packet &packet){

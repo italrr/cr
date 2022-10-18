@@ -13,13 +13,13 @@
 		static const size_t NetworkOrderSize = sizeof(uint32);
 		static const size_t NetworkAckSize = sizeof(uint32);
 		static const size_t NetworkMaxHeaderSize = NetworkHeaderSize + NetworkOrderSize + NetworkAckSize;
-		static const size_t NetworkMaxPacketSize = 512; // 512 bytes is the maximum size for reliable packet transmission over the internet
+		static const size_t NetworkMaxPacketSize = 512;
 
 		struct IP_Port {
 			IP_Port();
 			IP_Port(const std::string &ip, uint16 port);
 			IP_Port(const CR::IP_Port &ip, uint16 nport);
-			bool isBlack();
+			bool isBlank();
 			void clear();
 			std::string ip;
 			uint16 port;

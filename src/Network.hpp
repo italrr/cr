@@ -1,6 +1,8 @@
 #ifndef CR_GAME_NETWORK_HPP
     #define CR_GAME_NETWORK_HPP
 
+    #include <thread>
+
     #include "Engine/Network.hpp"
     #include "Game.hpp"
 
@@ -71,7 +73,20 @@
             }
         };
 
+        namespace NetHandleState {
+            enum NetHandleState : T_GENERICTYPE {
+                IDLE,
+                LISTENING,
+                CONNECTING,
+                CONNECTED,
+                DISCONNECTED
+            };
+        }
+
         struct NetHandle {
+            T_GENERICTYPE netState;
+            std::thread thread;
+            std::mutex netCon;
             bool isServer;
             CR::UDPSocket socket;
             std::vector<std::shared_ptr<CR::PersisentDelivey>> deliveries;
