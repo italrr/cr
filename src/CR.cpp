@@ -6,6 +6,7 @@
 #include "Map.hpp"
 #include "Entity.hpp"
 #include "Client.hpp"
+#include "Server.hpp"
 #include "World.hpp"
 
 static std::shared_ptr<CR::Gfx::RenderLayer> game;
@@ -269,9 +270,14 @@ int main(int argc, char* argv[]){
     // map->build(CR::Vec2<int>(32, 32), 8, 50);
 
     CR::Client client;
+    CR::Server server;
+    server.listen("Social Room", 24, CR::NetworkDefaultPort);
 
     CR::World world;
-    client.connect("127.0.0.1", CR::NetworkDefaultPort, &world);
+    
+    CR::spawn([&](CR::Job &Ctx){
+        client.connect("127.0.0.1", CR::NetworkDefaultPort, &world);
+    }, false, false, false);
 
     Character player;
 
@@ -360,9 +366,10 @@ int main(int argc, char* argv[]){
             gameL->camera.position.x += CR::getDelta() * 2000;
         }    
 
+        client.step();
+
         // map->render();
         player.render();
-        
         CR::Gfx::render();
     }
 

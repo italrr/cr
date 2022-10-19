@@ -24,7 +24,7 @@ void CR::NetHandle::sendPersPacketFor(const CR::IP_Port &ip, CR::Packet &packet,
     packet.receiver = ip;
     packet.setAck(ack);
     packetQueue.push_back(packet);  
-    auto pd = std::shared_ptr<CR::PersisentDelivey>(new CR::PersisentDelivey());
+    auto pd = std::make_shared<CR::PersisentDelivey>(CR::PersisentDelivey());
     pd->ip = ip;
     pd->ack = ack;
     pd->header = packet.getHeader();
@@ -40,7 +40,7 @@ void CR::NetHandle::sendPersPacketForMany(const std::vector<CR::IP_Port> &ips, C
         packet.receiver = ip;
         packet.setAck(ack);
         packetQueue.push_back(packet);        
-        auto pd = std::shared_ptr<CR::PersisentDelivey>(new CR::PersisentDelivey());
+        auto pd = std::make_shared<CR::PersisentDelivey>(CR::PersisentDelivey());
         pd->ip = ip;
         pd->header = packet.getHeader();
         pd->ack = ack;

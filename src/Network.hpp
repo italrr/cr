@@ -36,8 +36,8 @@
 
         namespace Net {
             static const uint32 CLIENT_UNRESPONSIVE_TIMEOUT = 30 * 1000; // 30 seconds before dropping unresponsive client
-            static const uint32 CLIENT_CONNECT_TRY_TIMEOUT_INTERVAL = 4;  // retries 3 times
-            static const uint64 CLIENT_CONNECT_TIMEOUT = 1000 * 3;
+            static const uint32 CLIENT_CONNECT_TRY_TIMEOUT_INTERVAL = 4;  // retries 4 times
+            static const uint64 CLIENT_CONNECT_TIMEOUT = 1000 * 5;
         }
 
         namespace ClientOriginType {
@@ -169,7 +169,7 @@
             CONNECT_ACCEPT,
             /*
                 STRING SESSION MAME (MAX 24 B)
-                UINT64 SESSION ID
+                UINT32 SESSION ID
                 UINT32 CLIENT ID
             */
 

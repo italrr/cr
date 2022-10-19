@@ -12,13 +12,25 @@
         struct Client : NetHandle {
             CR::World *world;
             CR::IP_Port svAddress;
-            bool isHandleRunning;
             uint64 connReqAt;
             unsigned connRet;
+            uint64 svNetId;
+            uint64 lastPacketTimeout;
+            CR::Packet lastPacket;
+            uint64 ping;
+            uint64 lastPing;
+            uint64 lastSentPing;
+            // Packet delivery
+            uint32 rcvOrder;
+            uint32 sentOrder;
+
             Client();
+            void processPacket(CR::Packet &packet);
             bool connect(const std::string &ip, unsigned port, CR::World *world);
-            void end();
+            void disconnect(const std::string &message = "");
+            void cleanUp();
             void step();
+            void deliverPacketQueue();
 
         };
 
