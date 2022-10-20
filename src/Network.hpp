@@ -123,8 +123,8 @@
             CR::ClientHandle *getClient(CR::T_GENERICID playerId);
             CR::ClientHandle *getClientByIP(const CR::IP_Port &ip);            
             
-            std::vector<CR::IP_Port> CR::NetHandle::getAllClientsIPs();
-            std::vector<uint32> CR::NetHandle::getAllClientsACKs();
+            std::vector<CR::IP_Port> getAllClientsIPs();
+            std::vector<uint32> getAllClientsACKs();
 
             void sendPacketFor(const CR::IP_Port &ip, CR::Packet &packet);
             void sendPacketForMany(const std::vector<CR::IP_Port> &ips, CR::Packet &packet);

@@ -122,6 +122,9 @@ void CR::Client::processPacket(CR::Packet &packet, bool ignoreOrder){
                 processPacket(holder, true);
             }
         } break;         
+        case CR::PacketType::ACK: {
+            ack(packet);
+        } break;        
         /*
             SV_PONG
         */
@@ -170,9 +173,8 @@ void CR::Client::processPacket(CR::Packet &packet, bool ignoreOrder){
                 nclient->clientId = clientId;
                 this->clients[nclient->clientId] = nclient;                
             }
-
             CR::log("[CLIENT] Player %s joined the game\n", nickname.c_str());
-
+            sendAck(sender, packet.getAck());
         } break;   
 
         /*

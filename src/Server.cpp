@@ -39,7 +39,10 @@ static void SV_PROCESS_PACKET(CR::Server *sv, CR::Packet &packet, bool ignoreOrd
                 holder.sender = client->ip;
                 SV_PROCESS_PACKET(sv, holder, true);
             }
-        } break;        
+        } break;       
+        case CR::PacketType::ACK: {
+            sv->ack(packet);
+        } break;              
         /*
             SV_PONG
         */      
