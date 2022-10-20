@@ -87,7 +87,7 @@ void CR::Client::disconnect(const std::string &message){
     cleanUp();
 }
 
-void CR::Client::processPacket(CR::Packet &packet){
+void CR::Client::processPacket(CR::Packet &packet, bool ignoreOrder){
     auto &sender = packet.sender;
     uint64 netId = sender.address + sender.port + socket.sock;
     bool isSv = netId == this->svNetId && netState != CR::NetHandleState::DISCONNECTED;
@@ -96,7 +96,32 @@ void CR::Client::processPacket(CR::Packet &packet){
         lastPacket = packet;
         rcvOrder = packet.getOrder();
     }
+    if(ignoreOrder){
+        isLast = true;
+    }
     switch(packet.getHeader()){
+        /*
+            SV_MULTI_PART_PACKET    
+        */
+        case CR::PacketType::MULTI_PART_PACKET: {
+            if(!isSv){
+                break;
+            }                    
+            std::vector<uint16> sizes;
+            uint8 total;
+            packet.read(&total, sizeof(total));
+            for(int i = 0; i < total; ++i){
+                uint16 size;
+                packet.read(&size, sizeof(size));
+                sizes.push_back(size);
+            }
+            for(int i = 0; i < total; ++i){
+                CR::Packet holder;
+                packet.read(holder.data, sizes[i]);
+                holder.sender = svAddress;
+                processPacket(holder, true);
+            }
+        } break;         
         /*
             SV_PONG
         */
@@ -127,7 +152,35 @@ void CR::Client::processPacket(CR::Packet &packet){
             // }
             // CR::print("[client] server dropped connection: "+reason);
             // clear();
-        } break;               
+        } break;   
+
+        /*
+            CLIENT_JOIN
+        */
+        case CR::PacketType::CLIENT_JOIN: {
+            CR::T_GENERICID clientId;
+            std::string nickname;
+            packet.read(&clientId, sizeof(CR::T_GENERICID));
+            packet.read(nickname);
+
+            auto client = getClient(clientId);
+            if(!client){
+                auto nclient = std::make_shared<CR::ClientHandle>(CR::ClientHandle());
+                nclient->nickname = nickname;
+                nclient->clientId = clientId;
+                this->clients[nclient->clientId] = nclient;                
+            }
+
+            CR::log("[CLIENT] Player %s joined the game\n", nickname.c_str());
+
+        } break;   
+
+        /*
+            CLIENT_DISCONNECT
+        */
+        case CR::PacketType::CLIENT_DISCONNECT: {
+
+        } break;                               
                               
     }
 }

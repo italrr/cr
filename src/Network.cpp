@@ -1,6 +1,37 @@
 #include "Network.hpp"
 
 
+CR::ClientHandle *CR::NetHandle::getClientByIP(const CR::IP_Port &ip){
+    for(auto _cl : clients){
+        if(_cl.second->ip.isSame(ip)){
+            return clients[_cl.first].get();
+        }
+    }
+    return NULL;
+}
+
+CR::ClientHandle *CR::NetHandle::getClient(CR::T_GENERICID playerId){
+    return clients.count(playerId) > 0 ? clients[playerId].get() : NULL;
+}
+
+
+std::vector<CR::IP_Port> CR::NetHandle::getAllClientsIPs(){
+    std::vector<CR::IP_Port> ips;
+    for(auto &it : clients){
+        ips.push_back(it.second->ip);
+    }
+    return ips;    
+}
+
+std::vector<uint32> CR::NetHandle::getAllClientsACKs(){
+    std::vector<uint32> acks;
+    for(auto &it : clients){
+        acks.push_back(++it.second->svACK);
+    }
+    return acks;
+}
+
+
 CR::NetHandle::NetHandle(){
     packetQueue.reserve(1024);
     rcvPackets.reserve(1024);

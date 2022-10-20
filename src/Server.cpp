@@ -1,6 +1,10 @@
 #include "Server.hpp"
 
 
+static void SV_SEND_CLIENT_JOIN(CR::Server *sv, CR::T_GENERICID clientId, const std::string &nickname){
+
+}
+
 static void SV_PROCESS_PACKET(CR::Server *sv, CR::Packet &packet, bool ignoreOrder){
     auto sender = packet.sender;
     auto client = sv->getClientByIP(sender);
@@ -14,6 +18,28 @@ static void SV_PROCESS_PACKET(CR::Server *sv, CR::Packet &packet, bool ignoreOrd
         isLast = true;
     }
     switch(packet.getHeader()){
+        /*
+            SV_MULTI_PART_PACKET    
+        */
+        case CR::PacketType::MULTI_PART_PACKET: {
+            if(!client){
+                break;
+            }                    
+            std::vector<uint16> sizes;
+            uint8 total;
+            packet.read(&total, sizeof(total));
+            for(int i = 0; i < total; ++i){
+                uint16 size;
+                packet.read(&size, sizeof(size));
+                sizes.push_back(size);
+            }
+            for(int i = 0; i < total; ++i){
+                CR::Packet holder;
+                packet.read(holder.data, sizes[i]);
+                holder.sender = client->ip;
+                SV_PROCESS_PACKET(sv, holder, true);
+            }
+        } break;        
         /*
             SV_PONG
         */      
@@ -72,6 +98,12 @@ static void SV_PROCESS_PACKET(CR::Server *sv, CR::Packet &packet, bool ignoreOrd
             acptPacket.write(&sv->sessionId, sizeof(CR::T_GENERICID));
             acptPacket.write(&nclient->clientId, sizeof(CR::T_GENERICID));
             sv->socket.send(sender, acptPacket);
+            // Notify client joined
+            CR::Packet clJoinedPacket;
+            clJoinedPacket.setHeader(CR::PacketType::CLIENT_JOIN);  
+            clJoinedPacket.write(&nclient->clientId, sizeof(CR::T_GENERICID));
+            clJoinedPacket.write(nickname);         
+            sv->sendPersPacketForMany(sv->getAllClientsIPs(), clJoinedPacket, sv->getAllClientsACKs());
         } break;
         /*
             SV_CLIENT_DISCONNECT
@@ -112,20 +144,6 @@ static void SV_THREAD(void *handle){
 
 static void GAME_THREAD(void *handle){
 
-}
-
-
-CR::ClientHandle *CR::Server::getClientByIP(const CR::IP_Port &ip){
-    for(auto _cl : clients){
-        if(_cl.second->ip.isSame(ip)){
-            return clients[_cl.first].get();
-        }
-    }
-    return NULL;
-}
-
-CR::ClientHandle *CR::Server::getClient(CR::T_GENERICID playerId){
-    return clients.count(playerId) > 0 ? clients[playerId].get() : NULL;
 }
 
 CR::Server::Server(){

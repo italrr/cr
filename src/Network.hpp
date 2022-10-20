@@ -2,6 +2,7 @@
     #define CR_GAME_NETWORK_HPP
 
     #include <thread>
+    #include <unordered_map>
 
     #include "Engine/Network.hpp"
     #include "Game.hpp"
@@ -83,6 +84,28 @@
             };
         }
 
+        struct ClientHandle {
+            CR::T_GENERICID clientId;
+            uint64 netId;
+            CR::IP_Port ip;
+            std::string nickname;
+            uint64 ping;
+            uint64 lastPing;
+            uint32 svACK;
+            CR::Packet lastPacket;
+
+            uint32 lastRecvOrder; 
+            uint32 lastSentOrder;  
+            uint64 lastPacketTimeout;            
+
+
+            ClientHandle(){
+                lastRecvOrder = 0;
+                lastSentOrder = 1;
+                svACK = 0;       
+            }
+        };
+
         struct NetHandle {
             T_GENERICTYPE netState;
             std::thread thread;
@@ -93,8 +116,16 @@
             std::vector<CR::Packet> packetQueue;
             std::vector<CR::Packet> rcvPackets;
             
+            std::unordered_map<CR::T_GENERICID, std::shared_ptr<CR::ClientHandle>> clients;
+
             NetHandle();
+
+            CR::ClientHandle *getClient(CR::T_GENERICID playerId);
+            CR::ClientHandle *getClientByIP(const CR::IP_Port &ip);            
             
+            std::vector<CR::IP_Port> CR::NetHandle::getAllClientsIPs();
+            std::vector<uint32> CR::NetHandle::getAllClientsACKs();
+
             void sendPacketFor(const CR::IP_Port &ip, CR::Packet &packet);
             void sendPacketForMany(const std::vector<CR::IP_Port> &ips, CR::Packet &packet);
             void sendPersPacketFor(const CR::IP_Port &ip, CR::Packet &packet, uint32 ack);
@@ -176,6 +207,12 @@
             CONNECT_REJECT,
             /*
                 STRING REASON (MAX 300 B)
+            */
+
+            CLIENT_JOIN,
+            /*
+                UINT32 CLIENT ID
+                STRING NICKNAME
             */
 
             CLIENT_DROP,
