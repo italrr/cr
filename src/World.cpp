@@ -25,6 +25,7 @@ CR::World::World(){
     this->auditBacklog.push_back(this->createFrame(FrameType::GAME_SIM_CREATED));
 }
 
+
 void CR::World::start(){
     this->auditBacklog.push_back(this->createFrame(FrameType::GAME_SIM_STARTED));    
     CR::log("World[%i] started simulation\n", this->wId);    
@@ -67,6 +68,9 @@ void CR::World::run(unsigned ticks){
     // run sim per tick
     for(unsigned i = 0; i < ticks; ++i){
         ++currentTick;
+        for(unsigned i = 0; i < objects.size(); ++i){
+            objects[i]->onStep();
+        }
     }
     // audits
     for(unsigned i = 0; i < auditBacklog.size(); ++i){
@@ -76,7 +80,7 @@ void CR::World::run(unsigned ticks){
         if(apply(audit)){
             this->auditHistory.push_back(audit);   
         }else{
-            CR::log("World[%i] fatal error has occured applying a frame: game will stop\n");
+            CR::log("World[%i] Fatal error has occured applying a frame: game will stop\n");
             CR::Core::exit(1); // TODO: Find a better way to handle this
             return;
         }
@@ -86,14 +90,14 @@ void CR::World::run(unsigned ticks){
 
 CR::T_OBJID CR::World::add(const std::shared_ptr<CR::Object> &obj){
     if(obj->world != NULL || obj->id != CR::OBJ_ID_INVALID){
-        std::string errmsg = CR::String::format("World[%i] failed to add object %i[%p]: it belongs to another world or wasn't properly destroyed", this->wId, obj->id, obj.get());
+        std::string errmsg = CR::String::format("World[%i] Failed to add object %i[%p]: it belongs to another world or wasn't properly destroyed", this->wId, obj->id, obj.get());
         this->auditBacklog.push_back(this->createFrame(errmsg));
         CR::log("%s\n", errmsg.c_str());
         return CR::OBJ_ID_INVALID;
     }
     for(unsigned i = 0; i < this->objects.size(); ++i){
         if(objects[i]->id == obj->id || objects[i].get() == obj.get()){          
-            std::string errmsg = CR::String::format("World[%i] failed to add object %i[%p]: it already exists in it", this->wId, objects[i]->id, objects[i].get());
+            std::string errmsg = CR::String::format("World[%i] Failed to add object %i[%p]: it already exists in it", this->wId, objects[i]->id, objects[i].get());
             this->auditBacklog.push_back(this->createFrame(errmsg));
             CR::log("%s\n", errmsg.c_str());
             return CR::OBJ_ID_INVALID;
@@ -133,14 +137,14 @@ std::shared_ptr<CR::Object> CR::World::get(CR::T_OBJID id){
 
 bool CR::World::destroy(T_OBJID id){
     if(!exists(id)){
-        std::string errmsg = CR::String::format("World[%i] failed to destroy object %i[%p]: it's not part of it", this->wId, id);
+        std::string errmsg = CR::String::format("World[%i] Failed to destroy object %i[%p]: it's not part of it", this->wId, id);
         this->auditBacklog.push_back(this->createFrame(errmsg));
         CR::log("%s\n", errmsg.c_str());        
         return false;
     }
     auto obj = get(id);
     if(obj.get() == NULL){
-        std::string errmsg = CR::String::format("[FATAL ERROR] World[%i] failed to destroy object %i[%p]: this object is null", this->wId, id);
+        std::string errmsg = CR::String::format("World[%i] FATAL ERROR: Failed to destroy object %i[%p]: this object is null", this->wId, id);
         this->auditBacklog.push_back(this->createFrame(errmsg));
         CR::log("%s\n", errmsg.c_str());        
         return false; 

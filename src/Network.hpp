@@ -264,10 +264,32 @@
                 STRING MESSAGE (MAX 250 B)
             */
 
-            CHARACTER_SHEET
+            CHARACTER_SHEET,
             /*
                 
 
+            */
+
+            SIMULATION_SETUP,
+            /*
+            
+            */
+
+            SIMULATION_FRAME_STATE,
+            /*
+                T_FRAMEORD  CURRENT TICK
+                T_FRAMEORD  ORDER
+                T_FRAME     TYPE
+                T_TIME      EPOCH
+                T_STATE     CURRENT STATE     
+                STRING      MESSAGE
+                UINT8       AFFECTED ENTITIES
+                0: {
+                    T_OBJID ENTITY ID
+                }
+                ... N
+                UINT8       PAYLOAD SIZE
+                [PAYLOAD DATA]
             */
 
 

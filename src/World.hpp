@@ -18,6 +18,8 @@
 
 
         struct World {
+            bool puppetMode;
+
             T_OBJID wId;
             T_TIME timePerTick;
             T_TIME totalSimTime;
@@ -37,9 +39,11 @@
             void setState(T_STATE nstate);
             bool apply(const std::shared_ptr<Frame> &audit);
             World();
+            void setPuppet(bool puppetMode, T_OBJID wId);
             void start();
             void reqEnd();
-            void run(unsigned ticks);
+            void run(unsigned ticks); // authoritative (for server)
+            void run(const std::vector<std::shared_ptr<Frame>> &frames);  // puppet mode (for clients)
             bool exists(CR::T_OBJID id);
             std::shared_ptr<CR::Object> get(CR::T_OBJID id);
             std::shared_ptr<Frame> createFrame(T_FRAME type);
