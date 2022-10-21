@@ -32,6 +32,23 @@ std::vector<uint32> CR::NetHandle::getAllClientsACKs(){
 }
 
 
+bool CR::NetHandle::removeClient(CR::T_GENERICID clientId){
+    auto client = getClient(clientId);
+    if(!client) return false;
+    this->clients.erase(clientId);
+    return true;
+}
+
+std::shared_ptr<CR::ClientHandle> CR::NetHandle::addClient(CR::T_GENERICID clientId, const std::string &nickname, const CR::IP_Port &ip){
+    auto nclient = std::make_shared<CR::ClientHandle>(CR::ClientHandle());
+    nclient->nickname = nickname;
+    nclient->clientId = clientId;
+    nclient->ip = ip;
+    clients[nclient->clientId] = nclient;
+    return nclient;
+}
+
+
 CR::NetHandle::NetHandle(){
     packetQueue.reserve(1024);
     rcvPackets.reserve(1024);

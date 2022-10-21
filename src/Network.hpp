@@ -37,7 +37,7 @@
 
         namespace Net {
             static const uint32 CLIENT_UNRESPONSIVE_TIMEOUT = 30 * 1000; // 30 seconds before dropping unresponsive client
-            static const uint32 CLIENT_CONNECT_TRY_TIMEOUT_INTERVAL = 4;  // retries 4 times
+            static const uint32 CLIENT_CONNECT_TRY_TIMEOUT_INTERVAL = 4;  // retries 3 times + 1 initial connection
             static const uint64 CLIENT_CONNECT_TIMEOUT = 1000 * 5;
         }
 
@@ -103,6 +103,7 @@
                 lastRecvOrder = 0;
                 lastSentOrder = 1;
                 svACK = 0;       
+                lastPacketTimeout = CR::ticks();
             }
         };
 
@@ -119,6 +120,9 @@
             std::unordered_map<CR::T_GENERICID, std::shared_ptr<CR::ClientHandle>> clients;
 
             NetHandle();
+
+            bool removeClient(CR::T_GENERICID clientId);
+            std::shared_ptr<CR::ClientHandle> addClient(CR::T_GENERICID clientId, const std::string &nickname, const CR::IP_Port &ip = CR::IP_Port());
 
             CR::ClientHandle *getClient(CR::T_GENERICID playerId);
             CR::ClientHandle *getClientByIP(const CR::IP_Port &ip);            

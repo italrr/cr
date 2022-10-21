@@ -25,6 +25,7 @@
             bool listen(const std::string &name, uint8 maxClients, uint16 port);
             void close();
             void deliverPacketQueue();
+            bool dropClient(CR::T_GENERICID clientId, const std::string &reason);
 
         };
 

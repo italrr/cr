@@ -143,24 +143,10 @@ void CR::Client::processPacket(CR::Packet &packet, bool ignoreOrder){
             socket.send(this->svAddress, pong);
         } break;
         /*
-            SV_CLIENT_DROP
-        */
-        case CR::PacketType::CLIENT_DROP: {
-            // TODO: Handle client drops
-            // if(!isSv || !isLast){ break; }
-            // String reason;
-            // handler.read(reason);
-            // if(reason.length() == 0){
-            //     reason = "no reason";
-            // }
-            // CR::print("[client] server dropped connection: "+reason);
-            // clear();
-        } break;   
-
-        /*
             CLIENT_JOIN
         */
         case CR::PacketType::CLIENT_JOIN: {
+            if(!isSv || !isLast){ break; }
             CR::T_GENERICID clientId;
             std::string nickname;
             packet.read(&clientId, sizeof(CR::T_GENERICID));
@@ -169,20 +155,50 @@ void CR::Client::processPacket(CR::Packet &packet, bool ignoreOrder){
             auto client = getClient(clientId);
             if(!client){
                 auto nclient = std::make_shared<CR::ClientHandle>(CR::ClientHandle());
-                nclient->nickname = nickname;
-                nclient->clientId = clientId;
-                this->clients[nclient->clientId] = nclient;                
+                addClient(clientId, nickname);                
             }
             CR::log("[CLIENT] Player %s joined the game\n", nickname.c_str());
             sendAck(sender, packet.getAck());
         } break;   
-
         /*
             CLIENT_DISCONNECT
         */
         case CR::PacketType::CLIENT_DISCONNECT: {
-
-        } break;                               
+            if(!isSv || !isLast){ break; }
+            CR::T_GENERICID clientId;
+            std::string reason;
+            packet.read(&clientId, sizeof(CR::T_GENERICID));
+            packet.read(reason);
+            if(reason.length() == 0) reason = "Disconnected by the user";
+            auto client = getClient(clientId);
+            if(client){
+                CR::log("[CLIENT] Player %s left the game: %s\n", client->nickname.c_str(), reason.c_str());
+                removeClient(clientId);
+            }
+            sendAck(sender, packet.getAck());            
+        } break;  
+        /*
+            CLIENT_DROP
+        */
+        case CR::PacketType::CLIENT_DROP: {
+            if(!isSv || !isLast){ break; }
+            CR::T_GENERICID clientId;
+            std::string reason;
+            packet.read(&clientId, sizeof(CR::T_GENERICID));
+            packet.read(reason);
+            if(reason.length() == 0) reason = "No reason given";
+            if(clientId == this->clientId){
+                CR::log("[CLIENT] Dropped by the server: %s\n", reason.c_str());
+                this->cleanUp();
+                return;
+            }
+            auto client = getClient(clientId);
+            if(client){
+                CR::log("[CLIENT] Player %s left the game: %s\n", client->nickname.c_str(), reason.c_str());
+                removeClient(clientId);
+            }
+            sendAck(sender, packet.getAck());            
+        } break;                                        
                               
     }
 }
@@ -239,15 +255,15 @@ void CR::Client::step(){
             }
             rcvPackets.clear();
         }
+        deliverPacketQueue();
+        if(CR::ticks()-lastSentPing > 1000){
+            lastSentPing = CR::ticks();
+            lastPing = CR::ticks();
+            CR::Packet ping(CR::PacketType::PING);
+            ping.setOrder(++sentOrder);
+            this->socket.send(this->svAddress, ping);
+        }    
     lock.unlock();  
-    deliverPacketQueue();
-    if(CR::ticks()-lastSentPing > 1000){
-        lastSentPing = CR::ticks();
-        lastPing = CR::ticks();
-        CR::Packet ping(CR::PacketType::PING);
-        ping.setOrder(++sentOrder);
-        this->socket.send(this->svAddress, ping);
-    }    
 }
 
 
