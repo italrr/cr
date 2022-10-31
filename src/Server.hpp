@@ -6,7 +6,7 @@
 
 
     namespace CR {
-        
+
         struct Server : NetHandle {
 
             CR::World world;
@@ -16,6 +16,9 @@
             std::string sessionName;
             CR::T_GENERICID sessionId;
             std::string sessionPassword;
+
+            std::vector<std::shared_ptr<Audit>> auditQueue;
+            std::mutex alMutex;
             
             uint32 lastClientId;
 

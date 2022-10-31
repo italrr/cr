@@ -456,7 +456,8 @@ namespace CR {
 			clear();
 			return;
 		}
-		memcpy(this->data, other.data, CR_SMALLPACKET_SIZE);
+		memcpy(this->data, other.data, other.size);
+		this->size = other.size; // actual size
 		lk.unlock();
 		reset();
 	}
@@ -472,6 +473,7 @@ namespace CR {
 			this->data = (char*)malloc(CR_SMALLPACKET_SIZE);
 		}
 		index = 0; 
+		size = 0;
 		lk.unlock();
 	}
 
@@ -505,6 +507,7 @@ namespace CR {
 				memcpy(buff, data + index, size);
 				str = std::string(buff, size);
 				index = i + 1;
+				this->size += i + 1;
 				lk.unlock();
 				return r;
 			}
@@ -526,6 +529,7 @@ namespace CR {
 		}
 		memcpy(data, this->data + index, size);
 		index += size;
+		this->size += size;
 		lk.unlock();
 		return r;
 	}		
@@ -544,6 +548,7 @@ namespace CR {
 		size_t sl = str.length() + 1;
 		memcpy(data + index, str.c_str(), sl);
 		index += sl;
+		this->size += sl;
 		lk.unlock();
 		return r;
 	}
@@ -561,6 +566,7 @@ namespace CR {
 		}
 		memcpy(this->data + index, data, size);
 		index += size;
+		this->size += size;
 		lk.unlock();
 		return r;
 	}

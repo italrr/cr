@@ -236,13 +236,15 @@
         }
 
         static const size_t CR_SMALLPACKET_SIZE = 64;
+        // TODO: use dynamic allocation
 		struct SmallPacket {
             SmallPacket(const CR::SmallPacket &other);
             SmallPacket();
 			~SmallPacket();
             std::mutex accesMutex;
 			size_t index;
-			char *data;				
+			char *data;	
+            size_t size;			
 			void copy(const CR::SmallPacket &other);
 			void reset();
 			void clear();

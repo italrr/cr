@@ -15,6 +15,8 @@
 #include "Shader.hpp"
 #include "Texture.hpp"
 
+#include "../Game.hpp"
+
 #if CR_ENABLE_DEBUG_BUILD == 1
     #define INC_OPGL_DEBUG handleOpenGLError(CR::String::format("%s | Line %i",  __func__, __LINE__));
     #define INC_OPGLSHADER_DEBUG handleOpenGLError(CR::String::format("%s | Line %i | Uniform '%s'",  __func__, __LINE__, attr->name.c_str()));
@@ -578,7 +580,7 @@ bool CR::Gfx::init(){
     
     size.x = settings->width;
     size.y = settings->height;
-    CR::log("[GFX] CAVERN RUSH | res: %dx%d | OS: %s | ARCH: %s | Mode: %s \n", settings->width, settings->height, platformName, archName, wst.c_str());
+    CR::log("[GFX] CAVERN RUSH v%i.%i.%i | res: %dx%d | OS: %s | ARCH: %s | Mode: %s \n", GAME_VERSION[0], GAME_VERSION[1], GAME_VERSION[2], settings->width, settings->height, platformName, archName, wst.c_str());
 
 
     if (!glfwInit()){

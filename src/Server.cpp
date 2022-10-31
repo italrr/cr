@@ -161,6 +161,55 @@ static void SV_THREAD(void *handle){
         if(nb > 0){
             SV_PROCESS_PACKET(sv, packet, false);            
         }
+        // Send delta to clients
+        std::vector<std::shared_ptr<CR::Audit>> deltaDevQueue;
+        std::unique_lock<std::mutex> alLock(sv->alMutex);
+            deltaDevQueue.insert(deltaDevQueue.end(), sv->auditQueue.begin(), sv->auditQueue.end());
+        alLock.unlock();
+        if(deltaDevQueue.size() > 0){          
+            bool deliveredAll = false;
+            std::vector<CR::Packet> deltaDeliveries;
+            while(!deliveredAll){
+                CR::Packet frameUpd;
+                frameUpd.setHeader(CR::PacketType::SIMULATION_FRAME_STATE);  
+                frameUpd.write(&deltaDevQueue[0]->tick, sizeof(deltaDevQueue[0]->tick));
+                frameUpd.write(&deltaDevQueue[0]->time, sizeof(deltaDevQueue[0]->time));
+                uint8 nAudits = deltaDevQueue.size();
+                frameUpd.write(&nAudits, sizeof(nAudits));
+
+                while(deltaDevQueue.size() > 0){     
+                    auto &dt = deltaDevQueue[0];
+                    
+                    CR::SmallPacket buffer;
+
+                    buffer.write(&dt->type, sizeof(dt->type));
+                    buffer.write(&dt->state, sizeof(dt->state));
+                    buffer.write(&dt->msg, sizeof(dt->msg));
+                    uint8 affEnt = dt->affEnt.size();
+                    buffer.write(&affEnt, sizeof(affEnt));
+                    for(unsigned j = 0; j < dt->affEnt.size(); ++j){
+                        buffer.write(&dt->affEnt[j], sizeof(dt->affEnt[j])); 
+                    }
+                    uint8 plSize = dt->data.size;
+                    buffer.write(&plSize, sizeof(plSize)); 
+                    buffer.write(dt->data.data, plSize); 
+                    
+                    if(buffer.size > frameUpd.maxSize > CR::NetworkMaxPacketSize){
+                        break;
+                    }else{
+                        frameUpd.write(buffer.data, buffer.size);
+                        deltaDevQueue.erase(deltaDevQueue.begin());
+                    }
+                }
+                deltaDeliveries.push_back(frameUpd);
+                deliveredAll = deltaDevQueue.size() == 0;
+            } 
+            
+            for(unsigned i = 0; i < deltaDeliveries.size(); ++i){
+                sv->sendPacketForMany(sv->getAllClientsIPs(), deltaDeliveries[i]);
+            }
+
+        }
         // Update deliveries
         sv->deliverPacketQueue();               
         // Ping clients
@@ -189,7 +238,22 @@ static void SV_THREAD(void *handle){
 }
 
 static void GAME_THREAD(void *handle){
+    auto sv = static_cast<CR::Server*>(handle);
+    // we make sure to run the simulation every X milliseconds
+    // depending on the world configuration
+    CR::T_TIME lastTick = CR::ticks();
+    while(true){
+        if(CR::ticks()-lastTick < sv->world.tickRate) continue; // will choke the entire thread for now
 
+        auto toApply = sv->world.auditBacklog;
+
+        sv->world.run(1);
+
+        // copy delta to auditQueue for later delivery
+        std::unique_lock<std::mutex> lock(sv->alMutex);
+            sv->auditQueue.insert(sv->auditQueue.end(), toApply.begin(), toApply.end()); // we need to make sure all packets in the log are from the same tick
+        lock.unlock();
+    }
 }
 
 CR::Server::Server(){

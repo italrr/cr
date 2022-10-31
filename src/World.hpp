@@ -23,8 +23,8 @@
             T_OBJID wId;
             T_TIME timePerTick;
             T_TIME totalSimTime;
-            T_FRAMEORD currentTick;
-            T_FRAMEORD tickRate;
+            T_AUDITORD currentTick;
+            T_AUDITORD tickRate;
             T_STATE state;
             T_STATE prevState;
             T_TIME lastState;
@@ -32,22 +32,22 @@
 
             std::vector<T_OBJID> toRemObjs;
             std::vector<std::shared_ptr<Object>> objects;
-            std::vector<std::shared_ptr<Frame>> auditBacklog;
-            std::vector<std::shared_ptr<Frame>> auditHistory;        
+            std::vector<std::shared_ptr<Audit>> auditBacklog;
+            std::vector<std::shared_ptr<Audit>> auditHistory;        
 
 
             void setState(T_STATE nstate);
-            bool apply(const std::shared_ptr<Frame> &audit);
+            bool apply(const std::shared_ptr<Audit> &audit);
             World();
             void setPuppet(bool puppetMode, T_OBJID wId);
             void start();
             void reqEnd();
             void run(unsigned ticks); // authoritative (for server)
-            void run(const std::vector<std::shared_ptr<Frame>> &frames);  // puppet mode (for clients)
+            void run(const std::vector<std::shared_ptr<Audit>> &audits);  // puppet mode (for clients)
             bool exists(CR::T_OBJID id);
             std::shared_ptr<CR::Object> get(CR::T_OBJID id);
-            std::shared_ptr<Frame> createFrame(T_FRAME type);
-            std::shared_ptr<Frame> createFrame(const std::string &msg);
+            std::shared_ptr<Audit> createAudit(T_AUDIT type);
+            std::shared_ptr<Audit> createAudit(const std::string &msg);
             CR::T_OBJID add(const std::shared_ptr<CR::Object> &obj);
             bool destroy(T_OBJID id);
             void render(const CR::Vec2<unsigned> &offset);

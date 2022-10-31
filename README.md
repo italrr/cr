@@ -144,3 +144,15 @@ If you didn't puck you get charged a penalty
         
 
     };
+
+
+
+// LockStep Implementation Schematic
+
+[AUDIT] -> ["FRAME"] -> [SIMULATION] -> [Animation_Integration]
+
+A "Audit" Is a single state change, ranging from anything like an object being created to an entity moving
+
+Audits are also called frames
+
+A tick is a conjuction of frames that happened together in an order

@@ -277,19 +277,23 @@
 
             SIMULATION_FRAME_STATE,
             /*
+                // It's assumed the order starts at zero per tick
+
                 T_FRAMEORD  CURRENT TICK
-                T_FRAMEORD  ORDER
-                T_FRAME     TYPE
                 T_TIME      EPOCH
-                T_STATE     CURRENT STATE     
-                STRING      MESSAGE
-                UINT8       AFFECTED ENTITIES
-                0: {
-                    T_OBJID ENTITY ID
-                }
-                ... N
-                UINT8       PAYLOAD SIZE
-                [PAYLOAD DATA]
+                UINT8       NUMBER OF FRAMES
+                {
+                    T_FRAME     TYPE
+                    T_STATE     CURRENT STATE     
+                    STRING      MESSAGE
+                    UINT8       AFFECTED ENTITIES
+                    0: {
+                        T_OBJID ENTITY ID
+                    }
+                    ... N
+                    UINT8       PAYLOAD SIZE
+                    [PAYLOAD DATA]
+                } ... N
             */
 
 
