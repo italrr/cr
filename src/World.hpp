@@ -21,7 +21,6 @@
             bool puppetMode;
 
             T_OBJID wId;
-            T_TIME timePerTick;
             T_TIME totalSimTime;
             T_AUDITORD currentTick;
             T_AUDITORD tickRate;
@@ -33,7 +32,7 @@
             std::vector<T_OBJID> toRemObjs;
             std::vector<std::shared_ptr<Object>> objects;
             std::vector<std::shared_ptr<Audit>> auditBacklog;
-            std::vector<std::shared_ptr<Audit>> auditHistory;        
+            std::unordered_map<T_AUDITORD, std::vector<std::shared_ptr<Audit>>> auditHistory;        
 
 
             void setState(T_STATE nstate);
@@ -42,7 +41,7 @@
             void setPuppet(bool puppetMode, T_OBJID wId);
             void start();
             void reqEnd();
-            void run(unsigned ticks); // authoritative (for server)
+            void run(unsigned ticks, std::vector<std::shared_ptr<Audit>> &applied); // authoritative (for server)
             void run(const std::vector<std::shared_ptr<Audit>> &audits);  // puppet mode (for clients)
             bool exists(CR::T_OBJID id);
             std::shared_ptr<CR::Object> get(CR::T_OBJID id);

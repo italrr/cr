@@ -11,8 +11,6 @@
         
         struct Client : NetHandle {
             CR::T_GENERICID clientId;
-
-            CR::World *world;
             CR::IP_Port svAddress;
             uint64 connReqAt;
             unsigned connRet;
@@ -28,7 +26,7 @@
 
             Client();
             void processPacket(CR::Packet &packet, bool ignoreOrder = false);
-            bool connect(const std::string &ip, unsigned port, CR::World *world);
+            bool connect(const std::string &ip, unsigned port);
             void disconnect(const std::string &message = "");
             void cleanUp();
             void step();

@@ -86,6 +86,7 @@
 
         struct ClientHandle {
             CR::T_GENERICID clientId;
+            CR::T_AUDITORD lastFrame;
             uint64 netId;
             CR::IP_Port ip;
             std::string nickname;
@@ -96,18 +97,23 @@
 
             uint32 lastRecvOrder; 
             uint32 lastSentOrder;  
-            uint64 lastPacketTimeout;            
+            uint64 lastPacketTimeout;  
+
+            std::vector<std::shared_ptr<CR::Audit>> frameQueue;          
 
 
             ClientHandle(){
                 lastRecvOrder = 0;
                 lastSentOrder = 1;
                 svACK = 0;       
+                lastFrame = 0;
                 lastPacketTimeout = CR::ticks();
             }
         };
 
         struct NetHandle {
+            std::shared_ptr<CR::World> world;
+
             T_GENERICTYPE netState;
             std::thread thread;
             std::mutex netCon;
@@ -206,6 +212,7 @@
                 STRING SESSION MAME (MAX 24 B)
                 UINT32 SESSION ID
                 UINT32 CLIENT ID
+                T_OBJID WORLD ID
             */
 
             CONNECT_REJECT,

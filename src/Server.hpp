@@ -8,9 +8,6 @@
     namespace CR {
 
         struct Server : NetHandle {
-
-            CR::World world;
-
             std::thread gameThread;
 
             std::string sessionName;
@@ -25,6 +22,7 @@
             Server();
             ~Server();
 
+            void flushFrameQueue(std::vector<std::shared_ptr<Audit>> &list);
             bool listen(const std::string &name, uint8 maxClients, uint16 port);
             void close();
             void deliverPacketQueue();

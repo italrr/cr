@@ -117,6 +117,7 @@ static void SV_PROCESS_PACKET(CR::Server *sv, CR::Packet &packet, bool ignoreOrd
             acptPacket.write(sv->sessionName);
             acptPacket.write(&sv->sessionId, sizeof(CR::T_GENERICID));
             acptPacket.write(&nclient->clientId, sizeof(CR::T_GENERICID));
+            acptPacket.write(&sv->world->wId, sizeof(CR::T_OBJID));
             sv->socket.send(sender, acptPacket);
             // Notify client joined
             SV_SEND_CLIENT_JOIN(sv, nclient.get());
@@ -162,54 +163,18 @@ static void SV_THREAD(void *handle){
             SV_PROCESS_PACKET(sv, packet, false);            
         }
         // Send delta to clients
-        std::vector<std::shared_ptr<CR::Audit>> deltaDevQueue;
-        std::unique_lock<std::mutex> alLock(sv->alMutex);
-            deltaDevQueue.insert(deltaDevQueue.end(), sv->auditQueue.begin(), sv->auditQueue.end());
-        alLock.unlock();
-        if(deltaDevQueue.size() > 0){          
-            bool deliveredAll = false;
-            std::vector<CR::Packet> deltaDeliveries;
-            while(!deliveredAll){
-                CR::Packet frameUpd;
-                frameUpd.setHeader(CR::PacketType::SIMULATION_FRAME_STATE);  
-                frameUpd.write(&deltaDevQueue[0]->tick, sizeof(deltaDevQueue[0]->tick));
-                frameUpd.write(&deltaDevQueue[0]->time, sizeof(deltaDevQueue[0]->time));
-                uint8 nAudits = deltaDevQueue.size();
-                frameUpd.write(&nAudits, sizeof(nAudits));
-
-                while(deltaDevQueue.size() > 0){     
-                    auto &dt = deltaDevQueue[0];
-                    
-                    CR::SmallPacket buffer;
-
-                    buffer.write(&dt->type, sizeof(dt->type));
-                    buffer.write(&dt->state, sizeof(dt->state));
-                    buffer.write(&dt->msg, sizeof(dt->msg));
-                    uint8 affEnt = dt->affEnt.size();
-                    buffer.write(&affEnt, sizeof(affEnt));
-                    for(unsigned j = 0; j < dt->affEnt.size(); ++j){
-                        buffer.write(&dt->affEnt[j], sizeof(dt->affEnt[j])); 
-                    }
-                    uint8 plSize = dt->data.size;
-                    buffer.write(&plSize, sizeof(plSize)); 
-                    buffer.write(dt->data.data, plSize); 
-                    
-                    if(buffer.size > frameUpd.maxSize > CR::NetworkMaxPacketSize){
+        std::unique_lock<std::mutex> lock(sv->alMutex);
+            for(auto &it : sv->clients){
+                auto cl = it.second.get();
+                for(unsigned i = 0; i <  cl->frameQueue.size(); ++i){
+                    auto &frame = cl->frameQueue[i];
+                    if(frame->tick - cl->lastFrame > 1){
                         break;
-                    }else{
-                        frameUpd.write(buffer.data, buffer.size);
-                        deltaDevQueue.erase(deltaDevQueue.begin());
                     }
+                    // sv->sendPacketFor(cl->ip,);
                 }
-                deltaDeliveries.push_back(frameUpd);
-                deliveredAll = deltaDevQueue.size() == 0;
-            } 
-            
-            for(unsigned i = 0; i < deltaDeliveries.size(); ++i){
-                sv->sendPacketForMany(sv->getAllClientsIPs(), deltaDeliveries[i]);
             }
-
-        }
+        lock.unlock();
         // Update deliveries
         sv->deliverPacketQueue();               
         // Ping clients
@@ -242,18 +207,27 @@ static void GAME_THREAD(void *handle){
     // we make sure to run the simulation every X milliseconds
     // depending on the world configuration
     CR::T_TIME lastTick = CR::ticks();
-    while(true){
-        if(CR::ticks()-lastTick < sv->world.tickRate) continue; // will choke the entire thread for now
+    while(sv->world->state == CR::WorldState::IDLE) CR::sleep(16);
+    while(sv->world->state != CR::WorldState::IDLE && sv->world->state != CR::WorldState::STOPPED){
+        if(CR::ticks()-lastTick < sv->world->tickRate) continue; // will choke the entire thread for now
 
-        auto toApply = sv->world.auditBacklog;
+        std::vector<std::shared_ptr<CR::Audit>> toApply;
+        sv->world->run(1, toApply);
 
-        sv->world.run(1);
-
-        // copy delta to auditQueue for later delivery
-        std::unique_lock<std::mutex> lock(sv->alMutex);
-            sv->auditQueue.insert(sv->auditQueue.end(), toApply.begin(), toApply.end()); // we need to make sure all packets in the log are from the same tick
-        lock.unlock();
+        // copy delta to auditQueue for delivery
+        sv->flushFrameQueue(toApply);
     }
+}
+
+void CR::Server::flushFrameQueue(std::vector<std::shared_ptr<CR::Audit>> &list){
+    auto copy = list;
+    CR::spawn([&, copy](CR::Job &ctx){
+        std::unique_lock<std::mutex> lock(alMutex);
+            for(auto &it : this->clients){
+                it.second->frameQueue.insert(it.second->frameQueue.end(), copy.begin(), copy.end());
+            }
+        lock.unlock();
+    }, false, false, true);
 }
 
 CR::Server::Server(){
@@ -275,9 +249,13 @@ bool CR::Server::listen(const std::string &name, uint8 maxClients, uint16 port){
         CR::log("[SERVER] Failed to start server: Couldn't open port %i\n", port);
         return false;
     }
+
+    this->world = std::make_shared<CR::World>(CR::World());
+    world->start(); // TODO: add clear to allow reusing world
     socket.setNonBlocking(true);
     CR::log("[SERVER] Started server. Listening at %i | Max Players %i\n", port, maxClients);
     this->thread = std::thread(&SV_THREAD, this); 
+    this->gameThread = std::thread(&GAME_THREAD, this); 
     this->netState = CR::NetHandleState::LISTENING;
     CR::log("[SERVER] Waiting for clients...\n");
     return true;

@@ -44,13 +44,13 @@ CR::Client::Client(){
     cleanUp();
 }
 
-bool CR::Client::connect(const std::string &ip, unsigned port, CR::World *world){
+bool CR::Client::connect(const std::string &ip, unsigned port){
     if(netState != CR::NetHandleState::IDLE){
         CR::log("[CLIENT] Failed to connect %s: Client is not in the IDLE state: disconnect from server\n", ip.c_str(), port);
         return false;
     }
     this->svAddress = CR::IP_Port(ip, port);
-    this->world = world;
+    this->world = std::make_shared<CR::World>(CR::World());
     this->connRet = 0;
     auto chosenPort = CR::NetworkDefaultPort + CR::Math::random(1, 200);
     if(!this->socket.open(chosenPort)){
@@ -198,7 +198,13 @@ void CR::Client::processPacket(CR::Packet &packet, bool ignoreOrder){
                 removeClient(clientId);
             }
             sendAck(sender, packet.getAck());            
-        } break;                                        
+        } break;         
+        /* SIMULATION_FRAME_STATE */                               
+        case CR::PacketType::SIMULATION_FRAME_STATE: {
+            if(!isSv || !isLast){ break; }
+
+            sendAck(sender, packet.getAck());
+        } break;
                               
     }
 }
@@ -214,14 +220,18 @@ void CR::Client::step(){
                     std::string seasonName;
                     CR::T_GENERICID sessionId;
                     CR::T_GENERICID clientId;
+                    CR::T_OBJID wId;
                     packet.read(seasonName);
                     packet.read(&sessionId, sizeof(CR::T_GENERICID));
                     packet.read(&clientId, sizeof(CR::T_GENERICID));
+                    packet.read(&wId, sizeof(CR::T_OBJID));
                     CR::log("[CLIENT] Joined server (%s): Session Name/ID '%s/%i' | Client ID '%i' \n", this->svAddress.str().c_str(), seasonName.c_str(), sessionId, clientId);
                     this->netState = CR::NetHandleState::CONNECTED;
                     this->sendAck(sender, packet.getAck()); // make sure to send ACK
                     // this->socket.setNonBlocking(false); // switch to blocking from now on
                     this->svNetId = sender.address + sender.port + socket.sock;
+                    world->setPuppet(true, wId);
+                    world->start();
                     return;
                 } break;
                 case CR::PacketType::CONNECT_REJECT: {

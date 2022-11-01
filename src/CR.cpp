@@ -272,11 +272,9 @@ int main(int argc, char* argv[]){
     CR::Client client;
     CR::Server server;
     server.listen("Social Room", 24, CR::NetworkDefaultPort);
-
-    CR::World world;
     
     CR::spawn([&](CR::Job &Ctx){
-        client.connect("127.0.0.1", CR::NetworkDefaultPort, &world);
+        client.connect("127.0.0.1", CR::NetworkDefaultPort);
     }, false, false, false);
 
     Character player;

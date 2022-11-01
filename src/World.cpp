@@ -20,6 +20,8 @@ static CR::T_OBJID genWorldId(){
 }
 
 CR::World::World(){
+    this->currentTick = 0;
+    this->puppetMode = false;
     this->wId = genWorldId();
     this->state = WorldState::IDLE;
     this->auditBacklog.push_back(this->createAudit(AuditType::GAME_SIM_CREATED));
@@ -27,8 +29,15 @@ CR::World::World(){
 
 
 void CR::World::start(){
-    this->auditBacklog.push_back(this->createAudit(AuditType::GAME_SIM_STARTED));    
-    CR::log("World[%i] started simulation\n", this->wId);    
+    this->currentTick = 0;
+    this->tickRate = 1000 / 60; // hardcoded for now
+    if(!puppetMode){
+        this->auditBacklog.push_back(this->createAudit(AuditType::GAME_SIM_STARTED));    
+        setState(CR::WorldState::RUNNING); // manually start simulation for now
+    }else{
+        this->auditBacklog.clear();
+    }
+    CR::log("World[%i] started simulation [%s]\n", this->wId, puppetMode ? "PUPPET" : "REAL");    
 }
 
 void CR::World::reqEnd(){
@@ -72,18 +81,34 @@ void CR::World::run(const std::vector<std::shared_ptr<CR::Audit>> &audits){
     // TODO: manually run audits 
 }
 
-void CR::World::run(unsigned ticks){
+void CR::World::setPuppet(bool puppetMode, CR::T_OBJID wId){
+    this->puppetMode = puppetMode;
+    this->wId = wId;
+}
+
+void CR::World::run(unsigned ticks, std::vector<std::shared_ptr<Audit>> &applied){
     if(puppetMode){ // client
         CR::log("World[%i] run was used in puppetMode\n");
         return;
     }
-    
+
+    // audits before running a tick are considered "external" or control flow
+    // these are not really applied, thus moved directly to the history
+    if(auditBacklog.size() > 0){
+        for(unsigned i = 0; i < auditBacklog.size(); ++i){
+            applied.push_back(auditBacklog[i]);
+            this->auditHistory[auditBacklog[i]->tick].push_back(auditBacklog[i]);   
+        }
+        auditBacklog.clear();
+    }
+   
     // run sim per tick
     for(unsigned i = 0; i < ticks; ++i){
         ++currentTick;
         for(unsigned i = 0; i < objects.size(); ++i){
             objects[i]->onStep();
         }
+        totalSimTime += tickRate;
     }
     // audits
     for(unsigned i = 0; i < auditBacklog.size(); ++i){
@@ -91,7 +116,8 @@ void CR::World::run(unsigned ticks){
         audit->time = CR::ticks();
         audit->order = i;
         if(apply(audit)){
-            this->auditHistory.push_back(audit);   
+            applied.push_back(audit);
+            this->auditHistory[audit->tick].push_back(audit);   
         }else{
             CR::log("World[%i] Fatal error has occured applying an audit: game will stop\n");
             CR::Core::exit(1); // TODO: Find a better way to handle this
