@@ -25,13 +25,31 @@ static void SV_SEND_CLIENT_DROP(CR::Server *sv, CR::ClientHandle *client, const 
     sv->sendPersPacketForMany(sv->getAllClientsIPs(), clJoinedPacket, sv->getAllClientsACKs());
 }
 
-static void SV_SEND_AUDITS(CR::Server *sv, CR::T_AUDITORD tick, CR::ClientHandle *client, const std::unordered_map<CR::T_AUDITORD, std::vector<std::shared_ptr<CR::Audit>>> &history){
+static void SV_CHECK_SKIP_TICK(CR::Server *sv, CR::ClientHandle *client, const std::unordered_map<CR::T_AUDITORD, std::vector<std::shared_ptr<CR::Audit>>> &history){
+    auto it = history.find(client->lastFrame);
+    if(it == history.end()){
+        CR::log("[SERVER] Failed to find tick needed for client %i: %i. Is the client from the future???\n");
+        return;
+    }
+
+    if(client->lastAudit >= it->second.size()-1){
+        client->lastAudit = 0;
+        ++client->lastFrame;
+    }
+}
+
+static void SV_SEND_AUDITS(CR::Server *sv, CR::T_AUDITORD fromAudit, CR::T_AUDITORD tick, CR::ClientHandle *client, const std::unordered_map<CR::T_AUDITORD, std::vector<std::shared_ptr<CR::Audit>>> &history){
     auto it = history.find(tick);
     if(it == history.end()){
         CR::log("[SERVER] Failed to find tick needed for client %i: %i. Is the client from the future???\n");
         return;
     }
+
     auto copy = it->second;
+
+    if(fromAudit > 0){ // we delete the ones before
+        copy.erase(copy.begin(), copy.begin() + fromAudit);
+    }
 
     if(copy.size() == 0){ return; }    
 
@@ -227,7 +245,7 @@ static void SV_THREAD(void *handle){
         for(auto &it : sv->clients){
             auto cl = it.second.get();
             if(CR::ticks()-cl->lastFrame > 1000 || cl->readyNextFrame){
-                SV_SEND_AUDITS(sv, cl->lastFrame, cl, sv->world->auditHistory);
+                SV_SEND_AUDITS(sv, cl->lastAudit, cl->lastFrame, cl, sv->world->auditHistory);
                 cl->setReadyForFrame(false);
             }
         }
