@@ -25,6 +25,67 @@ static void SV_SEND_CLIENT_DROP(CR::Server *sv, CR::ClientHandle *client, const 
     sv->sendPersPacketForMany(sv->getAllClientsIPs(), clJoinedPacket, sv->getAllClientsACKs());
 }
 
+static void SV_SEND_AUDITS(CR::Server *sv, CR::T_AUDITORD tick, CR::ClientHandle *client, const std::unordered_map<CR::T_AUDITORD, std::vector<std::shared_ptr<CR::Audit>>> &history){
+    auto it = history.find(tick);
+    if(it == history.end()){
+        CR::log("[SERVER] Failed to find tick needed for client %i: %i. Is the client from the future???\n");
+        return;
+    }
+    auto copy = it->second;
+
+    if(copy.size() == 0){ return; }    
+
+    std::vector<CR::Packet> deliveries;
+    bool deliveredAll = false;
+    uint8 nAudits = copy.size();
+    while(!deliveredAll){
+        CR::Packet frameUpd;
+        frameUpd.setHeader(CR::PacketType::SIMULATION_FRAME_STATE);  
+        frameUpd.write(&copy[0]->tick, sizeof(copy[0]->tick));
+        frameUpd.write(&copy[0]->time, sizeof(copy[0]->time));
+        frameUpd.write(&nAudits, sizeof(nAudits));
+        uint16 nAudInTP = frameUpd.index;
+        uint8 audCount = 0;
+        frameUpd.write(&nAudits, sizeof(nAudits));
+
+        while(copy.size() > 0){     
+            auto &dt = copy[0];
+            CR::SmallPacket buffer;
+            buffer.write(&dt->type, sizeof(dt->type));
+            buffer.write(&dt->state, sizeof(dt->state));
+            buffer.write(&dt->msg, sizeof(dt->msg));
+            uint8 affEnt = dt->affEnt.size();
+            buffer.write(&affEnt, sizeof(affEnt));
+            for(unsigned j = 0; j < dt->affEnt.size(); ++j){
+                buffer.write(&dt->affEnt[j], sizeof(dt->affEnt[j])); 
+            }
+            uint8 plSize = dt->data.size;
+            buffer.write(&plSize, sizeof(plSize)); 
+            buffer.write(dt->data.data, plSize); 
+            if(buffer.size > frameUpd.maxSize > CR::NetworkMaxPacketSize){
+                break; 
+            }else{
+                frameUpd.write(buffer.data, buffer.size);
+                copy.erase(copy.begin());
+                ++audCount;
+            }
+        }
+
+        frameUpd.setIndex(nAudInTP);
+        frameUpd.write(&audCount, sizeof(uint8));
+
+
+        deliveries.push_back(frameUpd);
+        deliveredAll = copy.size() == 0;
+    } 
+    
+    // for(unsigned i = 0; i < deliveries.size(); ++i){
+    //     sv->sendPersPacketForMany(sv->getAllClientsIPs(), deltaDeliveries[i], sv->getAllClientsACKs());
+    // }
+
+
+}
+
 
 static void SV_PROCESS_PACKET(CR::Server *sv, CR::Packet &packet, bool ignoreOrder){
     auto sender = packet.sender;
@@ -163,18 +224,13 @@ static void SV_THREAD(void *handle){
             SV_PROCESS_PACKET(sv, packet, false);            
         }
         // Send delta to clients
-        std::unique_lock<std::mutex> lock(sv->alMutex);
-            for(auto &it : sv->clients){
-                auto cl = it.second.get();
-                for(unsigned i = 0; i <  cl->frameQueue.size(); ++i){
-                    auto &frame = cl->frameQueue[i];
-                    if(frame->tick - cl->lastFrame > 1){
-                        break;
-                    }
-                    // sv->sendPacketFor(cl->ip,);
-                }
+        for(auto &it : sv->clients){
+            auto cl = it.second.get();
+            if(CR::ticks()-cl->lastFrame > 1000 || cl->readyNextFrame){
+                SV_SEND_AUDITS(sv, cl->lastFrame, cl, sv->world->auditHistory);
+                cl->setReadyForFrame(false);
             }
-        lock.unlock();
+        }
         // Update deliveries
         sv->deliverPacketQueue();               
         // Ping clients
@@ -210,24 +266,8 @@ static void GAME_THREAD(void *handle){
     while(sv->world->state == CR::WorldState::IDLE) CR::sleep(16);
     while(sv->world->state != CR::WorldState::IDLE && sv->world->state != CR::WorldState::STOPPED){
         if(CR::ticks()-lastTick < sv->world->tickRate) continue; // will choke the entire thread for now
-
-        std::vector<std::shared_ptr<CR::Audit>> toApply;
-        sv->world->run(1, toApply);
-
-        // copy delta to auditQueue for delivery
-        sv->flushFrameQueue(toApply);
+        sv->world->run(1);
     }
-}
-
-void CR::Server::flushFrameQueue(std::vector<std::shared_ptr<CR::Audit>> &list){
-    auto copy = list;
-    CR::spawn([&, copy](CR::Job &ctx){
-        std::unique_lock<std::mutex> lock(alMutex);
-            for(auto &it : this->clients){
-                it.second->frameQueue.insert(it.second->frameQueue.end(), copy.begin(), copy.end());
-            }
-        lock.unlock();
-    }, false, false, true);
 }
 
 CR::Server::Server(){

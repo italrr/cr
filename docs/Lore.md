@@ -22,7 +22,7 @@ The social and political implications of these events radically changed humanity
 
 ### IVTE and Intrisic Fields Manipulation
 
-Interplanetary traveling was made possible by the Interplanetary Vacuumless Thrust Engine (IVTE, or eeft as it's called colloquially). IVTE produces inmense accelation capable of reaching 0.99c (99% of the speed of light) in less than one minute. This is however only possible with a Massless Drive (MD). The Massless Drive is capable of physically faking the mass of certain objects connected to the field (including the IVTE), meaning objects within or inside of the husk of the spaceship weight less than a gram but only to the engine as the effect is purely relativistic. One issue of the IVTE is that combining it with the Massless Drive, causes a massive gravitational pull around the ship that could potentially cause havok around civialian areas. That's why it's highly illegal engaging full throttle with the IVTE close to a populated areas. There are systems in place to take down any ship that engages full throttle within the bounds of a colony or space station.
+Interplanetary traveling was made possible by the Interplanetary Vacuumless Thrust Engine (IVTE, or eeft as it's called colloquially). IVTE produces inmense accelation capable of reaching 0.99c (99% of the speed of light) in less than one minute. This is however only possible with a Massless Drive (MD). The Massless Drive is capable of physically faking the mass of certain objects connected to the field (including the IVTE), meaning objects within or inside of the husk of the spaceship weight less than a gram but only to the engine as the effect is purely relativistic. One issue of the IVTE is that combining it with the Massless Drive, causes a massive gravitational pull and push around the ship that could potentially cause havok around civialian areas. That's why it's highly illegal engaging full throttle with the IVTE close to a populated areas. There are systems in place to take down any ship that engages full throttle within the bounds of a colony or space station.
 
 The IVTE and Massless Drive were both created by Alana Industries. The MD was the first created, and it was meant to be used for asteroid mining, but never left testing phases. The MD started as a paper on potential applications using Intrisic Fields Manipulation on the Higgs Boson. IVTE also uses theories proposed by this paper.
 
@@ -52,7 +52,7 @@ Transactions with GEM are instant and reliable. It's also the main currency used
 
 ### Teleperceptive Projections or TPP or Brain Jerk / NeuroProjection
 
-These are a combination of visual, audio, haptic, olfactory, and/or signaled emotions or feelings all packed in single a binary file with the purpose of being played back by a NeuroProjector within a simulation. They're basically movies projected directly to the brain, a like vivid dream, and thus reproducing all the stimuli stored in the file onto the user's psyche. The main difference is that the NeuroProjectors tries to create a simulation utilizing feedback from the brain.
+These are a combination of visual, auditory, haptic, olfactory, and/or signaled emotions or feelings all packed in single a binary file with the purpose of being played back by a NeuroProjector within a simulation. They're basically movies projected directly to the brain, a like vivid dream, and thus reproducing all the stimuli stored in the file onto the user's psyche. The main difference is that the NeuroProjectors tries to create a simulation utilizing feedback from the brain.
 
 Almost every UHCI chip comes with a NeuroProjector. There also are external NeuroProjectors that are latched around the neck, and a pair of glasses. One disadvantage between the integrated and external NeuroProjector is that the external one isn't capable of reading the user's feedback, and for this reason, the simulation sticks to the perception of the original recorder.
 
@@ -78,7 +78,7 @@ The official languages in the UNT is English, Spanish and Japanese.
 ### Wayland
 Wayland was originally formed by the EU and China, but right before war it was reformed and completely distanced itself from these countries. Similarly to UNT, they also dedicded to buy Alana's technology and do their own thing. Wayland started not more than 2 years after Alana started sending ships to space, in 2087.
 
-The official language in Wayland is English and Chinese.
+The official language in Wayland are English and Chinese.
 
 ### Veracrúz
 Veracrúz was an independent group of colonizers before the war, headed by Alana Industries, a company from Earth, the first one to invest in the IVTE. The leader of this group was Sir Arthur Velanova, that named the group after his wife, Marta Veracrúz Velanova. Russia, India, and France were also major investors in Alana Industries. Alana's project started after one year of the first succesful test of the IVTE in the year 2084.
@@ -125,20 +125,24 @@ Tesla develops Android, replacement parts, but also some prosthetics. It's mid l
 
 Bibi Snakes is a small gang situated in Doluz. They specialize in small crimes such as stealing companies' shipment and selling them in the black market. Bibi is lead by Victor Vetsu.
 
+### Bloodchungs
+
+Bloodchungs is the rival gang of the Bibi Snakes.
+
 
 ## Important Characters
 
 - Sir Arthur Velanova
 
-It's multi-trillionare from Earth. It's unknown how old he really is, but it's especulated to be over a hundred years old. Arthur is considered a humanitarian, and creator of the IVTE that allowed the human species to trascend to the stars. Arthur's entire body is prosthetic, even his brain.
+It's multi-trillionare from Earth. It's unknown how old he really is, but it's especulated to be over a hundred years old. Arthur is considered a humanitarian, and father of the IVTE that allowed the human species to trascend from earth. Arthur's entire body is prosthetic, even his brain.
 
 - Jem 
 
-Jem is cyborg, extremely dangerous individual, wanted crimininal across all colonies, head of the Saborou Group. Jem posses a military-grade prosthetic body. Jem likes to be called by She/her pronous, but her body looks anything but feminine.
+Jem is a cyborg, extremely dangerous individual, wanted crimininal across all colonies, head of the Saborou Group. Jem posses a military-grade prosthetic body. Jem likes to be called by She/her pronous, but her body looks anything but feminine.
 
 - Luna Mayer
 
-It's a experienced hacker and wanted crimical that helped The Protagonist when their ship was shot down by Titan's Protection Squad. 
+It's an experienced hacker and wanted crimical that helped The Protagonist when their ship was shot down by Titan's Protection Squad. 
 Luna is the youngest of 3 sisters. Luna is around 22 years old. She got into Cybersecurity Specialist at School, and finished her junior year at 18 years old. But then her father died in a job accident. Her mother left when she was only 2 years old. Her sister Allison and Jessica left the house when their father died. She's been on her own ever since. She couldn't afford tuition at school, so she dropped out. She has dedicated her life to computers, software programming, and of course, hacking.
 
 Luna is acts really tough, and sometimes even cold, but deep inside she's very fragile, and suffer from abandoment issues. Luna is 5'9" tall, slim. She's from germanic decendency. Blond, blue-eyed, white skinned. Luna enjoys lowbeat music, and loves Anime. She's tends to be contrarian out of spite sometimes.
@@ -165,12 +169,12 @@ Jessica Mayer is Luna's sister.
 
 - Reamon Dess
 
-Reamon is a option major character that the protagonist can choose to work/hang out with. Reamon is also a romantic parnet.
+Reamon is an optional major character that the protagonist can choose to work/hang out with. Reamon is also a romantic partner.
 Reamon used to work with Luna, but he decided to split due Luna being too selfish to work with.
 
 Reamon works for Tesla Industries as inventory techinician. He used to have Luna help hack the companies inventory database system to steal parts and prosthetics to sell in the black market.
 
-Raemon is from hispanic decendency. He's 6'2" tall, and built. He's only 80% cyborg. Raemon like old style garage rock, and he's generally a hot headed person, although ultimate very agreeable. 
+Raemon is from hispanic decendency. He's 6'2" tall, and built. He's only 80% cyborg. Raemon likes old style garage rock, and he's generally a hot headed person, although ultimate very agreeable. 
 
 Raemon stopped stealing from Tesla after splitting away from Luna.
 
@@ -178,9 +182,15 @@ Raemon now works for a gang called Bibi Snakes.
 
 - Victor Vetsu
 
-Victor is the leader of the Bibi Snakes. The character can choose to work for Victor/Bibis. The name comes from an artificial food created by the Chinese before the world. It's served as a delicatessen.
+Victor is the leader of the Bibi Snakes. The character can choose to work for Victor/Bibis. The name comes from an artificial food created by the Chinese before the world ended. It's served as a delicatessen.
 
-- 
+Victor used to be a drug addicted, that lost his job, and friends. Eventually he quit, and put together the Bibi Snakes. Victor is slender, but built.
+
+Victor's best friend was Mona Miss which was murdered by the rival gang Bloodchungs.
+
+- Mona Miss
+
+Mona is an ex-drugaddict that met Victor Vetsu in an AA meeting.
 
 
 ## How it starts
@@ -194,11 +204,11 @@ The protanists is destined to figure out who he is in this world, and either ret
 
 Dóluz is a city/colony is Titan, one of the moons of Saturn. Dóluz was one of the first space colonies, originally founded by Alana Industries. Now part of Veracrúz.
 There are 50 million people in Dóluz. Most of them low-lives. One of the main joints of Century Laboratories is located in Dóluz. 
-The main transporation is Dóluz is the metro as streets are too narrow for for full size vehicles. Most people ride their personal electric vehicles such as bikes and scooters, then everyone else use the metro. The rich people of Dóluz use Flying vehicles of course.
+The main transporation is Dóluz is the metro as streets are too narrow for for full sized vehicles. Most people ride their personal electric vehicles such as bikes and scooters, and then everyone else use the metro. The rich people of Dóluz use Flying vehicles of course.
 
-Dóluz is famouse because of its night life. Dóluz is one of the few colonies without regulations on sex slaves and age of consent is 15 years old, also most drugs are legal except hardcore ones.
+Dóluz is famous because of its night life. Dóluz is one of the few colonies without regulations on sex slaves and age of consent is 15 years old, also most drugs are legal except hardcore ones.
 
-Dóluz police department is called the Protection Squad. Most basic rights of a citizen Dóluz include protection from the Squad, but many of their services are paid such as murder and missing persons investigations.
+Dóluz police department is called the Protection Squad. Most basic rights of a citizen in Dóluz include protection from the Squad, but many of their services are paid such as murder and missing persons investigations.
 
 The city is completely domed, but the ground under it is actually highly fertile as of now, and inhabited by small purple worms. It's unknown how it happened, but it's said that a secret project carried by an unknown group which consisted in terraforming the floor using a mutated type of worm that survived by eating waste. It seems the city waste management system has been leaking through the base and reaching the worms, keeping them alive.
 
@@ -211,7 +221,7 @@ It's the first and biggest major city/colony in mars part of the UNT. NH was one
 
 ### Romdo or The Interplanetary Space Station
 
-It's a luxurious neutral Space Station built within 5 years of the destruction of earth with the purpose of hosting the main headquaters of The Federation for the Future of Humanity. Although through time it also became a comercial and residential structure. Most of the wealthiests and high society individuals live in Romdo. There are around 150 thousand people living there. It's said it has cost around 3 trillion Gems to build.
+It's a luxurious neutral zone Space Station built within 5 years of the destruction of earth with the purpose of hosting the main headquaters of The Federation for the Future of Humanity. Although through time it also became a comercial and residential structure. Most of the wealthiests and high society individuals live in Romdo. There are around 150 thousand people living there. It's said it has cost around 3 trillion Gems to build.
 
 
 

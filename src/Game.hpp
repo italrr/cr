@@ -68,6 +68,9 @@
                 GAME_SIM_SETTING_CHANGED,
                 GAME_SIM_STATE_CHANGED,
                 GAME_SIM_WEATHER_STATUS,
+                GAME_SIM_START_OF_FRAME,
+                GAME_SIM_END_OF_FRAME,
+                GAME_SIM_NEXT_FRAME,
 
                 CLIENT_CONNECTED,
                 CLIENT_DISCONNECTED,

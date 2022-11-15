@@ -41,8 +41,8 @@
             void setPuppet(bool puppetMode, T_OBJID wId);
             void start();
             void reqEnd();
-            void run(unsigned ticks, std::vector<std::shared_ptr<Audit>> &applied); // authoritative (for server)
-            void run(const std::vector<std::shared_ptr<Audit>> &audits);  // puppet mode (for clients)
+            bool run(unsigned ticks); // authoritative (for server)
+            bool run(const std::vector<std::shared_ptr<Audit>> &audits);  // puppet mode (for clients)
             bool exists(CR::T_OBJID id);
             std::shared_ptr<CR::Object> get(CR::T_OBJID id);
             std::shared_ptr<Audit> createAudit(T_AUDIT type);

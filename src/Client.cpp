@@ -23,21 +23,6 @@ static void CL_SEND_DISCONNECT(CR::Client *cl, const std::string &reason){
     cl->socket.send(cl->svAddress, packet);
 }
 
-static void CL_THREAD(void *handle){
-    auto cl = static_cast<CR::Client*>(handle);
-    CR::Packet packet;
-    CR::IP_Port sender;        
-    while(cl->netState != CR::NetHandleState::CONNECTED) CR::sleep(16);
-    while(CR::NetHandleState::CONNECTED){
-        int nb = cl->socket.recv(sender, packet);
-        if(nb > 0){
-            std::unique_lock<std::mutex> lock(cl->netCon);
-                cl->rcvPackets.push_back(packet);
-            lock.unlock();
-        }        
-    }
-}
-
 CR::Client::Client(){
     this->isServer = false;
     this->netState = CR::NetHandleState::IDLE;
@@ -58,7 +43,6 @@ bool CR::Client::connect(const std::string &ip, unsigned port){
         return false;
     }
     socket.setNonBlocking(true);
-    this->thread = std::thread(&CL_THREAD, this); 
     this->netState = CR::NetHandleState::CONNECTING;
     CR::log("[CLIENT] Connecting to %s...\n", this->svAddress.str().c_str());
     CL_SEND_CONNECT(this);
@@ -203,6 +187,8 @@ void CR::Client::processPacket(CR::Packet &packet, bool ignoreOrder){
         case CR::PacketType::SIMULATION_FRAME_STATE: {
             if(!isSv || !isLast){ break; }
 
+            
+
             sendAck(sender, packet.getAck());
         } break;
                               
@@ -257,23 +243,26 @@ void CR::Client::step(){
     if(netState != CR::NetHandleState::CONNECTED){
         return;
     }
+    int nb = socket.recv(sender, packet);
+    if(nb > 0){
+        rcvPackets.push_back(packet);
+    }    
+            
     // process packet queue
-    std::unique_lock<std::mutex> lock(this->netCon);
-        if(rcvPackets.size() > 0){
-            for(unsigned i = 0; i < rcvPackets.size(); ++i){
-                processPacket(rcvPackets[i]);
-            }
-            rcvPackets.clear();
+    if(rcvPackets.size() > 0){
+        for(unsigned i = 0; i < rcvPackets.size(); ++i){
+            processPacket(rcvPackets[i]);
         }
-        deliverPacketQueue();
-        if(CR::ticks()-lastSentPing > 1000){
-            lastSentPing = CR::ticks();
-            lastPing = CR::ticks();
-            CR::Packet ping(CR::PacketType::PING);
-            ping.setOrder(++sentOrder);
-            this->socket.send(this->svAddress, ping);
-        }    
-    lock.unlock();  
+        rcvPackets.clear();
+    }
+    deliverPacketQueue();
+    if(CR::ticks()-lastSentPing > 1000){
+        lastSentPing = CR::ticks();
+        lastPing = CR::ticks();
+        CR::Packet ping(CR::PacketType::PING);
+        ping.setOrder(++sentOrder);
+        this->socket.send(this->svAddress, ping);
+    }    
 }
 
 

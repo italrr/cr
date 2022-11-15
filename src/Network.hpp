@@ -87,6 +87,11 @@
         struct ClientHandle {
             CR::T_GENERICID clientId;
             CR::T_AUDITORD lastFrame;
+            CR::T_AUDITORD lastAudit;
+            CR::T_TIME lastFrameACK;
+            bool readyNextFrame;
+            std::mutex nextFrameMutex;
+            
             uint64 netId;
             CR::IP_Port ip;
             std::string nickname;
@@ -99,15 +104,30 @@
             uint32 lastSentOrder;  
             uint64 lastPacketTimeout;  
 
-            std::vector<std::shared_ptr<CR::Audit>> frameQueue;          
+            void setReadyForFrame(bool ready){
+                std::unique_lock<std::mutex> lock(nextFrameMutex);
+                    this->lastFrameACK = CR::ticks();
+                    this->readyNextFrame = ready;
+                lock.unlock();
+            }
 
+            void setReadyForFrame(bool ready, CR::T_AUDITORD lastAudit, CR::T_AUDITORD lastFrame){
+                std::unique_lock<std::mutex> lock(nextFrameMutex);
+                    this->lastFrameACK = CR::ticks();
+                    this->readyNextFrame = ready;
+                    this->lastAudit = lastAudit;
+                    this->lastFrame = lastFrame;
+                lock.unlock();
+            }            
 
             ClientHandle(){
                 lastRecvOrder = 0;
                 lastSentOrder = 1;
                 svACK = 0;       
                 lastFrame = 0;
+                readyNextFrame = true;
                 lastPacketTimeout = CR::ticks();
+                lastFrameACK = CR::ticks();
             }
         };
 
@@ -284,11 +304,10 @@
 
             SIMULATION_FRAME_STATE,
             /*
-                // It's assumed the order starts at zero per tick
-
-                T_FRAMEORD  CURRENT TICK
+                T_FRAMEORD  TICK
                 T_TIME      EPOCH
-                UINT8       NUMBER OF FRAMES
+                UINT8       NUMBER OF TOTAL FRAMES IN THIS TICK
+                UINT8       NUMBER OF FRAMES IN THIS PACKET
                 {
                     T_FRAME     TYPE
                     T_STATE     CURRENT STATE     
@@ -301,6 +320,11 @@
                     UINT8       PAYLOAD SIZE
                     [PAYLOAD DATA]
                 } ... N
+            */
+            ACK_SIM_FRAME_STATE,
+            /*
+                T_FRAMEORD LAST APPLIED FRAME
+                T_FRAMEORD LAST AUDIT APPLIED
             */
 
 
