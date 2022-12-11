@@ -104,31 +104,10 @@
             uint32 lastSentOrder;  
             uint64 lastPacketTimeout;  
 
-            void setReadyForFrame(bool ready){
-                std::unique_lock<std::mutex> lock(nextFrameMutex);
-                    this->lastFrameACK = CR::ticks();
-                    this->readyNextFrame = ready;
-                lock.unlock();
-            }
-
-            void setReadyForFrame(bool ready, CR::T_AUDITORD lastAudit, CR::T_AUDITORD lastFrame){
-                std::unique_lock<std::mutex> lock(nextFrameMutex);
-                    this->lastFrameACK = CR::ticks();
-                    this->readyNextFrame = ready;
-                    this->lastAudit = lastAudit;
-                    this->lastFrame = lastFrame;
-                lock.unlock();
-            }            
-
-            ClientHandle(){
-                lastRecvOrder = 0;
-                lastSentOrder = 1;
-                svACK = 0;       
-                lastFrame = 0;
-                readyNextFrame = true;
-                lastPacketTimeout = CR::ticks();
-                lastFrameACK = CR::ticks();
-            }
+            void setReadyForFrame(bool ready);
+            void setReadyForFrame(bool ready, CR::T_AUDITORD lastAudit, CR::T_AUDITORD lastFrame);
+            ClientHandle(const ClientHandle &other);
+            ClientHandle();
         };
 
         struct NetHandle {
@@ -323,8 +302,8 @@
             */
             ACK_SIM_FRAME_STATE,
             /*
-                T_FRAMEORD LAST APPLIED FRAME
-                T_FRAMEORD LAST AUDIT APPLIED
+                T_AUDITORD LAST APPLIED FRAME
+                T_AUDITORD LAST AUDIT APPLIED
             */
 
 

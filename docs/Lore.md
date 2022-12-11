@@ -6,7 +6,7 @@
 
 It's the year 2105. The place is the Dóluz. It's one of the first industrial colonies founded when the space age started 20 years ago, in Titan.
 
-In the year 2033 the first succesful artificial heart was engineered by Century Labatories, part of the biggest technological and medical conglomerate known as The Vega Group. In the year 2056 the first fully digitilized brain by the same people. By the year 2100, cyborgs became the majority of the population.
+In the year 2033 the first succesful artificial heart was engineered by Century Labatories, part of the biggest technological and medical conglomerate known as The Vega Group. In the year 2056 the first fully digitized brain by the same people. By the year 2100, cyborgs became the majority of the population.
 
 In this future, humans are no longer born due to an accidental biological contanimation that took place decades ago when humans still inhabited earth. The Lazarus incident, or how people call it, Rapture, is an airborn virus, highly congious, engineered to modify every human cell's DNA to prevent telomere degration. However the virus was still in the testing phases. The virus had a major side effect that affected most people. It caused their blood to slowly thicken until reaching cardiac arrest, regardless of any medicine used. This thickening rate takes years to develop.
 
@@ -20,6 +20,15 @@ The factions that managed to escape the planet before imminent destruction found
 
 The social and political implications of these events radically changed humanity.
 
+### Azula Portable Nuclear Fusion Reactor (AZPNFR) or Azula Reactor or Azula
+
+Azula Portable Nuclear Reactor is a design for a Portable Fusion Reactor proposed by a french scientist known as Roman Halloway in 2062. The original design for this reactor weighted 500 pounds, but there are modern revisions of it weighting less than 100 pounds. The Azula Reactor
+works similarly to generic Fusion Reactors, but instead of using steam to drive turbines, it uses a very rare type of metal called Azulumiun. Azulumiun when heated produces an electrical discharge 85% proportional in energy to the heat applied. Meaning it has a 85% conversion of energy. This mysterious metal was first found in the core of an asteroid that was theorized to contain large quantities of diamonds. Azulumiun melting point is completely dependant of its ability to discharge. The more heated it gets, the higher the discharge. However, if it were to be isolated, incapable of discharging, it would start losing is structural integratiy. The start melting point of Azulumiun without discharging is 545 C.
+
+The French government quickly took over as the first prototype was succesfully tested. The project was never made public up until Alana Industries reported their first successul test of the IVTE. The French government offered their reactor as the potential power source for the IVTE. Alana agreed to work together.
+
+Azulumiun is a very rare metal nowdays, however there's an artificial substitute known as Azulumiun-1010, which is cheaper. Azulumiun-1010 is only 50% as efficient as pure Azulumiun, therefore is energy througput is limited in comparison. Most cheap Azula knockoffs are built using 1010.
+
 ### IVTE and Intrisic Fields Manipulation
 
 Interplanetary traveling was made possible by the Interplanetary Vacuumless Thrust Engine (IVTE, or eeft as it's called colloquially). IVTE produces inmense accelation capable of reaching 0.99c (99% of the speed of light) in less than one minute. This is however only possible with a Massless Drive (MD). The Massless Drive is capable of physically faking the mass of certain objects connected to the field (including the IVTE), meaning objects within or inside of the husk of the spaceship weight less than a gram but only to the engine as the effect is purely relativistic. One issue of the IVTE is that combining it with the Massless Drive, causes a massive gravitational pull and push around the ship that could potentially cause havok around civialian areas. That's why it's highly illegal engaging full throttle with the IVTE close to a populated areas. There are systems in place to take down any ship that engages full throttle within the bounds of a colony or space station.
@@ -27,6 +36,8 @@ Interplanetary traveling was made possible by the Interplanetary Vacuumless Thru
 The IVTE and Massless Drive were both created by Alana Industries. The MD was the first created, and it was meant to be used for asteroid mining, but never left testing phases. The MD started as a paper on potential applications using Intrisic Fields Manipulation on the Higgs Boson. IVTE also uses theories proposed by this paper.
 
 The Intrisic Fields Manipulation (IFM) was a major scientific breakthrough by the end of 2060s. It works through the usage of extremely high energy beams on matter.
+
+The IVTE and MD were very power hungry, and needed a highly specialized setup to run. Alana proposed a concept of a portable nuclear reactor but was soon discarded when the French government reached out to them with the Azula Reactor. After both parties reaching an agreement, the Azula Reactor was selected as the ideal power source for the IVTE/MD combination.
 
 ### Neutral-Vacuumless Implosive Bomb
 

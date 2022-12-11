@@ -26,6 +26,8 @@ static void CL_SEND_DISCONNECT(CR::Client *cl, const std::string &reason){
 CR::Client::Client(){
     this->isServer = false;
     this->netState = CR::NetHandleState::IDLE;
+    this->lastFrame = 0;
+    this->lastAudit = 0;
     cleanUp();
 }
 
@@ -187,9 +189,33 @@ void CR::Client::processPacket(CR::Packet &packet, bool ignoreOrder){
         case CR::PacketType::SIMULATION_FRAME_STATE: {
             if(!isSv || !isLast){ break; }
 
-            
+            CR::T_AUDITORD tick;
+            CR::T_TIME epoch;
+            uint8 nFramesTick;
+            uint8 nFramesPacket;
 
-            sendAck(sender, packet.getAck());
+            packet.read(&tick, sizeof(tick));
+            packet.read(&epoch, sizeof(epoch));
+            packet.read(&nFramesTick, sizeof(nFramesTick));
+            packet.read(&nFramesPacket, sizeof(nFramesPacket));
+            
+            std::vector<std::shared_ptr<Audit>> audits;
+
+            T_AUDITORD readFrame = this->lastFrame + 0;
+            for(unsigned i = 0; i < nFramesPacket; ++i){
+                ++readFrame;
+            }
+    
+            this->lastFrame = readFrame;
+            this->lastAudit = tick;
+
+            CR::Packet packet;
+            packet.setHeader(CR::PacketType::ACK_SIM_FRAME_STATE);
+            packet.write(&this->lastFrame, sizeof(T_AUDITORD));
+            packet.write(&this->lastAudit, sizeof(T_AUDITORD));
+            this->sendPacketFor(svAddress, packet);
+            // CR::log("[CL] nFramesPacket %i\n", nFramesPacket);
+
         } break;
                               
     }

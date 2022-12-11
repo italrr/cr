@@ -24,6 +24,9 @@
             uint32 rcvOrder;
             uint32 sentOrder;
 
+            CR::T_AUDITORD lastFrame;
+            CR::T_AUDITORD lastAudit;
+            
             Client();
             void processPacket(CR::Packet &packet, bool ignoreOrder = false);
             bool connect(const std::string &ip, unsigned port);

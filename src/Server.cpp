@@ -28,7 +28,10 @@ static void SV_SEND_CLIENT_DROP(CR::Server *sv, CR::ClientHandle *client, const 
 static void SV_CHECK_SKIP_TICK(CR::Server *sv, CR::ClientHandle *client, const std::unordered_map<CR::T_AUDITORD, std::vector<std::shared_ptr<CR::Audit>>> &history){
     auto it = history.find(client->lastFrame);
     if(it == history.end()){
-        CR::log("[SERVER] Failed to find tick needed for client %i: %i. Is the client from the future???\n");
+        auto lf = client->lastFrame;
+        client->lastFrame = 0;        
+        CR::log("[SERVER] Failed to find tick needed for client %i: %i. Is the client from the future??? [SV_CHECK_SKIP_TICK]\n", client->clientId, lf);
+        // TODO: This shouldn't happen, but if it does, probably the best course of action is to kick them
         return;
     }
 
@@ -41,11 +44,18 @@ static void SV_CHECK_SKIP_TICK(CR::Server *sv, CR::ClientHandle *client, const s
 static void SV_SEND_AUDITS(CR::Server *sv, CR::T_AUDITORD fromAudit, CR::T_AUDITORD tick, CR::ClientHandle *client, const std::unordered_map<CR::T_AUDITORD, std::vector<std::shared_ptr<CR::Audit>>> &history){
     auto it = history.find(tick);
     if(it == history.end()){
-        CR::log("[SERVER] Failed to find tick needed for client %i: %i. Is the client from the future???\n");
+        // CR::log("[SERVER] Failed to find tick needed for client %i: %i. Is the client from the future??? [SV_SEND_AUDITS]\n", client->clientId, tick);
+        // We probably shouldn't check this here, but the same as in SV_CHECK_SKIP_TICK, we should probably just kick the player 
         return;
     }
 
     auto copy = it->second;
+
+    for(unsigned i = 0; i < copy.size(); ++i){
+        CR::log("AUDIT %i: %i\n", tick, copy[i]->type);
+    }
+
+    CR::log("N COPY %i | fromAudit %i\n", copy.size(), fromAudit);
 
     if(fromAudit > 0){ // we delete the ones before
         copy.erase(copy.begin(), copy.begin() + fromAudit);
@@ -80,7 +90,7 @@ static void SV_SEND_AUDITS(CR::Server *sv, CR::T_AUDITORD fromAudit, CR::T_AUDIT
             uint8 plSize = dt->data.size;
             buffer.write(&plSize, sizeof(plSize)); 
             buffer.write(dt->data.data, plSize); 
-            if(buffer.size > frameUpd.maxSize > CR::NetworkMaxPacketSize){
+            if(buffer.size + frameUpd.maxSize > CR::NetworkMaxPacketSize){
                 break; 
             }else{
                 frameUpd.write(buffer.data, buffer.size);
@@ -97,10 +107,10 @@ static void SV_SEND_AUDITS(CR::Server *sv, CR::T_AUDITORD fromAudit, CR::T_AUDIT
         deliveredAll = copy.size() == 0;
     } 
     
-    // for(unsigned i = 0; i < deliveries.size(); ++i){
-    //     sv->sendPersPacketForMany(sv->getAllClientsIPs(), deltaDeliveries[i], sv->getAllClientsACKs());
-    // }
-
+    for(unsigned i = 0; i < deliveries.size(); ++i){
+        // sv->sendPersPacketForMany(sv->getAllClientsIPs(), deltaDeliveries[i], sv->getAllClientsACKs());
+        sv->sendPacketFor(client->ip, deliveries[i]);
+    }
 
 }
 
@@ -207,7 +217,7 @@ static void SV_PROCESS_PACKET(CR::Server *sv, CR::Packet &packet, bool ignoreOrd
         */             
         case CR::PacketType::CLIENT_DISCONNECT: {
             if(!client || !isLast){
-                if(!client) CR::log("[SERVER] Faltal error: Client %s disconnected by does not exist in the server\n", sender.str().c_str());
+                if(!client) CR::log("[SERVER] Fatal error: Client %s disconnected by does not exist in the server\n", sender.str().c_str());
                 break;
             }
             CR::T_GENERICID clientId;
@@ -220,6 +230,19 @@ static void SV_PROCESS_PACKET(CR::Server *sv, CR::Packet &packet, bool ignoreOrd
             // Notify others
             SV_SEND_CLIENT_DISCONNECT(sv, client, reason); 
             // TODO: Send frame to world
+        } break;
+        /*
+            ACK_SIM_FRAME_STATE
+        */    
+        case CR::PacketType::ACK_SIM_FRAME_STATE: {
+            if(!client || !isLast){
+                break;
+            }
+            CR::T_AUDITORD lastFrame, lastAudit;
+            packet.read(&lastFrame, sizeof(CR::T_AUDITORD));
+            packet.read(&lastAudit, sizeof(CR::T_AUDITORD));
+            client->setReadyForFrame(true, lastAudit, lastFrame);
+            SV_CHECK_SKIP_TICK(sv, client, sv->world->auditHistory);
         } break;
 
         default: {
@@ -244,7 +267,7 @@ static void SV_THREAD(void *handle){
         // Send delta to clients
         for(auto &it : sv->clients){
             auto cl = it.second.get();
-            if(CR::ticks()-cl->lastFrame > 1000 || cl->readyNextFrame){
+            if(CR::ticks()-cl->lastFrameACK > 1000 || cl->readyNextFrame){
                 SV_SEND_AUDITS(sv, cl->lastAudit, cl->lastFrame, cl, sv->world->auditHistory);
                 cl->setReadyForFrame(false);
             }

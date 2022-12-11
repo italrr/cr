@@ -1,6 +1,46 @@
 #include "Network.hpp"
 
 
+
+void CR::ClientHandle::setReadyForFrame(bool ready){
+    std::unique_lock<std::mutex> lock(nextFrameMutex);
+        this->lastFrameACK = CR::ticks();
+        this->readyNextFrame = ready;
+    lock.unlock();
+}
+
+void CR::ClientHandle::setReadyForFrame(bool ready, CR::T_AUDITORD lastAudit, CR::T_AUDITORD lastFrame){
+    std::unique_lock<std::mutex> lock(nextFrameMutex);
+        this->lastFrameACK = CR::ticks();
+        this->readyNextFrame = ready;
+        this->lastAudit = lastAudit;
+        this->lastFrame = lastFrame;
+    lock.unlock();
+}        
+
+CR::ClientHandle::ClientHandle(const CR::ClientHandle &other){
+    lastRecvOrder = 0;
+    lastSentOrder = 1;
+    svACK = 0;       
+    lastFrame = 0;
+    lastAudit = 0;
+    readyNextFrame = true;
+    lastPacketTimeout = CR::ticks();
+    lastFrameACK = CR::ticks();
+}
+
+CR::ClientHandle::ClientHandle(){
+    lastRecvOrder = 0;
+    lastSentOrder = 1;
+    svACK = 0;       
+    lastFrame = 0;
+    lastAudit = 0;
+    readyNextFrame = true;
+    lastPacketTimeout = CR::ticks();
+    lastFrameACK = CR::ticks();
+}
+
+
 CR::ClientHandle *CR::NetHandle::getClientByIP(const CR::IP_Port &ip){
     for(auto _cl : clients){
         if(_cl.second->ip.isSame(ip)){

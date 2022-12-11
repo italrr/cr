@@ -90,6 +90,13 @@
                 ENTITY_KILLED,
                 ENTITY_MOVED
             };
+            static std::string str(CR::T_AUDIT type){
+                switch(type){
+                    
+                    default:
+                        return "UNDEFINED";
+                }
+            }
         }
 
         
