@@ -285,6 +285,7 @@
             /*
                 T_FRAMEORD  TICK
                 T_TIME      EPOCH
+                T_FRAMEORD  FROM AUDIT N
                 UINT8       NUMBER OF TOTAL FRAMES IN THIS TICK
                 UINT8       NUMBER OF FRAMES IN THIS PACKET
                 {

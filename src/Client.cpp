@@ -23,6 +23,14 @@ static void CL_SEND_DISCONNECT(CR::Client *cl, const std::string &reason){
     cl->socket.send(cl->svAddress, packet);
 }
 
+static void CL_SEND_CURRENT_SIM_STATE(CR::Client *cl){
+    CR::Packet packet;
+    packet.setHeader(CR::PacketType::ACK_SIM_FRAME_STATE);
+    packet.write(&cl->lastFrame, sizeof(CR::T_AUDITORD));
+    packet.write(&cl->lastAudit, sizeof(CR::T_AUDITORD));
+    cl->sendPacketFor(cl->svAddress, packet);
+}
+
 CR::Client::Client(){
     this->isServer = false;
     this->netState = CR::NetHandleState::IDLE;
@@ -190,31 +198,42 @@ void CR::Client::processPacket(CR::Packet &packet, bool ignoreOrder){
             if(!isSv || !isLast){ break; }
 
             CR::T_AUDITORD tick;
+            CR::T_AUDITORD fromAudit;
             CR::T_TIME epoch;
-            uint8 nFramesTick;
-            uint8 nFramesPacket;
+            uint8 nAuditsTick;
+            uint8 nAuditsPacket;
 
             packet.read(&tick, sizeof(tick));
             packet.read(&epoch, sizeof(epoch));
-            packet.read(&nFramesTick, sizeof(nFramesTick));
-            packet.read(&nFramesPacket, sizeof(nFramesPacket));
+            packet.read(&fromAudit, sizeof(fromAudit));
+            packet.read(&nAuditsTick, sizeof(nAuditsTick));
+            packet.read(&nAuditsPacket, sizeof(nAuditsPacket));
+
+            // check this state is indeed the next one
+            if(tick < this->lastFrame || tick-this->lastFrame > 1 || tick == this->lastFrame && (fromAudit < this->lastAudit || fromAudit-this->lastAudit > 1)){
+                // CR::log("RCV TICK %i | ")
+                CL_SEND_CURRENT_SIM_STATE(this);
+                break;
+            }
             
             std::vector<std::shared_ptr<Audit>> audits;
 
-            T_AUDITORD readFrame = this->lastFrame + 0;
-            for(unsigned i = 0; i < nFramesPacket; ++i){
-                ++readFrame;
+            T_AUDITORD readAudits = this->lastAudit + 0;
+            for(unsigned i = 0; i < nAuditsPacket; ++i){
+                ++readAudits;
             }
     
-            this->lastFrame = readFrame;
-            this->lastAudit = tick;
+            this->lastFrame = tick;
+            this->lastAudit = readAudits;   
 
-            CR::Packet packet;
-            packet.setHeader(CR::PacketType::ACK_SIM_FRAME_STATE);
-            packet.write(&this->lastFrame, sizeof(T_AUDITORD));
-            packet.write(&this->lastAudit, sizeof(T_AUDITORD));
-            this->sendPacketFor(svAddress, packet);
+            CL_SEND_CURRENT_SIM_STATE(this);
+
             // CR::log("[CL] nFramesPacket %i\n", nFramesPacket);
+
+            // if we got all audits from this frame, reset counter
+            if(this->lastAudit >= nAuditsTick){
+                this->lastAudit = 0;
+            }
 
         } break;
                               

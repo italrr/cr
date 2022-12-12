@@ -28,9 +28,8 @@ static void SV_SEND_CLIENT_DROP(CR::Server *sv, CR::ClientHandle *client, const 
 static void SV_CHECK_SKIP_TICK(CR::Server *sv, CR::ClientHandle *client, const std::unordered_map<CR::T_AUDITORD, std::vector<std::shared_ptr<CR::Audit>>> &history){
     auto it = history.find(client->lastFrame);
     if(it == history.end()){
-        auto lf = client->lastFrame;
-        client->lastFrame = 0;        
-        CR::log("[SERVER] Failed to find tick needed for client %i: %i. Is the client from the future??? [SV_CHECK_SKIP_TICK]\n", client->clientId, lf);
+        client->lastAudit = 0;        
+        CR::log("[SERVER] Failed to find tick/frame needed for client %i: %i. Is the client from the future??? [SV_CHECK_SKIP_TICK]\n", client->clientId, client->lastFrame);
         // TODO: This shouldn't happen, but if it does, probably the best course of action is to kick them
         return;
     }
@@ -51,11 +50,11 @@ static void SV_SEND_AUDITS(CR::Server *sv, CR::T_AUDITORD fromAudit, CR::T_AUDIT
 
     auto copy = it->second;
 
+    CR::log("[FRAME %i START]\n", tick);
     for(unsigned i = 0; i < copy.size(); ++i){
-        CR::log("AUDIT %i: %i\n", tick, copy[i]->type);
+        CR::log("%i\n", copy[i]->type);
     }
-
-    CR::log("N COPY %i | fromAudit %i\n", copy.size(), fromAudit);
+    CR::log("[FRAME %i END]\n", tick);
 
     if(fromAudit > 0){ // we delete the ones before
         copy.erase(copy.begin(), copy.begin() + fromAudit);
@@ -71,6 +70,7 @@ static void SV_SEND_AUDITS(CR::Server *sv, CR::T_AUDITORD fromAudit, CR::T_AUDIT
         frameUpd.setHeader(CR::PacketType::SIMULATION_FRAME_STATE);  
         frameUpd.write(&copy[0]->tick, sizeof(copy[0]->tick));
         frameUpd.write(&copy[0]->time, sizeof(copy[0]->time));
+        frameUpd.write(&fromAudit, sizeof(fromAudit));
         frameUpd.write(&nAudits, sizeof(nAudits));
         uint16 nAudInTP = frameUpd.index;
         uint8 audCount = 0;
@@ -243,6 +243,7 @@ static void SV_PROCESS_PACKET(CR::Server *sv, CR::Packet &packet, bool ignoreOrd
             packet.read(&lastAudit, sizeof(CR::T_AUDITORD));
             client->setReadyForFrame(true, lastAudit, lastFrame);
             SV_CHECK_SKIP_TICK(sv, client, sv->world->auditHistory);
+            CR::log("[ACK] AUDIT %i |  FRAME %i\n", lastAudit, lastFrame);
         } break;
 
         default: {
