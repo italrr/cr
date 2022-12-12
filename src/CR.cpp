@@ -269,10 +269,14 @@ int main(int argc, char* argv[]){
 
     // map->build(CR::Vec2<int>(32, 32), 8, 50);
 
-    CR::Client client;
+    
     CR::Server server;
     server.listen("Social Room", 24, CR::NetworkDefaultPort);
-    
+    CR::spawn([&](CR::Job &Ctx){
+        server.step();
+    }, true, true, false);
+
+    CR::Client client;
     CR::spawn([&](CR::Job &Ctx){
         client.connect("127.0.0.1", CR::NetworkDefaultPort);
     }, false, false, false);

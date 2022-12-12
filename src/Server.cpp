@@ -254,62 +254,54 @@ static void SV_PROCESS_PACKET(CR::Server *sv, CR::Packet &packet, bool ignoreOrd
     }   
 }
 
-static void SV_THREAD(void *handle){
-    auto sv = static_cast<CR::Server*>(handle);
+void CR::Server::step(){
+    // update world
+    if(world->state != CR::WorldState::IDLE && world->state != CR::WorldState::STOPPED){
+        if(CR::ticks()-lastWorldTick >= world->tickRate){
+            world->run(1);
+        }
+    }
+    // run server controller
     CR::Packet packet;
     CR::IP_Port sender;        
-    while(sv->netState != CR::NetHandleState::LISTENING) CR::sleep(16);
-    while(CR::NetHandleState::LISTENING){
-        std::unique_lock<std::mutex> lock(sv->netCon);
-        int nb = sv->socket.recv(sender, packet);
+    if(netState == CR::NetHandleState::LISTENING){
+        int nb = socket.recv(sender, packet);
         if(nb > 0){
-            SV_PROCESS_PACKET(sv, packet, false);            
+            SV_PROCESS_PACKET(this, packet, false);            
         }
         // Send delta to clients
-        for(auto &it : sv->clients){
+        for(auto &it : clients){
             auto cl = it.second.get();
             if(CR::ticks()-cl->lastFrameACK > 1000 || cl->readyNextFrame){
-                SV_SEND_AUDITS(sv, cl->lastAudit, cl->lastFrame, cl, sv->world->auditHistory);
+                SV_SEND_AUDITS(this, cl->lastAudit, cl->lastFrame, cl, this->world->auditHistory);
                 cl->setReadyForFrame(false);
             }
         }
         // Update deliveries
-        sv->deliverPacketQueue();               
+        deliverPacketQueue();               
         // Ping clients
-        for(auto &cl : sv->clients){
+        for(auto &cl : this->clients){
             auto &client = cl.second;
             if(CR::ticks()-client->lastPing > 1000){
                 client->lastPing = CR::ticks();
                 CR::Packet ping(CR::PacketType::PING);
                 ping.setOrder(++client->lastSentOrder);
-                sv->socket.send(client->ip, ping);
+                this->socket.send(client->ip, ping);
             }
         }          
         // Drop unresponsive clients
         std::vector<CR::ClientHandle*> timedoutClients;
-        for(auto cl : sv->clients){
+        for(auto cl : this->clients){
             if(CR::ticks()-cl.second->lastPacketTimeout > CR::Net::CLIENT_UNRESPONSIVE_TIMEOUT){
                 timedoutClients.push_back(cl.second.get());
             }
         }
         for(int i = 0; i < timedoutClients.size(); ++i){
             auto &client = timedoutClients[i];
-           sv->dropClient(client->clientId, "Timed out");
-        }  
-        lock.unlock();      
-    }
-}
+            this->dropClient(client->clientId, "Timed out");
+        }       
+    }    
 
-static void GAME_THREAD(void *handle){
-    auto sv = static_cast<CR::Server*>(handle);
-    // we make sure to run the simulation every X milliseconds
-    // depending on the world configuration
-    CR::T_TIME lastTick = CR::ticks();
-    while(sv->world->state == CR::WorldState::IDLE) CR::sleep(16);
-    while(sv->world->state != CR::WorldState::IDLE && sv->world->state != CR::WorldState::STOPPED){
-        if(CR::ticks()-lastTick < sv->world->tickRate) continue; // will choke the entire thread for now
-        sv->world->run(1);
-    }
 }
 
 CR::Server::Server(){
@@ -336,8 +328,6 @@ bool CR::Server::listen(const std::string &name, uint8 maxClients, uint16 port){
     world->start(); // TODO: add clear to allow reusing world
     socket.setNonBlocking(true);
     CR::log("[SERVER] Started server. Listening at %i | Max Players %i\n", port, maxClients);
-    this->thread = std::thread(&SV_THREAD, this); 
-    this->gameThread = std::thread(&GAME_THREAD, this); 
     this->netState = CR::NetHandleState::LISTENING;
     CR::log("[SERVER] Waiting for clients...\n");
     return true;

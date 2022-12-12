@@ -8,8 +8,6 @@
     namespace CR {
 
         struct Server : NetHandle {
-            std::thread gameThread;
-
             std::string sessionName;
             CR::T_GENERICID sessionId;
             std::string sessionPassword;
@@ -19,11 +17,14 @@
             
             uint32 lastClientId;
 
+            CR::T_TIME lastWorldTick;
+
             Server();
             ~Server();
 
             bool listen(const std::string &name, uint8 maxClients, uint16 port);
             void close();
+            void step();
             void deliverPacketQueue();
             bool dropClient(CR::T_GENERICID clientId, const std::string &reason);
 

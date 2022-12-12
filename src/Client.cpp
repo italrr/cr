@@ -211,7 +211,6 @@ void CR::Client::processPacket(CR::Packet &packet, bool ignoreOrder){
 
             // check this state is indeed the next one
             if(tick < this->lastFrame || tick-this->lastFrame > 1 || tick == this->lastFrame && (fromAudit < this->lastAudit || fromAudit-this->lastAudit > 1)){
-                // CR::log("RCV TICK %i | ")
                 CL_SEND_CURRENT_SIM_STATE(this);
                 break;
             }
@@ -227,8 +226,6 @@ void CR::Client::processPacket(CR::Packet &packet, bool ignoreOrder){
             this->lastAudit = readAudits;   
 
             CL_SEND_CURRENT_SIM_STATE(this);
-
-            // CR::log("[CL] nFramesPacket %i\n", nFramesPacket);
 
             // if we got all audits from this frame, reset counter
             if(this->lastAudit >= nAuditsTick){
