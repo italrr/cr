@@ -62,6 +62,60 @@ std::shared_ptr<CR::Audit> CR::World::createAudit(const std::string &msg){
 
 
 bool CR::World::apply(const std::shared_ptr<CR::Audit> &audit){
+
+    switch(audit->type){
+        /*
+            PLAYER        
+        */
+        case CR::AuditType::PLAYER_CHAT_MESSAGE: {
+
+        } break;
+        case CR::AuditType::PLAYER_JOINED: {
+
+        } break;
+
+        case CR::AuditType::PLAYER_LEFT: {
+
+        } break;
+
+        case CR::AuditType::PLAYER_GRANT_ENTITY_CONTROL: {
+
+        } break;  
+        /*
+            OBJECT  
+        */
+        case CR::AuditType::OBJECT_CREATED: {
+
+        } break;
+        case CR::AuditType::OBJECT_DESTROYED: {
+
+        } break;
+        case CR::AuditType::OBJECT_MOVED: {
+
+        } break;                
+        /*
+            ENTITY  
+        */
+        case CR::AuditType::ENTITY_STATE_CHANGED: {
+
+        } break;
+        case CR::AuditType::ENTITY_STATUS_CHANGED: {
+
+        } break;
+
+        case CR::AuditType::ENTITY_DAMAGED: {
+
+        } break;
+
+        case CR::AuditType::ENTITY_KILLED: {
+
+        } break;     
+
+        case CR::AuditType::ENTITY_MOVED: {
+
+        } break;                                
+    }
+
     return true;
 }
 
@@ -80,8 +134,17 @@ bool CR::World::run(const std::vector<std::shared_ptr<CR::Audit>> &audits){
         CR::log("World[%i] run providing audits was used in non-puppetMode\n");
         return false;
     }   
-    // TODO: manually run audits 
-
+    for(unsigned i = 0; i < audits.size(); ++i){
+        auto &audit = audits[i];
+        this->currentTick = audit->tick;
+        if(apply(audit)){
+            this->auditHistory[audit->tick].push_back(audit);   
+        }else{
+            CR::log("World[%i] Fatal error has occured applying an audit: game will stop\n");
+            CR::Core::exit(1); // TODO: Find a better way to handle this
+            return false;
+        }        
+    }
     return true;
 }
 

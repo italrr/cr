@@ -30,6 +30,14 @@
                     RIGHT
                 };
             }
+            
+            namespace Trackpad {
+
+            }
+
+            namespace Touchscreen {
+                
+            }
 
             bool mouseCheck(int button);
             bool mousePressed(int button);

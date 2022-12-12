@@ -82,6 +82,10 @@
             std::vector<std::string> loadParams(int argc, char* argv[]);
         }
 
+        namespace Date {
+            
+        }
+
 
         namespace Hash {
             std::string md5(const std::string &path, bool partial = false);

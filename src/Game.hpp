@@ -78,7 +78,8 @@
 
                 PLAYER_CHAT_MESSAGE,
                 PLAYER_JOINED,
-                PLAYER_KICKED,
+                PLAYER_LEFT,
+                PLAYER_GRANT_ENTITY_CONTROL,
 
                 OBJECT_CREATED,
                 OBJECT_DESTROYED,

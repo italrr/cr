@@ -216,11 +216,30 @@ void CR::Client::processPacket(CR::Packet &packet, bool ignoreOrder){
             }
             
             std::vector<std::shared_ptr<Audit>> audits;
-
             T_AUDITORD readAudits = this->lastAudit + 0;
             for(unsigned i = 0; i < nAuditsPacket; ++i){
+                auto audit = std::make_shared<CR::Audit>(CR::Audit());
+                packet.read(&audit->type, sizeof(audit->type));
+                packet.read(&audit->state, sizeof(audit->state));
+                packet.read(audit->msg);
+                uint8 affEnt;
+                packet.read(&affEnt, sizeof(affEnt));
+                for(unsigned j = 0; j < affEnt; ++j){
+                    CR::T_OBJID objId;
+                    packet.read(&objId, sizeof(objId));
+                    audit->affEnt.push_back(objId);
+                }
+                uint8 plSize;
+                packet.read(&plSize, sizeof(plSize));
+                packet.read(audit->data.data, plSize);
+                audit->data.size = plSize;
+                audit->time = epoch;
+                audit->tick = tick;
+                audit->order = i + this->lastAudit;
                 ++readAudits;
+                audits.push_back(audit);
             }
+            this->world->run(audits);
     
             this->lastFrame = tick;
             this->lastAudit = readAudits;   

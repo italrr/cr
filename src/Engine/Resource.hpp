@@ -42,6 +42,7 @@
                     BINARY,
                     JSON,
                     TEXT,
+                    FONT,
                     SHADER,
                     TEXTURE,
                     MODEL,
