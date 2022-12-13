@@ -1,6 +1,7 @@
 #include "Engine/Log.hpp"
 #include "Engine/Graphics.hpp"
 #include "Engine/Texture.hpp"
+#include "Engine/Font.hpp"
 #include "Engine/Job.hpp"
 #include "Engine/Input.hpp"
 #include "Map.hpp"
@@ -284,6 +285,11 @@ int main(int argc, char* argv[]){
     Character player;
 
     player.load();
+    
+    auto font = std::make_shared<CR::Gfx::Font>(CR::Gfx::Font());
+
+    auto style = CR::Gfx::FontStyle(32, CR::Gfx::);
+    font->load("data/font/nk57_monoscape.ttf", );
 
     while(CR::Gfx::isRunning()){
 

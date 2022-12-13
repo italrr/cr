@@ -14,6 +14,7 @@ set (cr_src
     src/Engine/Result.cpp
     src/Engine/Tools.cpp
     src/Engine/Types.cpp
+    src/Engine/Font.cpp
     src/Engine/Input.cpp
     src/Engine/Shader.cpp
     src/Engine/Network.cpp
@@ -38,16 +39,16 @@ if(UNIX AND NOT APPLE)
 endif()
 
 IF(LINUX)
-	target_link_libraries(cr_bin -m64 -lGL -lGLU -lglfw -pthread -ldl  -lrt -lXrandr -lXi -lXinerama -lX11 -lXxf86vm -lassimp -lz)
+	target_link_libraries(cr_bin -m64 -lGL -lGLU -lglfw -pthread -ldl  -lrt -lXrandr -lXi -lXinerama -lX11 -lXxf86vm -lassimp -lfreetype -lz)
 ENDIF(LINUX)
 
 IF(MINGW)
-	target_link_libraries(cr_bin -m64 -lglfw3 -pthread -lgdi32 -lopengl32 -lassimp -lz -lws2_32)
+	target_link_libraries(cr_bin -m64 -lglfw3 -pthread -lgdi32 -lopengl32 -lassimp -lfreetype -lz -lws2_32)
 ENDIF(MINGW)
 
 # Apple most likely won't work
 IF(APPLE)
-	target_link_libraries(cr_bin -lglfw3 -pthread -framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo -lvulkan-1 -lassimp -lIrrXML -lzlib)
+	target_link_libraries(cr_bin -lglfw3 -pthread -framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo -lvulkan-1 -lassimp -lfreetype -lIrrXML -lzlib)
 ENDIF(APPLE)
 
 add_executable(cr src/CR.cpp)
