@@ -46,16 +46,19 @@
                     this->size = size;
                     encoding = CR::Gfx::FontEncondig::ASCII;
                     outlineThickness = 0.0f;
+                    type = FontStyleType::SOLID;
                 }
-                FontStyle(unsigned size, unsigned encoding, float thickness){
+                FontStyle(unsigned size, unsigned encoding, float thickness, unsigned type){
                     this->size = size;
                     this->encoding = encoding;
                     this->outlineThickness = thickness;
+                    this->type = type;
                 }                
                 FontStyle(){
                     size = 16;
                     encoding = CR::Gfx::FontEncondig::ASCII;
                     outlineThickness = 0.0f;
+                    type = FontStyleType::SOLID;
                 }                
             };
 
@@ -74,9 +77,9 @@
             };         
 
             struct Font : CR::Rsc::Proxy {
-                Font(const std::string &path, const CR::Gfx::FontStyle &style = CR::Gfx::FontStyle(16, CR::Gfx::FontEncondig::ASCII, 1.0f));
+                Font(const std::string &path, const CR::Gfx::FontStyle &style = CR::Gfx::FontStyle(16, CR::Gfx::FontEncondig::ASCII, 1.0f, FontStyleType::SOLID));
                 Font();                
-                bool load(const std::string &path, const CR::Gfx::FontStyle &style = CR::Gfx::FontStyle(16, CR::Gfx::FontEncondig::ASCII, 1.0f));
+                bool load(const std::string &path, const CR::Gfx::FontStyle &style = CR::Gfx::FontStyle(16, CR::Gfx::FontEncondig::ASCII, 1.0f, FontStyleType::SOLID));
                 void unload();
                 CR::Gfx::FontResource *getRsc(){
                     return static_cast<CR::Gfx::FontResource*>(rsc.get());

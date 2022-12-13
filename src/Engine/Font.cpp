@@ -39,6 +39,58 @@ struct SingleGlyph {
         buffer = NULL;
         atlasIndex = 0;
     }
+	// solid makes a base with the exact same level per channel
+	void solid(int w, int h, unsigned char* src){
+		int channels = 4;
+		this->w = w;
+		this->h = h;
+		size = w * h * channels;
+		buffer = new unsigned char[size];
+		memset(buffer, 0, size);
+		for(int i = 0; i < w*h; ++i){
+			buffer[i*4 + 0] = src[i];
+			buffer[i*4 + 1] = src[i];
+			buffer[i*4 + 2] = src[i];
+			buffer[i*4 + 3] = src[i];
+		}
+	}    
+	// strong makes a base with strong opposite (> 0 -> 0, == 0 -> 255)
+	void strong(int w, int h, unsigned char* src){
+		int channels = 4;
+		this->w = w;
+		this->h = h;
+		size = w * h * channels;
+		buffer = new unsigned char[size];
+		memset(buffer, 0, size);
+		for(int i = 0; i < w*h; ++i){
+			unsigned char v = src[i] > 0 ? 0 : 255;
+			buffer[i*4 + 0] = v;
+			buffer[i*4 + 1] = v;
+			buffer[i*4 + 2] = v;
+			buffer[i*4 + 3] = src[i];
+		}
+	}    
+	// bliz paints over a strong base
+	void blitz(int w, int h, unsigned char* src){
+		// blitz expects a smaller bitmap
+		int offsetx = (this->w - w) / 2;
+		int offsety = (this->h - h) / 2;
+		for(int y = 0; y < h; ++y){
+			for(int x = 0; x < w; ++x){
+				int i = y * w  + x; //src
+				int j = (y + offsety)  * this->w + x + offsetx; // target
+				buffer[j*4 + 0] = src[i];
+				buffer[j*4 + 1] = src[i];
+				buffer[j*4 + 2] = src[i];
+				// buffer[j*4 + 3] = (buffer[j*4 + 3] + src[i]); // disregard alpha			
+			}
+		}
+	}    
+	void clear(){
+		if(buffer != NULL){
+			delete buffer;
+		}
+	}    
 };
 
 struct GlyphMapping {
@@ -115,7 +167,34 @@ static std::shared_ptr<GlyphMapping> genMapping(const std::string &path, const C
     return mapping;
 }
 
-static void genAtlas(){
+static void renderGlyph(SingleGlyph *glyph, const CR::Gfx::FontStyle &style){
+    switch(style.type){
+        case CR::Gfx::FontStyleType::SOLID: {
+            FT_Glyph_To_Bitmap(&glyph->glyph, FT_RENDER_MODE_NORMAL, NULL, true);
+            FT_BitmapGlyph bitmap = reinterpret_cast<FT_BitmapGlyph>(glyph);
+            glyph->solid(bitmap->bitmap.width, bitmap->bitmap.rows, bitmap->bitmap.buffer);
+        } break;
+        case CR::Gfx::FontStyleType::OUTLINE_ONLY: {
+			FT_Glyph_To_Bitmap(&glyph->stroke, FT_RENDER_MODE_NORMAL, NULL, true);
+			FT_BitmapGlyph bitmapStroke = reinterpret_cast<FT_BitmapGlyph>(glyph->stroke);     
+            glyph->solid(bitmapStroke->bitmap.width, bitmapStroke->bitmap.rows, bitmapStroke->bitmap.buffer);
+        } break;
+        case CR::Gfx::FontStyleType::SOLID_OUTLINED: {
+            FT_Glyph_To_Bitmap(&glyph->glyph, FT_RENDER_MODE_NORMAL, NULL, true);
+            FT_BitmapGlyph bitmap = reinterpret_cast<FT_BitmapGlyph>(glyph);
+			FT_Glyph_To_Bitmap(&glyph->stroke, FT_RENDER_MODE_NORMAL, NULL, true);
+			FT_BitmapGlyph bitmapStroke = reinterpret_cast<FT_BitmapGlyph>(glyph->stroke);                        
+			glyph->strong(bitmapStroke->bitmap.width, bitmapStroke->bitmap.rows, bitmapStroke->bitmap.buffer);
+			glyph->blitz(bitmap->bitmap.width, bitmap->bitmap.rows, bitmap->bitmap.buffer);	
+        } break;
+
+        case CR::Gfx::FontStyleType::SOLID_SHADOWED: {
+
+        } break;                        
+    }
+}
+
+static void genAtlas(std::shared_ptr<GlyphMapping> &mapping){
 
 }
 
@@ -153,7 +232,7 @@ bool CR::Gfx::Font::load(const std::string &path, const CR::Gfx::FontStyle &styl
 
 
 
-    CR::log("[GFX] Loaded Font %s | Size %ipx | Encoding %s\n", path.c_str(), rscFont->size, CR::Gfx::FontEncondig::str(rscFont->encoding));
+    CR::log("[GFX] Loaded Font %s | Size %iPX | Encoding %s\n", path.c_str(), rscFont->size, CR::Gfx::FontEncondig::str(rscFont->encoding).c_str());
 
 
     FT_Done_FreeType(library);

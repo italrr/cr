@@ -288,8 +288,8 @@ int main(int argc, char* argv[]){
     
     auto font = std::make_shared<CR::Gfx::Font>(CR::Gfx::Font());
 
-    auto style = CR::Gfx::FontStyle(32, CR::Gfx::);
-    font->load("data/font/nk57_monoscape.ttf", );
+    auto style = CR::Gfx::FontStyle(32, CR::Gfx::FontEncondig::ASCII, 2.0f, CR::Gfx::FontStyleType::SOLID);
+    font->load("data/font/nk57_monoscape.ttf", style);
 
     while(CR::Gfx::isRunning()){
 
