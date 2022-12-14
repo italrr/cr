@@ -252,6 +252,8 @@ bool CR::Gfx::Font::load(const std::string &path, const CR::Gfx::FontStyle &styl
 
     CR::log("%s\n", expectedSize.str().c_str());
 
+    rsc->atlas = CR::Gfx::createTexture2D(0, expectedSize.x, expectedSize.y, CR::Gfx::ImageFormat::RG);
+
     // rsc->atlas = 
 
     // // render into atlas
