@@ -14,8 +14,9 @@
                 };
                 static std::string str(unsigned type){
                     switch(type){
-                        case ASCII: { return "ASCII"; };
                         case UTF8: { return "UTF8"; };
+                        case ASCII:
+                        default: { return "ASCII"; };
                     }
                 }
             };
@@ -30,11 +31,14 @@
             }        
     
             struct FontGlyph {
-                std::string glyph;
+                unsigned glyph;
 	            CR::Vec2<unsigned> coors;
 	            CR::Vec2<unsigned> size;
 	            CR::Vec2<unsigned> orig;
 	            CR::Vec2<unsigned> index;
+                FontGlyph(){
+                    glyph = 0;
+                }
             };
 
             struct FontStyle {
@@ -63,15 +67,16 @@
             };
 
             struct FontResource : CR::Rsc::Resource {
-                std::vector<int> textureAtlas;
-                std::unordered_map<std::string, CR::Gfx::FontGlyph> glyphMap;
-                unsigned encoding;
-                unsigned size; // in pixels;
-                float outThickness;
+                unsigned atlas;
+                std::unordered_map<unsigned, CR::Gfx::FontGlyph> glyphMap;
+                CR::Gfx::FontStyle style;
+                unsigned vertAdvance;
+                unsigned advanceX;
+                unsigned horiBearingY;
                 FontResource() : Resource() {
                     rscType = CR::Rsc::ResourceType::FONT;
                     srcType = CR::Rsc::SourceType::FILE;
-                    encoding = FontEncondig::ASCII;
+                    style = CR::Gfx::FontStyle(16);
                 }
                 void unload();
             };         

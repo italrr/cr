@@ -4,40 +4,38 @@
 #include <freetype/ftstroke.h>
 #include FT_FREETYPE_H
 
+#include "Graphics.hpp"
 #include "Font.hpp"
 
 #define ENCODING_ASCII_RANGE_MIN 32
 #define ENCODING_ASCII_RANGE_MAX 128
 
-void CR::Gfx::FontResource::unload(){
 
-}
-
-
-
-
-
-CR::Gfx::Font::Font(const std::string &path, const CR::Gfx::FontStyle &style){
-    load(path, style);
-}
-
-CR::Gfx::Font::Font(){
-
-}
 
 struct SingleGlyph {
 	int w, h;
 	int bw, bh;
 	unsigned char *buffer; // bitmap
 	size_t size;
-    FT_UInt cindex;
-    FT_Glyph glyph;
-    FT_Glyph stroke;
-    FT_UInt symbol;
-    unsigned atlasIndex;
+    unsigned symbol;
+
+    CR::Vec2<unsigned> _coors;
+    CR::Vec2<unsigned> _size;
+    CR::Vec2<unsigned> _orig;      
+    CR::Vec2<unsigned> _index;  
+
+
+    void readSpecs(FT_BitmapGlyph &glyph, FT_Face &face){
+        this->_coors.x = glyph->bitmap.width;
+        this->_coors.y = glyph->bitmap.rows;
+        this->_orig.x = glyph->left;
+        this->_orig.y = glyph->top;
+        this->_size.x = face->glyph->advance.x >> 6;
+        this->_size.y = face->glyph->metrics.horiBearingY >> 6;
+    }
+
     SingleGlyph(){
         buffer = NULL;
-        atlasIndex = 0;
     }
 	// solid makes a base with the exact same level per channel
 	void solid(int w, int h, unsigned char* src){
@@ -93,109 +91,50 @@ struct SingleGlyph {
 	}    
 };
 
-struct GlyphMapping {
-    std::unordered_map<FT_UInt, std::shared_ptr<SingleGlyph>> map;
-    std::vector<FT_UInt> list;
-};
 
-static std::shared_ptr<GlyphMapping> genMapping(const std::string &path, const CR::Gfx::FontStyle &style, FT_Library &library){
-    auto mapping = std::make_shared<GlyphMapping>(GlyphMapping());
-    
-	FT_Face face;
-    FT_Stroker stroker;
 
-	if(FT_New_Face(library, path.c_str(), 0, &face)) {
-		CR::log("[GFX] Font::genMapping: Failed loading font '%s: FT_New_Face\n", path.c_str());
-		FT_Done_FreeType(library);
-		return mapping;
-	}	
+void CR::Gfx::FontResource::unload(){
 
-	if(FT_Set_Char_Size(face, 0, style.size << 6, 96, 96)){
-		CR::log("[GFX] Font::genMapping: Failed loading font '%s': FT_Set_Char_Size\n", path.c_str());
-		FT_Done_FreeType(library);		
-		return mapping;
-	}
-    
-    FT_Stroker_New(library, &stroker);
-    FT_Stroker_Set(stroker, (int)(style.outlineThickness * 64.0f), FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
-
-    switch(style.encoding){
-        case CR::Gfx::FontEncondig::ASCII: {
-            for(unsigned i = ENCODING_ASCII_RANGE_MIN; i < ENCODING_ASCII_RANGE_MAX; i++){    
-                std::shared_ptr<SingleGlyph> glSingle = std::make_shared<SingleGlyph>(SingleGlyph());
-                
-                FT_UInt cindex = FT_Get_Char_Index(face, i);
-                mapping->list.push_back(cindex);
-                
-                glSingle->symbol = cindex;
-                FT_Glyph glyph, stroke;
-
-                // Load glyph
-                if(FT_Load_Glyph(face, cindex, FT_LOAD_DEFAULT)){
-                    CR::log("[GFX] Font::genMapping: Failed to load glyph '%c' for font '%s'\n", (char)i, path.c_str());
-                    continue;
-                }
-
-                // Get glyph (base)
-                if(FT_Get_Glyph(face->glyph, &glyph)){
-                    CR::log("[GFX] Font::genMapping: Failed to load glyph '%c' for font '%s'\n", (char)i, path.c_str());
-                    continue;
-                }
-
-                // Get glyph (stroke)
-                if(FT_Get_Glyph(face->glyph, &stroke)){
-                    CR::log("[GFX] Font::genMapping: Failed to load glyph '%c' for font '%s'\n", (char)i, path.c_str());
-                    continue;
-                }        
-                FT_Glyph_StrokeBorder(&stroke, stroker, 0, 1);	       
-
-                glSingle->glyph = glyph;
-                glSingle->stroke = stroke;
-
-                mapping->map[cindex] = glSingle;
-            }
-        } break;
-        default:
-        case CR::Gfx::FontEncondig::UTF8: {
-            CR::log("[GFX] Font::genMapping: Failed to generate atlas for 'UTF8': Unimplemented\n");
-        } break;            
-    }
-
-    FT_Done_Face(face);
-    FT_Stroker_Done(stroker);
-
-    return mapping;
 }
 
-static void renderGlyph(SingleGlyph *glyph, const CR::Gfx::FontStyle &style){
+CR::Gfx::Font::Font(const std::string &path, const CR::Gfx::FontStyle &style){
+    load(path, style);
+}
+
+CR::Gfx::Font::Font(){
+
+}
+
+
+static void renderGlyph(FT_Face &face, FT_Glyph &glyph, FT_Glyph &stroke, SingleGlyph *sg, const CR::Gfx::FontStyle &style){
     switch(style.type){
         case CR::Gfx::FontStyleType::SOLID: {
-            FT_Glyph_To_Bitmap(&glyph->glyph, FT_RENDER_MODE_NORMAL, NULL, true);
+            FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, NULL, true);
             FT_BitmapGlyph bitmap = reinterpret_cast<FT_BitmapGlyph>(glyph);
-            glyph->solid(bitmap->bitmap.width, bitmap->bitmap.rows, bitmap->bitmap.buffer);
+            // CR::log("[%c] %ix%i\n", (char) sg->symbol, bitmap->bitmap.width, bitmap->bitmap.rows);
+            sg->solid(bitmap->bitmap.width, bitmap->bitmap.rows, bitmap->bitmap.buffer);
+            sg->readSpecs(bitmap, face);
         } break;
         case CR::Gfx::FontStyleType::OUTLINE_ONLY: {
-			FT_Glyph_To_Bitmap(&glyph->stroke, FT_RENDER_MODE_NORMAL, NULL, true);
-			FT_BitmapGlyph bitmapStroke = reinterpret_cast<FT_BitmapGlyph>(glyph->stroke);     
-            glyph->solid(bitmapStroke->bitmap.width, bitmapStroke->bitmap.rows, bitmapStroke->bitmap.buffer);
+			FT_Glyph_To_Bitmap(&stroke, FT_RENDER_MODE_NORMAL, NULL, true);
+			FT_BitmapGlyph bitmapStroke = reinterpret_cast<FT_BitmapGlyph>(stroke);     
+            sg->solid(bitmapStroke->bitmap.width, bitmapStroke->bitmap.rows, bitmapStroke->bitmap.buffer);
+            sg->readSpecs(bitmapStroke, face);
         } break;
         case CR::Gfx::FontStyleType::SOLID_OUTLINED: {
-            FT_Glyph_To_Bitmap(&glyph->glyph, FT_RENDER_MODE_NORMAL, NULL, true);
+            FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, NULL, true);
             FT_BitmapGlyph bitmap = reinterpret_cast<FT_BitmapGlyph>(glyph);
-			FT_Glyph_To_Bitmap(&glyph->stroke, FT_RENDER_MODE_NORMAL, NULL, true);
-			FT_BitmapGlyph bitmapStroke = reinterpret_cast<FT_BitmapGlyph>(glyph->stroke);                        
-			glyph->strong(bitmapStroke->bitmap.width, bitmapStroke->bitmap.rows, bitmapStroke->bitmap.buffer);
-			glyph->blitz(bitmap->bitmap.width, bitmap->bitmap.rows, bitmap->bitmap.buffer);	
+			FT_Glyph_To_Bitmap(&stroke, FT_RENDER_MODE_NORMAL, NULL, true);
+			FT_BitmapGlyph bitmapStroke = reinterpret_cast<FT_BitmapGlyph>(stroke);           
+			sg->strong(bitmapStroke->bitmap.width, bitmapStroke->bitmap.rows, bitmapStroke->bitmap.buffer);
+			sg->blitz(bitmap->bitmap.width, bitmap->bitmap.rows, bitmap->bitmap.buffer);	
+            sg->readSpecs(bitmapStroke, face);
         } break;
 
         case CR::Gfx::FontStyleType::SOLID_SHADOWED: {
 
         } break;                        
     }
-}
-
-static void genAtlas(std::shared_ptr<GlyphMapping> &mapping){
-
 }
 
 bool CR::Gfx::Font::load(const std::string &path, const CR::Gfx::FontStyle &style){
@@ -216,26 +155,116 @@ bool CR::Gfx::Font::load(const std::string &path, const CR::Gfx::FontStyle &styl
 
     allocate(rscFont);
 
-    rscFont->encoding = style.encoding;
-    rscFont->size = style.size;
+    rscFont->style = style;
     rscFont->file->read(path);
 
-
-    FT_Library library;     
+    FT_Library library; 
+    FT_Face face;
+    FT_Stroker stroker;
+    
 
 	if(FT_Init_FreeType(&library)){
 		CR::log("[GFX] Font::load: Failed to start FreeType: FT_Init_FreeType\n");
 		return false;
 	}
 
-    auto mapping = genMapping(path, style, library);
+	if(FT_New_Face(library, path.c_str(), 0, &face)) {
+		CR::log("[GFX] Font::genMapping: Failed loading font '%s: FT_New_Face\n", path.c_str());
+        return false;
+	}	
+
+	if(FT_Set_Char_Size(face, 0, style.size << 6, 96, 96)){
+		CR::log("[GFX] Font::genMapping: Failed loading font '%s': FT_Set_Char_Size\n", path.c_str());	
+        return false;
+	}
+
+    std::vector<FT_UInt> mapping;
+
+    switch(style.encoding){
+        case CR::Gfx::FontEncondig::ASCII: {
+            for(unsigned i = ENCODING_ASCII_RANGE_MIN; i < ENCODING_ASCII_RANGE_MAX; ++i){
+                FT_UInt cindex = FT_Get_Char_Index(face, i);
+                mapping.push_back(cindex);
+            }
+        } break;
+        default:
+        case CR::Gfx::FontEncondig::UTF8: {
+            CR::log("[GFX] Font::load: UTF-8 is unimplemented\n");
+        } break;         
+    }
+
+    unsigned maxHeight = 0;
+    static const CR::Vec2<unsigned> maxSize = {8192, 8192};
+    CR::Vec2<unsigned> expectedSize = {0, 0};
+    CR::Vec2<unsigned> cursor = {0, 0};
+
+    FT_Stroker_New(library, &stroker);
+    FT_Stroker_Set(stroker, (int)(style.outlineThickness * 64.0f), FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
+
+    rsc->vertAdvance = face->size->metrics.height >> 6;
+    rsc->advanceX = face->glyph->advance.x >> 6;
+    rsc->horiBearingY = face->glyph->metrics.horiBearingY >> 6;    
+
+    // Get Glyphs
+    std::unordered_map<FT_UInt, std::shared_ptr<SingleGlyph>> sgs;
+    for(unsigned i = 0; i < mapping.size(); ++i){
+        FT_Glyph glyph, stroke;
+        std::shared_ptr<SingleGlyph> sg = std::make_shared<SingleGlyph>(SingleGlyph());
+        auto id = mapping[i];
+        sg->symbol = id;
+        // Load glyph
+        if(FT_Load_Glyph(face, id, FT_LOAD_DEFAULT)){
+            CR::log("[GFX] Font::genMapping: Failed to load glyph '%c' for font '%s'\n", (char)id, path.c_str());
+            continue;
+        }
+        // Get base glyph
+        if(FT_Get_Glyph(face->glyph, &glyph)){
+            CR::log("[GFX] Font::genMapping: Failed to load glyph '%c' for font '%s'\n", (char)id, path.c_str());
+            continue;
+        }     
+        // Get stroke glyph
+        if(FT_Get_Glyph(face->glyph, &stroke)){
+            CR::log("[GFX] Font::genMapping: Failed to load glyph '%c' for font '%s'\n", (char)id, path.c_str());
+            continue;
+        }             
+        FT_Glyph_StrokeBorder(&stroke, stroker, 0, 1);
+        renderGlyph(face, glyph, stroke, sg.get(), style);
+        maxHeight = std::max(sg->_coors.y, maxHeight);
+        sgs[id] = sg;
+
+        sg->_index.set(cursor.x, cursor.y);
+        // move to cursor
+        auto xAdd = sg->_coors.x + 2;
+        auto yAdd = maxHeight + 2;
+        if(cursor.x + xAdd < maxSize.x){ 
+            cursor.x += xAdd;
+        }else{
+            cursor.x = 0;
+            cursor.y += yAdd;
+        }
+
+        expectedSize.x = std::max(cursor.x, expectedSize.x);
+        expectedSize.y = std::max(maxHeight, std::max(cursor.y, expectedSize.y));
+
+        FT_Done_Glyph(glyph);
+        FT_Done_Glyph(stroke);
+    }
+
+    CR::log("%s\n", expectedSize.str().c_str());
+
+    // rsc->atlas = 
+
+    // // render into atlas
+    // for(unsigned i = 0; i < mapping.size(); ++i){
 
 
 
-    CR::log("[GFX] Loaded Font %s | Size %iPX | Encoding %s\n", path.c_str(), rscFont->size, CR::Gfx::FontEncondig::str(rscFont->encoding).c_str());
+    CR::log("[GFX] Loaded Font %s | Size %ipx | Encoding %s\n", path.c_str(), rscFont->style.size, CR::Gfx::FontEncondig::str(rscFont->style.encoding).c_str());
 
-
+    FT_Stroker_Done(stroker);
+    FT_Done_Face(face);
     FT_Done_FreeType(library);
+    return true;
 }
 
 void CR::Gfx::Font::unload(){

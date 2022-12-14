@@ -442,6 +442,22 @@ static void __RENDER_TEXTURE(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *
 
 
 
+CR::Gfx::Renderable *CR::Gfx::Draw::Texture(unsigned tex, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle){
+    CR::Gfx::Renderable2D *self = new CR::Gfx::Renderable2D(); // layer's flush is in charge of deleting this
+
+    self->position = pos;
+    self->size = size;
+    self->origin = origin;
+    self->angle = angle;
+    self->origSize = size;
+    self->region = CR::Rect<float>(0, 0, size.x, size.y);
+    self->type = RenderableType::TEXTURE;
+    self->handleId = tex;
+    self->render = &__RENDER_TEXTURE;
+
+    return self;
+}
+
 
 CR::Gfx::Renderable *CR::Gfx::Draw::Texture(const std::shared_ptr<CR::Gfx::Texture> &tex, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle){
     CR::Gfx::Renderable2D *self = new CR::Gfx::Renderable2D(); // layer's flush is in charge of deleting this
@@ -765,7 +781,6 @@ void CR::Gfx::render(){
     currentDelta = (currentTime - lastDeltaCheck);
     lastDeltaCheck = currentTime;
 
-
     // static auto dummyLayer = CR::Gfx::createRenderLayer(CR::Vec2<int>(dummyTexture->getRsc()->size), CR::Gfx::RenderLayerType::T_2D);
     // dummyLayer->renderOn([](CR::Gfx::RenderLayer *lyr){
     //     lyr->add(Draw::Texture(dummyTexture, CR::Vec2<float>(), dummyTexture->getRsc()->size, CR::Vec2<float>(0.0f), CR::Math::rads(0)));
@@ -773,10 +788,14 @@ void CR::Gfx::render(){
     // dummyLayer->clear();
     // dummyLayer->flush();
 
+    // static uiLi
 
 
-    // static std::shared_ptr<CR::Gfx::RenderLayer> uiL = CR::Gfx::getRenderLayer("ui");
+
+    static std::shared_ptr<CR::Gfx::RenderLayer> uiL = CR::Gfx::getRenderLayer("ui");
     // static std::shared_ptr<CR::Gfx::RenderLayer> wL = CR::Gfx::getRenderLayer("world");
+
+    // uiL->renderOn()
 
 
     // uiL->clear();
@@ -871,6 +890,38 @@ CR::Vec2<int> CR::Gfx::getSize(){
     return size;
 }
 
+bool CR::Gfx::pasteSubTexture2D(unsigned id, unsigned char *data, unsigned w, unsigned h, unsigned format, unsigned x, unsigned y){
+	std::unique_lock<std::mutex> texLock(textureRenderMutex);
+    GLenum glformat;
+    switch(format){
+        case ImageFormat::RED: {
+            glformat = GL_RED;
+        } break;
+        case ImageFormat::GREEN: {
+            glformat = GL_GREEN;
+        } break;        
+        case ImageFormat::BLUE: {
+            glformat = GL_BLUE;
+        } break;        
+        case ImageFormat::RG: {
+            glformat = GL_RG;
+        } break;         
+        case ImageFormat::RGB: {
+            glformat = GL_RGB;
+        } break;
+        case ImageFormat::RGBA: {
+            glformat = GL_RGBA;
+        } break;                
+    }
+    glEnable(GL_TEXTURE_2D); INC_OPGL_DEBUG;
+	glGenTextures(1, &id); INC_OPGL_DEBUG;
+    glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, glformat, GL_UNSIGNED_BYTE, data); INC_OPGL_DEBUG;
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 4); INC_OPGL_DEBUG;
+    glDisable(GL_TEXTURE_2D); INC_OPGL_DEBUG;
+    texLock.unlock();
+    return true;
+}
+
 unsigned CR::Gfx::createTexture2D(unsigned char *data, unsigned w, unsigned h, unsigned format){
     unsigned texture;
     std::unique_lock<std::mutex> texLock(textureRenderMutex);
@@ -891,7 +942,10 @@ unsigned CR::Gfx::createTexture2D(unsigned char *data, unsigned w, unsigned h, u
         } break;        
         case ImageFormat::BLUE: {
             glformat = GL_BLUE;
-        } break;        
+        } break;     
+        case ImageFormat::RG: {
+            glformat = GL_RG;
+        } break;           
         case ImageFormat::RGB: {
             glformat = GL_RGB;
         } break;

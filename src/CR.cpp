@@ -287,9 +287,14 @@ int main(int argc, char* argv[]){
     player.load();
     
     auto font = std::make_shared<CR::Gfx::Font>(CR::Gfx::Font());
-
     auto style = CR::Gfx::FontStyle(32, CR::Gfx::FontEncondig::ASCII, 2.0f, CR::Gfx::FontStyleType::SOLID);
     font->load("data/font/nk57_monoscape.ttf", style);
+
+
+    // auto layer = CR::Gfx::createRenderLayer(CR::Vec2<int>(2048, 2048), CR::Gfx::RenderLayerType::T_2D);
+
+    
+    // layer
 
     while(CR::Gfx::isRunning()){
 
@@ -373,6 +378,12 @@ int main(int argc, char* argv[]){
         if(CR::Input::keyboardCheck(CR::Input::Key::NUMPAD6)){
             gameL->camera.position.x += CR::getDelta() * 2000;
         }    
+
+            uiL->renderOn([&](CR::Gfx::RenderLayer *layer){    
+                // layer->add(CR::Gfx::Draw::Texture(font->getRsc()->atlas, CR::Vec2<float>(0), CR::Vec2<int>(1869, 51), CR::Vec2<float>(0.0f), CR::Math::rads(0)));
+                // layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->size, CR::Vec2<float>(0.5f), CR::Math::rads(0)));
+                // layer->add(CR::Gfx::Draw::RenderLayer(dummyLayer, CR::Vec2<float>(layer->size.x - dummyLayer->size.x,layer->size.y - dummyLayer->size.y), CR::Vec2<int>(dummyLayer->size), CR::Vec2<float>(0.0f), 0.0f));
+            });
 
         client.step();
 

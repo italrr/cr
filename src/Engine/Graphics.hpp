@@ -43,6 +43,7 @@
                     RED, // 8 bits
                     GREEN, // 8 bits
                     BLUE, // 8 bits
+                    RG, // 16 bit
                     RGB, // 24 bits
                     RGBA, // 32 bits
                 };
@@ -269,6 +270,7 @@
             namespace Draw {
                 CR::Gfx::Renderable *RenderLayer(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle);        
                 CR::Gfx::Renderable *Texture(const std::shared_ptr<CR::Gfx::Texture> &tex, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle); 
+                CR::Gfx::Renderable *Texture(unsigned tex, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle); 
                 CR::Gfx::Renderable *Mesh(CR::Gfx::MeshData &md, CR::Gfx::Transform *transform); 
                 CR::Gfx::Renderable *MeshBatch(std::vector<CR::Gfx::MeshData*> *md, std::vector<CR::Gfx::Transform*> *trans, bool shareTexture, bool shareShader, bool shareModel, unsigned modelPos = 0); 
             } 
@@ -282,6 +284,7 @@
             int getHeight();
             CR::Vec2<int> getSize();
 
+            bool pasteSubTexture2D(unsigned id, unsigned char *data, unsigned w, unsigned h, unsigned format, unsigned x, unsigned y);
             unsigned createTexture2D(unsigned char *data, unsigned w, unsigned h, unsigned format);
             bool deleteTexture2D(unsigned id);
             
