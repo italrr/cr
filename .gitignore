@@ -6,3 +6,4 @@ cr
 .vscode/*
 libcr_bin.a
 Makefile
+AUDITS.txt

@@ -162,6 +162,11 @@ static void handleOpenGLError(const std::string &at){
     }
 }
 
+#if CR_ENABLE_DEBUG_BUILD == 1
+    void ____CR_GFX_CHECK_OPENGL_ERROR(){
+        handleOpenGLError(CR::String::format("%s | Line %i",  __func__, __LINE__));
+    }
+#endif
 
 
 
@@ -427,10 +432,9 @@ static void __RENDER_TEXTURE(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *
 
     CR::Gfx::applyShader(trans2DTexture.shader->getRsc()->shaderId, trans2DTexture.shAttrsLocVec, trans2DTexture.shAttrsValVec);
 
-
     glActiveTexture(GL_TEXTURE0); INC_OPGL_DEBUG;
     glBindTexture(GL_TEXTURE_2D, obj->handleId); INC_OPGL_DEBUG;
-
+    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     glBindVertexArray(mBRect.vao); INC_OPGL_DEBUG;
     glDrawArrays(GL_TRIANGLES, 0, 6); INC_OPGL_DEBUG;
     glBindVertexArray(0); INC_OPGL_DEBUG;      
@@ -913,11 +917,15 @@ bool CR::Gfx::pasteSubTexture2D(unsigned id, unsigned char *data, unsigned w, un
             glformat = GL_RGBA;
         } break;                
     }
-    glEnable(GL_TEXTURE_2D); INC_OPGL_DEBUG;
-	glGenTextures(1, &id); INC_OPGL_DEBUG;
+    glBindTexture(GL_TEXTURE_2D, id); INC_OPGL_DEBUG; 
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); INC_OPGL_DEBUG;
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); INC_OPGL_DEBUG;
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); INC_OPGL_DEBUG;
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); INC_OPGL_DEBUG;    
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); INC_OPGL_DEBUG;
     glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, glformat, GL_UNSIGNED_BYTE, data); INC_OPGL_DEBUG;
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 4); INC_OPGL_DEBUG;
-    glDisable(GL_TEXTURE_2D); INC_OPGL_DEBUG;
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4); INC_OPGL_DEBUG;
+    glBindTexture(GL_TEXTURE_2D, 0); INC_OPGL_DEBUG;
     texLock.unlock();
     return true;
 }

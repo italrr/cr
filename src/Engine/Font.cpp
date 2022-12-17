@@ -42,6 +42,8 @@ struct SingleGlyph {
 		int channels = 4;
 		this->w = w;
 		this->h = h;
+		this->bw = w;
+		this->bh = h;        
 		size = w * h * channels;
 		buffer = new unsigned char[size];
 		memset(buffer, 0, size);
@@ -57,6 +59,8 @@ struct SingleGlyph {
 		int channels = 4;
 		this->w = w;
 		this->h = h;
+		this->bw = bw == 0 ? w : bw;
+		this->bh = bh == 0 ? h : bh;        
 		size = w * h * channels;
 		buffer = new unsigned char[size];
 		memset(buffer, 0, size);
@@ -111,8 +115,8 @@ static void renderGlyph(FT_Face &face, FT_Glyph &glyph, FT_Glyph &stroke, Single
         case CR::Gfx::FontStyleType::SOLID: {
             FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, NULL, true);
             FT_BitmapGlyph bitmap = reinterpret_cast<FT_BitmapGlyph>(glyph);
-            // CR::log("[%c] %ix%i\n", (char) sg->symbol, bitmap->bitmap.width, bitmap->bitmap.rows);
             sg->solid(bitmap->bitmap.width, bitmap->bitmap.rows, bitmap->bitmap.buffer);
+            // CR::log("[%c] %ix%i\n", (char) sg->symbol, bitmap->bitmap.width, bitmap->bitmap.rows);
             sg->readSpecs(bitmap, face);
         } break;
         case CR::Gfx::FontStyleType::OUTLINE_ONLY: {
@@ -229,10 +233,15 @@ bool CR::Gfx::Font::load(const std::string &path, const CR::Gfx::FontStyle &styl
         }             
         FT_Glyph_StrokeBorder(&stroke, stroker, 0, 1);
         renderGlyph(face, glyph, stroke, sg.get(), style);
+        
+        if(sg->bw == 0 || sg->bh == 0){continue;}
+
         maxHeight = std::max(sg->_coors.y, maxHeight);
         sgs[id] = sg;
 
-        sg->_index.set(cursor.x, cursor.y);
+        sg->_index.x = cursor.x;
+        sg->_index.y = cursor.y;
+
         // move to cursor
         auto xAdd = sg->_coors.x + 2;
         auto yAdd = maxHeight + 2;
@@ -257,7 +266,13 @@ bool CR::Gfx::Font::load(const std::string &path, const CR::Gfx::FontStyle &styl
     // rsc->atlas = 
 
     // // render into atlas
-    // for(unsigned i = 0; i < mapping.size(); ++i){
+    for(unsigned i = 0; i < mapping.size(); ++i){
+        auto it = sgs.find(mapping[i]);
+        if(it == sgs.end()) continue;
+        auto sg = it->second;
+        // CR::log("%i | %i %i | %i %i\n", rsc->atlas, sg->bw, sg->bh, sg->_index.x, sg->_index.y);
+        CR::Gfx::pasteSubTexture2D(rsc->atlas, sg->buffer, sg->bw, sg->bh, CR::Gfx::ImageFormat::RG, sg->_index.x, sg->_index.y);
+    }
 
 
 
