@@ -90,6 +90,12 @@
                     return static_cast<CR::Gfx::FontResource*>(rsc.get());
                 }                
             };   
+
+            namespace Draw {
+                
+            }
+
+            
         }     
 
     }

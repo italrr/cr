@@ -14,6 +14,7 @@
 #include "Log.hpp"
 #include "Shader.hpp"
 #include "Texture.hpp"
+#include "Font.hpp"
 
 #include "../Game.hpp"
 
@@ -77,8 +78,10 @@ static std::vector<std::shared_ptr<CR::Gfx::RenderLayer>> getSortedRenderList(co
 
 static std::shared_ptr<CR::Gfx::Texture> dummyTexture = std::make_shared<CR::Gfx::Texture>(CR::Gfx::Texture());
 static std::shared_ptr<CR::Gfx::Shader> shBRect = std::make_shared<CR::Gfx::Shader>(CR::Gfx::Shader());
+static std::shared_ptr<CR::Gfx::Shader> shGText = std::make_shared<CR::Gfx::Shader>(CR::Gfx::Shader());
 static CR::Gfx::MeshData mBRect;
 static CR::Gfx::Transform trans2DTexture;
+static CR::Gfx::Transform transGText;
 
 
 double CR::getDelta(){
@@ -651,6 +654,23 @@ bool CR::Gfx::init(){
     };    
     trans2DTexture.fixShaderAttributes({"image", "model", "projection", "color"});
 
+
+    // text shader
+    shGText->load("data/shader/g_text_render_f.glsl", "data/shader/g_text_render_v.glsl");
+    shGText->findAttrs({"outlineCol", "fillCol", "model", "projection", "image"});
+
+    transGText.shader = shGText;
+    transGText.shAttrsLoc = shGText->shAttrs;
+    transGText.shAttrsVal = {
+        {"image", std::make_shared<CR::Gfx::ShaderAttrInt>(0)},
+        {"model", std::make_shared<CR::Gfx::ShaderAttrMat4>(CR::MAT4Identity)},
+        {"projection", std::make_shared<CR::Gfx::ShaderAttrMat4>(MAT4Identity)},
+        {"outlineCol", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))},
+        {"fillCol", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(0.0f, 0.0f, 0.0f, 1.0f))}
+    };    
+    transGText.fixShaderAttributes({"image", "model", "projection", "outlineCol", "fillCol"});    
+
+
     mBRect = createMesh({ 
         // pos
         0.0f, 1.0f, 0.0f,
@@ -769,6 +789,67 @@ CR::Gfx::Renderable *CR::Gfx::Draw::MeshBatch(std::vector<CR::Gfx::MeshData*> *m
 
     return self;
 }
+
+
+
+
+
+
+
+
+static void __RENDER_TEXT(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
+    auto *obj = static_cast<CR::Gfx::RenderableText*>(renobj);
+
+
+    auto position = CR::Vec2<float>(0.0f);
+    auto origin = CR::Vec2<float>(0.0f);
+    auto &angle = obj->angle;
+    auto size = CR::Vec2<float>(512,512);
+
+
+    static_cast<CR::Gfx::ShaderAttrMat4*>(transGText.shAttrsValVec[1])->mat = CR::MAT4Identity
+                .translate(CR::Vec3<float>(position.x - origin.x * static_cast<float>(size.x), position.y - origin.y * static_cast<float>(size.y), 0.0f))
+                .translate(CR::Vec3<float>(origin.x * static_cast<float>(size.x), origin.y * static_cast<float>(size.y), 0.0f))
+                .rotate(angle, CR::Vec3<float>(0.0f, 0.0f, 1.0f))
+                .translate(CR::Vec3<float>(-origin.x * static_cast<float>(size.x), -origin.y * static_cast<float>(size.y), 0.0f))
+                .scale(CR::Vec3<float>(size.x, size.y, 1.0f));
+
+    CR::Gfx::applyShader(transGText.shader->getRsc()->shaderId, transGText.shAttrsLocVec, transGText.shAttrsValVec);
+
+    glActiveTexture(GL_TEXTURE0); INC_OPGL_DEBUG;
+    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    glBindTexture(GL_TEXTURE_2D, dummyTexture->getRsc()->textureId); INC_OPGL_DEBUG;
+    for(unsigned i = 0; i < obj->text.length(); ++i){
+
+        glBindVertexArray(mBRect.vao); INC_OPGL_DEBUG;
+        glDrawArrays(GL_TRIANGLES, 0, 6); INC_OPGL_DEBUG;          
+
+    }
+
+    glBindVertexArray(0); INC_OPGL_DEBUG;       
+    glUseProgram(0); INC_OPGL_DEBUG;   
+
+    return;
+}
+
+CR::Gfx::Renderable *CR::Gfx::Draw::Text(CR::Gfx::FontResource *font, const std::string &text, const CR::Vec2<float> &pos){
+    auto *self = new CR::Gfx::RenderableText();
+    
+    self->rsc = font;
+    self->text = text;
+    self->position = pos;
+    self->angle = 0;
+    self->render = &__RENDER_TEXT;
+
+    return self;
+}
+
+
+
+
+
+
+
 
 void CR::Gfx::render(){
     if(!running){

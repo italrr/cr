@@ -153,6 +153,7 @@
             struct ShaderAttr;
             struct Texture;
             struct Shader;
+            struct FontResource;
 
             struct Transform {
                 std::shared_ptr<CR::Gfx::Shader> shader;
@@ -194,6 +195,16 @@
                 float angle;
                 Renderable2D(){
                     scale = CR::Vec2<float>(1.0f);
+                }
+            };
+
+            struct RenderableText : Renderable {
+                std::string text;
+                Gfx::FontResource *rsc;
+                Vec2<float> position;          
+                float angle;
+                RenderableText(){
+                    type = RenderableType::TEXT;
                 }
             };
 
@@ -279,6 +290,7 @@
                 CR::Gfx::Renderable *Texture(unsigned tex, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle); 
                 CR::Gfx::Renderable *Mesh(CR::Gfx::MeshData &md, CR::Gfx::Transform *transform); 
                 CR::Gfx::Renderable *MeshBatch(std::vector<CR::Gfx::MeshData*> *md, std::vector<CR::Gfx::Transform*> *trans, bool shareTexture, bool shareShader, bool shareModel, unsigned modelPos = 0); 
+                CR::Gfx::Renderable *Text(CR::Gfx::FontResource *font, const std::string &text, const CR::Vec2<float> &pos);        
             } 
 
             bool init();

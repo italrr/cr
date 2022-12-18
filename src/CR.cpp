@@ -271,16 +271,16 @@ int main(int argc, char* argv[]){
     // map->build(CR::Vec2<int>(32, 32), 8, 50);
 
     
-    CR::Server server;
-    server.listen("Social Room", 24, CR::NetworkDefaultPort);
-    CR::spawn([&](CR::Job &Ctx){
-        server.step();
-    }, true, true, false);
+    // CR::Server server;
+    // server.listen("Social Room", 24, CR::NetworkDefaultPort);
+    // CR::spawn([&](CR::Job &Ctx){
+    //     server.step();
+    // }, true, true, false);
 
-    CR::Client client;
-    CR::spawn([&](CR::Job &Ctx){
-        client.connect("127.0.0.1", CR::NetworkDefaultPort);
-    }, false, false, false);
+    // CR::Client client;
+    // CR::spawn([&](CR::Job &Ctx){
+    //     client.connect("127.0.0.1", CR::NetworkDefaultPort);
+    // }, false, false, false);
 
     Character player;
 
@@ -289,7 +289,6 @@ int main(int argc, char* argv[]){
     auto font = std::make_shared<CR::Gfx::Font>(CR::Gfx::Font());
     auto style = CR::Gfx::FontStyle(32, CR::Gfx::FontEncondig::ASCII, 2.0f, CR::Gfx::FontStyleType::SOLID);
     font->load("data/font/nk57_monoscape.ttf", style);
-
 
     // auto layer = CR::Gfx::createRenderLayer(CR::Vec2<int>(2048, 2048), CR::Gfx::RenderLayerType::T_2D);
 
@@ -379,13 +378,13 @@ int main(int argc, char* argv[]){
             gameL->camera.position.x += CR::getDelta() * 2000;
         }    
 
-            uiL->renderOn([&](CR::Gfx::RenderLayer *layer){    
-                layer->add(CR::Gfx::Draw::Texture(font->getRsc()->atlas, CR::Vec2<float>(0), CR::Vec2<int>(1869, 51), CR::Vec2<float>(0.0f), CR::Math::rads(0)));
+            uiL->renderOn([&](CR::Gfx::RenderLayer *layer){  
+                layer->add(CR::Gfx::Draw::Text(font->getRsc(), "This is text example", CR::Vec2<float>(1)));
                 // layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->size, CR::Vec2<float>(0.5f), CR::Math::rads(0)));
                 // layer->add(CR::Gfx::Draw::RenderLayer(dummyLayer, CR::Vec2<float>(layer->size.x - dummyLayer->size.x,layer->size.y - dummyLayer->size.y), CR::Vec2<int>(dummyLayer->size), CR::Vec2<float>(0.0f), 0.0f));
             });
 
-        client.step();
+        // client.step();
 
         // map->render();
         player.render();

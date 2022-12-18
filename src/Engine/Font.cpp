@@ -259,22 +259,27 @@ bool CR::Gfx::Font::load(const std::string &path, const CR::Gfx::FontStyle &styl
         FT_Done_Glyph(stroke);
     }
 
-    CR::log("%s\n", expectedSize.str().c_str());
+    auto useImgFormat = CR::Gfx::ImageFormat::RGBA;
 
-    rsc->atlas = CR::Gfx::createTexture2D(0, expectedSize.x, expectedSize.y, CR::Gfx::ImageFormat::RG);
+    switch(style.type){
+        case Gfx::FontStyleType::OUTLINE_ONLY:
+        case Gfx::FontStyleType::SOLID: {
+            useImgFormat = CR::Gfx::ImageFormat::RGBA;
+        } break;
+        case Gfx::FontStyleType::SOLID_OUTLINED: {
+            useImgFormat = CR::Gfx::ImageFormat::RG;
+        } break;        
+    }
 
-    // rsc->atlas = 
+    rsc->atlas = CR::Gfx::createTexture2D(0, expectedSize.x, expectedSize.y, CR::Gfx::ImageFormat::RGBA);
 
-    // // render into atlas
+    // render into atlas
     for(unsigned i = 0; i < mapping.size(); ++i){
         auto it = sgs.find(mapping[i]);
         if(it == sgs.end()) continue;
         auto sg = it->second;
-        // CR::log("%i | %i %i | %i %i\n", rsc->atlas, sg->bw, sg->bh, sg->_index.x, sg->_index.y);
-        CR::Gfx::pasteSubTexture2D(rsc->atlas, sg->buffer, sg->bw, sg->bh, CR::Gfx::ImageFormat::RG, sg->_index.x, sg->_index.y);
+        CR::Gfx::pasteSubTexture2D(rsc->atlas, sg->buffer, sg->bw, sg->bh, CR::Gfx::ImageFormat::RGBA, sg->_index.x, sg->_index.y);
     }
-
-
 
     CR::log("[GFX] Loaded Font %s | Size %ipx | Encoding %s\n", path.c_str(), rscFont->style.size, CR::Gfx::FontEncondig::str(rscFont->style.encoding).c_str());
 
