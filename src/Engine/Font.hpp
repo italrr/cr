@@ -32,10 +32,11 @@
     
             struct FontGlyph {
                 unsigned glyph;
-	            CR::Vec2<unsigned> coors;
-	            CR::Vec2<unsigned> size;
-	            CR::Vec2<unsigned> orig;
-	            CR::Vec2<unsigned> index;
+	            CR::Vec2<float> coors;
+	            CR::Vec2<float> size;
+	            CR::Vec2<float> orig;
+	            CR::Vec2<float> index;
+                CR::Vec2<unsigned> bmpSize;
                 FontGlyph(){
                     glyph = 0;
                 }
@@ -66,8 +67,43 @@
                 }                
             };
 
+            namespace TextAlignType {
+                enum TextAlignType : unsigned {
+                    LEFT,
+                    CENTER,
+                    RIGHT
+                };
+            }
+
+            struct TextRenderOpts {
+                CR::Color outline;
+                CR::Color fill;
+                bool autobreak;
+                float maxWidth; // for auto break
+                unsigned alignment;
+                float spaceWidth;
+                float lineHeight;                
+                TextRenderOpts(){
+                    outline.set(1.0f, 1.0f, 1.0f, 1.0f);
+                    fill.set(0.0f, 0.0f, 0.0f, 1.0f);
+                    autobreak = 0;
+                    maxWidth = 0;
+                    alignment = TextAlignType::LEFT;
+                    spaceWidth = 0; // 0 uses default
+                    lineHeight = 0; // 0 used default
+                }
+                TextRenderOpts(const CR::Color &fill){
+                    this->fill = fill;
+                }
+                TextRenderOpts(const CR::Color &fill, const CR::Color &outline){
+                    this->fill = fill;
+                    this->outline = outline;
+                }                
+            };
+
             struct FontResource : CR::Rsc::Resource {
                 unsigned atlas;
+                CR::Vec2<unsigned> atlasSize;
                 std::unordered_map<unsigned, CR::Gfx::FontGlyph> glyphMap;
                 CR::Gfx::FontStyle style;
                 unsigned vertAdvance;
@@ -90,11 +126,6 @@
                     return static_cast<CR::Gfx::FontResource*>(rsc.get());
                 }                
             };   
-
-            namespace Draw {
-                
-            }
-
             
         }     
 

@@ -80,6 +80,7 @@ static std::shared_ptr<CR::Gfx::Texture> dummyTexture = std::make_shared<CR::Gfx
 static std::shared_ptr<CR::Gfx::Shader> shBRect = std::make_shared<CR::Gfx::Shader>(CR::Gfx::Shader());
 static std::shared_ptr<CR::Gfx::Shader> shGText = std::make_shared<CR::Gfx::Shader>(CR::Gfx::Shader());
 static CR::Gfx::MeshData mBRect;
+static CR::Gfx::MeshData mGFontGlyph;
 static CR::Gfx::Transform trans2DTexture;
 static CR::Gfx::Transform transGText;
 
@@ -437,7 +438,7 @@ static void __RENDER_TEXTURE(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *
 
     glActiveTexture(GL_TEXTURE0); INC_OPGL_DEBUG;
     glBindTexture(GL_TEXTURE_2D, obj->handleId); INC_OPGL_DEBUG;
-    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA); INC_OPGL_DEBUG;
     glBindVertexArray(mBRect.vao); INC_OPGL_DEBUG;
     glDrawArrays(GL_TRIANGLES, 0, 6); INC_OPGL_DEBUG;
     glBindVertexArray(0); INC_OPGL_DEBUG;      
@@ -666,12 +667,34 @@ bool CR::Gfx::init(){
         {"model", std::make_shared<CR::Gfx::ShaderAttrMat4>(CR::MAT4Identity)},
         {"projection", std::make_shared<CR::Gfx::ShaderAttrMat4>(MAT4Identity)},
         {"outlineCol", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))},
-        {"fillCol", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(0.0f, 0.0f, 0.0f, 1.0f))}
+        {"fillCol", std::make_shared<CR::Gfx::ShaderAttrColor>(CR::Color(1.0f, 1.0f, 1.0f, 1.0f))}
     };    
     transGText.fixShaderAttributes({"image", "model", "projection", "outlineCol", "fillCol"});    
 
 
     mBRect = createMesh({ 
+        // pos
+        0.0f, 1.0f, 0.0f,
+        1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f,
+    
+        0.0f, 1.0f, 0.0f,
+        1.0f, 1.0f, 0.0f,
+        1.0f, 0.0f, 0.0f,
+    },
+    {
+        // tex
+        0.0f, 1.0f,
+        1.0f, 0.0f,
+        0.0f, 0.0f, 
+    
+        0.0f, 1.0f,
+        1.0f, 1.0f,
+        1.0f, 0.0f        
+    });
+
+
+    mGFontGlyph = createMesh({ 
         // pos
         0.0f, 1.0f, 0.0f,
         1.0f, 0.0f, 0.0f,
@@ -796,34 +819,96 @@ CR::Gfx::Renderable *CR::Gfx::Draw::MeshBatch(std::vector<CR::Gfx::MeshData*> *m
 
 
 
-
+// We'll do font rendering here for now, but ideally should be move to Font.cpp
 static void __RENDER_TEXT(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
     auto *obj = static_cast<CR::Gfx::RenderableText*>(renobj);
 
-
-    auto position = CR::Vec2<float>(0.0f);
     auto origin = CR::Vec2<float>(0.0f);
-    auto &angle = obj->angle;
-    auto size = CR::Vec2<float>(512,512);
+    // auto &angle = obj->angle;
+    auto angle = 0.0f;
+    // auto position = CR::Vec2<float>(0);
+    auto size = CR::Vec2<float>(512);
 
-
+    
+    static_cast<CR::Gfx::ShaderAttrMat4*>(transGText.shAttrsValVec[2])->mat = rl->projection;
+    
     static_cast<CR::Gfx::ShaderAttrMat4*>(transGText.shAttrsValVec[1])->mat = CR::MAT4Identity
-                .translate(CR::Vec3<float>(position.x - origin.x * static_cast<float>(size.x), position.y - origin.y * static_cast<float>(size.y), 0.0f))
-                .translate(CR::Vec3<float>(origin.x * static_cast<float>(size.x), origin.y * static_cast<float>(size.y), 0.0f))
-                .rotate(angle, CR::Vec3<float>(0.0f, 0.0f, 1.0f))
-                .translate(CR::Vec3<float>(-origin.x * static_cast<float>(size.x), -origin.y * static_cast<float>(size.y), 0.0f))
-                .scale(CR::Vec3<float>(size.x, size.y, 1.0f));
+        .translate(CR::Vec3<float>(0.0f))
+        .rotate(0.0f, CR::Vec3<float>(0.0f))
+        .scale(CR::Vec3<float>(0.0f));
+
+
+    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[0] = obj->outline.r;
+    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[1] = obj->outline.g;
+    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[2] = obj->outline.b;
+
+    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[0] = obj->fill.r;
+    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[1] = obj->fill.g;
+    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[2] = obj->fill.b;
 
     CR::Gfx::applyShader(transGText.shader->getRsc()->shaderId, transGText.shAttrsLocVec, transGText.shAttrsValVec);
 
     glActiveTexture(GL_TEXTURE0); INC_OPGL_DEBUG;
-    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-    glBindTexture(GL_TEXTURE_2D, dummyTexture->getRsc()->textureId); INC_OPGL_DEBUG;
+    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA); INC_OPGL_DEBUG;
+    glBindTexture(GL_TEXTURE_2D, obj->rsc->atlas); INC_OPGL_DEBUG;
+    CR::Vec2<float> cursor(obj->position.x, obj->position.y);
+    
+    auto fontMWidth = obj->rsc->glyphMap['A'].bmpSize.x;
+    auto fontMHeight = obj->rsc->glyphMap['A'].bmpSize.y;
+    
     for(unsigned i = 0; i < obj->text.length(); ++i){
+        char current =  obj->text[i];
+        
+        // Handle Special Tokens
+        switch(current){
+            case ' ':{
+                cursor.x += fontMWidth;
+                continue;
+            };
+            case '\t':{
+                cursor.x += fontMWidth * 4;
+                continue;
+            };      
+            case '\n':{
+                cursor.y += fontMHeight;
+                continue;
+            };   
+        }
 
-        glBindVertexArray(mBRect.vao); INC_OPGL_DEBUG;
-        glDrawArrays(GL_TRIANGLES, 0, 6); INC_OPGL_DEBUG;          
+        auto &glyph = obj->rsc->glyphMap[current];
 
+        auto &xxi = glyph.index.x;
+        auto &yyi = glyph.index.y;
+        auto wwi = xxi + glyph.coors.x;
+        auto hhi = yyi + glyph.coors.y;
+
+
+        if(current == '_'){
+            // CR::log("%f %f | %f %f\n", xxi, yyi, wwi, hhi);
+        }
+
+        auto position = CR::Vec2<float>(cursor.x + glyph.orig.x, static_cast<float>(cursor.y) + fontMHeight - glyph.size.y);
+        auto size = CR::Vec2<float>(glyph.bmpSize.x, glyph.bmpSize.y);
+
+        static_cast<CR::Gfx::ShaderAttrMat4*>(transGText.shAttrsValVec[1])->mat = CR::MAT4Identity
+            .translate(CR::Vec3<float>(position.x, position.y, 0.0f))
+            .scale(CR::Vec3<float>(size.x, size.y, 1.0f));
+
+        // Glyph position in atlas
+        CR::Gfx::applyShaderPartial(transGText.shAttrsLocVec[1], transGText.shAttrsValVec[1]);            
+        CR::Gfx::updateMesh(mGFontGlyph, CR::Gfx::VertexRole::TEXCOORD, {
+            xxi, hhi,
+            wwi, yyi,
+            xxi, yyi, 
+        
+            xxi, hhi,
+            wwi, hhi,
+            wwi, yyi             
+        });
+
+        glBindVertexArray(mGFontGlyph.vao); INC_OPGL_DEBUG;
+        glDrawArrays(GL_TRIANGLES, 0, 6); INC_OPGL_DEBUG;      
+        cursor.x += glyph.size.x;
     }
 
     glBindVertexArray(0); INC_OPGL_DEBUG;       
@@ -832,7 +917,7 @@ static void __RENDER_TEXT(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl)
     return;
 }
 
-CR::Gfx::Renderable *CR::Gfx::Draw::Text(CR::Gfx::FontResource *font, const std::string &text, const CR::Vec2<float> &pos){
+CR::Gfx::Renderable *CR::Gfx::Draw::Text(CR::Gfx::FontResource *font, const std::string &text, const CR::Vec2<float> &pos, const TextRenderOpts &opts){
     auto *self = new CR::Gfx::RenderableText();
     
     self->rsc = font;
@@ -840,7 +925,14 @@ CR::Gfx::Renderable *CR::Gfx::Draw::Text(CR::Gfx::FontResource *font, const std:
     self->position = pos;
     self->angle = 0;
     self->render = &__RENDER_TEXT;
-
+    // copy options (yup this dumb i know)
+    self->outline = opts.outline;
+    self->fill = opts.fill;
+    self->autobreak = opts.autobreak;
+    self->maxWidth = opts.maxWidth;
+    self->alignment = opts.alignment;
+    self->spaceWidth = opts.spaceWidth;
+    self->lineHeight = opts.lineHeight;
     return self;
 }
 
@@ -975,7 +1067,7 @@ CR::Vec2<int> CR::Gfx::getSize(){
     return size;
 }
 
-bool CR::Gfx::pasteSubTexture2D(unsigned id, unsigned char *data, unsigned w, unsigned h, unsigned format, unsigned x, unsigned y){
+bool CR::Gfx::pasteSubTexture2D(unsigned id, unsigned char *data, unsigned w, unsigned h, unsigned x, unsigned y, unsigned format, unsigned pixelAlignment){
 	std::unique_lock<std::mutex> texLock(textureRenderMutex);
     GLenum glformat;
     switch(format){
@@ -1003,7 +1095,7 @@ bool CR::Gfx::pasteSubTexture2D(unsigned id, unsigned char *data, unsigned w, un
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); INC_OPGL_DEBUG;
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); INC_OPGL_DEBUG;
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); INC_OPGL_DEBUG;    
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); INC_OPGL_DEBUG;
+    glPixelStorei(GL_UNPACK_ALIGNMENT, pixelAlignment); INC_OPGL_DEBUG;
     glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, glformat, GL_UNSIGNED_BYTE, data); INC_OPGL_DEBUG;
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4); INC_OPGL_DEBUG;
     glBindTexture(GL_TEXTURE_2D, 0); INC_OPGL_DEBUG;
@@ -1011,7 +1103,7 @@ bool CR::Gfx::pasteSubTexture2D(unsigned id, unsigned char *data, unsigned w, un
     return true;
 }
 
-unsigned CR::Gfx::createTexture2D(unsigned char *data, unsigned w, unsigned h, unsigned format){
+unsigned CR::Gfx::createTexture2D(unsigned char *data, unsigned w, unsigned h, unsigned format, unsigned pixelAlignment){
     unsigned texture;
     std::unique_lock<std::mutex> texLock(textureRenderMutex);
     glGenTextures(1, &texture); INC_OPGL_DEBUG;
@@ -1042,14 +1134,15 @@ unsigned CR::Gfx::createTexture2D(unsigned char *data, unsigned w, unsigned h, u
             glformat = GL_RGBA;
         } break;                
     }
+    glPixelStorei(GL_UNPACK_ALIGNMENT, pixelAlignment); INC_OPGL_DEBUG;
     glTexImage2D(GL_TEXTURE_2D, 0, glformat, w, h, 0, glformat, GL_UNSIGNED_BYTE, data); INC_OPGL_DEBUG;
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4); INC_OPGL_DEBUG;
     glGenerateMipmap(GL_TEXTURE_2D); INC_OPGL_DEBUG;
     glBindTexture(GL_TEXTURE_2D, 0); INC_OPGL_DEBUG;
     texLock.unlock();
     std::unique_lock<std::mutex> lock(textureListMutex);
     textureList.push_back(texture);
     lock.unlock();
-    // TODO: check OpenGL errors
     return texture;
 }
 

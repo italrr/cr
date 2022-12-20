@@ -294,6 +294,8 @@ int main(int argc, char* argv[]){
 
     
     // layer
+    auto opts = CR::Gfx::TextRenderOpts(CR::Color(1.0f, 0.0f, 0.0f, 1.0));
+    opts.outline = CR::Color(0.5f, 0.5f, 0.5f, 1.0f);
 
     while(CR::Gfx::isRunning()){
 
@@ -378,9 +380,12 @@ int main(int argc, char* argv[]){
             gameL->camera.position.x += CR::getDelta() * 2000;
         }    
 
+            
+
             uiL->renderOn([&](CR::Gfx::RenderLayer *layer){  
-                layer->add(CR::Gfx::Draw::Text(font->getRsc(), "This is text example", CR::Vec2<float>(1)));
-                // layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->size, CR::Vec2<float>(0.5f), CR::Math::rads(0)));
+                layer->add(CR::Gfx::Draw::Text(font->getRsc(), "THIS_A_TEST_EXAMPLE", CR::Vec2<float>(128), opts));
+                // auto atlasSize = CR::Vec2<int>(font->getRsc()->atlasSize.x, font->getRsc()->atlasSize.y);
+                // layer->add(CR::Gfx::Draw::Texture(font->getRsc()->atlas, CR::Vec2<float>(0), atlasSize, CR::Vec2<float>(0), CR::Math::rads(0)));
                 // layer->add(CR::Gfx::Draw::RenderLayer(dummyLayer, CR::Vec2<float>(layer->size.x - dummyLayer->size.x,layer->size.y - dummyLayer->size.y), CR::Vec2<int>(dummyLayer->size), CR::Vec2<float>(0.0f), 0.0f));
             });
 

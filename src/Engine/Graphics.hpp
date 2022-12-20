@@ -53,7 +53,7 @@
                     RGB, // 24 bits
                     RGBA, // 32 bits
                 };
-            }
+            }        
 
             namespace RenderableType {
                 enum RenderableType : unsigned {
@@ -154,6 +154,7 @@
             struct Texture;
             struct Shader;
             struct FontResource;
+            struct TextRenderOpts;
 
             struct Transform {
                 std::shared_ptr<CR::Gfx::Shader> shader;
@@ -203,6 +204,15 @@
                 Gfx::FontResource *rsc;
                 Vec2<float> position;          
                 float angle;
+
+                CR::Color outline;
+                CR::Color fill;
+                bool autobreak;
+                float maxWidth;
+                unsigned alignment;
+                float spaceWidth;
+                float lineHeight; 
+
                 RenderableText(){
                     type = RenderableType::TEXT;
                 }
@@ -290,7 +300,7 @@
                 CR::Gfx::Renderable *Texture(unsigned tex, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle); 
                 CR::Gfx::Renderable *Mesh(CR::Gfx::MeshData &md, CR::Gfx::Transform *transform); 
                 CR::Gfx::Renderable *MeshBatch(std::vector<CR::Gfx::MeshData*> *md, std::vector<CR::Gfx::Transform*> *trans, bool shareTexture, bool shareShader, bool shareModel, unsigned modelPos = 0); 
-                CR::Gfx::Renderable *Text(CR::Gfx::FontResource *font, const std::string &text, const CR::Vec2<float> &pos);        
+                CR::Gfx::Renderable *Text(CR::Gfx::FontResource *font, const std::string &text, const CR::Vec2<float> &pos, const CR::Gfx::TextRenderOpts &opts);        
             } 
 
             bool init();
@@ -302,8 +312,8 @@
             int getHeight();
             CR::Vec2<int> getSize();
 
-            bool pasteSubTexture2D(unsigned id, unsigned char *data, unsigned w, unsigned h, unsigned format, unsigned x, unsigned y);
-            unsigned createTexture2D(unsigned char *data, unsigned w, unsigned h, unsigned format);
+            bool pasteSubTexture2D(unsigned id, unsigned char *data, unsigned w, unsigned h, unsigned x, unsigned y, unsigned format, unsigned pixelAlignment = 4);
+            unsigned createTexture2D(unsigned char *data, unsigned w, unsigned h, unsigned format, unsigned pixelAlignment = 4);
             bool deleteTexture2D(unsigned id);
             
             std::shared_ptr<FramebufferObj> createFramebuffer(unsigned w, unsigned h);

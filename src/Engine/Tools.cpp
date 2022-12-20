@@ -300,6 +300,12 @@ std::string CR::String::replaceAll(std::string subject, const std::string& searc
 
 namespace CR {
 	namespace Math {
+        float round(float n){
+			return std::round(n);
+		}
+		double round(double n){
+			return std::round(n);
+		}
 		int even(int n){
 			return n % 2 != 0 ? n + 1 : n;
 		}
