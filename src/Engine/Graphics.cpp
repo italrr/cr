@@ -861,31 +861,35 @@ static void __RENDER_TEXT(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl)
         
         // Handle Special Tokens
         switch(current){
-            case ' ':{
-                cursor.x += fontMWidth;
-                continue;
-            };
-            case '\t':{
-                cursor.x += fontMWidth * 4;
-                continue;
-            };      
-            case '\n':{
-                cursor.y += fontMHeight;
-                continue;
-            };   
+            // case ' ':{
+            //     cursor.x += fontMWidth;
+            //     continue;
+            // };
+            // case '\t':{
+            //     cursor.x += fontMWidth * 4;
+            //     continue;
+            // };      
+            // case '\n':{
+            //     cursor.y += fontMHeight;
+            //     continue;
+            // };   
         }
 
         auto &glyph = obj->rsc->glyphMap[current];
 
-        auto &xxi = glyph.index.x;
-        auto &yyi = glyph.index.y;
+        auto xxi = glyph.index.x;
+        auto yyi = glyph.index.y;
         auto wwi = xxi + glyph.coors.x;
         auto hhi = yyi + glyph.coors.y;
+        
 
 
-        if(current == '_'){
-            // CR::log("%f %f | %f %f\n", xxi, yyi, wwi, hhi);
-        }
+        // if(current == '_'){
+        //     xxi = glyph.index.x * 0.5f;
+        //     yyi = glyph.index.y * 0.5f;            
+        //     wwi = xxi + glyph.coors.x * 2;
+        //     hhi = yyi + glyph.coors.y * 2;
+        // }
 
         auto position = CR::Vec2<float>(cursor.x + glyph.orig.x, static_cast<float>(cursor.y) + fontMHeight - glyph.size.y);
         auto size = CR::Vec2<float>(glyph.bmpSize.x, glyph.bmpSize.y);

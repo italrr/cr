@@ -261,7 +261,7 @@ bool CR::Gfx::Font::load(const std::string &path, const CR::Gfx::FontStyle &styl
         }             
         FT_Glyph_StrokeBorder(&stroke, stroker, 0, 1);
         renderGlyph(face, glyph, stroke, sg.get(), style);
-        
+
         if(sg->w == 0 || sg->h == 0){ CR::log("%c %i %i\n", (char)i, sg->w, sg->h); continue;}
 
         maxHeight = std::max(sg->_coors.y, maxHeight);
@@ -312,6 +312,21 @@ bool CR::Gfx::Font::load(const std::string &path, const CR::Gfx::FontStyle &styl
             CR::log("%i\n", i);
             continue;
         }
+        if(i == '_'){
+            auto it2 = sgs.find('A');
+
+            auto sg = it->second;
+            auto sg2 = it2->second;
+            // Paste glyph into atlas
+            CR::Gfx::pasteSubTexture2D(rsc->atlas, sg2->buffer, sg2->bw, sg2->bh, sg->_index.x, sg->_index.y, useImgFormat, 1);
+            // Transfer glyph data
+            rsc->glyphMap[i] = CR::Gfx::FontGlyph();
+            auto &gproxy = rsc->glyphMap[i];
+            gproxy.glyph = i;
+            sg->transferSpec(gproxy, expectedSize);
+
+            continue;
+        }
         auto sg = it->second;
         // Paste glyph into atlas
         CR::Gfx::pasteSubTexture2D(rsc->atlas, sg->buffer, sg->bw, sg->bh, sg->_index.x, sg->_index.y, useImgFormat, 1);
@@ -320,7 +335,7 @@ bool CR::Gfx::Font::load(const std::string &path, const CR::Gfx::FontStyle &styl
         auto &gproxy = rsc->glyphMap[i];
         gproxy.glyph = i;
         sg->transferSpec(gproxy, expectedSize);
-        sg->clear();
+        // sg->clear();
     }
 
     CR::log("[GFX] Loaded Font %s | Size %ipx | Encoding %s\n", path.c_str(), rscFont->style.size, CR::Gfx::FontEncondig::str(rscFont->style.encoding).c_str());
