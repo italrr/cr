@@ -282,5 +282,7 @@ It's a luxurious neutral zone Space Station built within 5 years of the destruct
 
 The most advanced hospital in the solar system is located in Romdo.
 
+Romdo is orbiting mars on a fixed direction as to be always on top of New Horizon.
+
 
 
