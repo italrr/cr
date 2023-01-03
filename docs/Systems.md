@@ -1,22 +1,24 @@
 # Battle
 
-Battle is semi-real time action based. TIme is usually slowed down and what allows entities to move
+Battle is semi-real time action based. TIme is usually slowed down and what allows entities to move are mobility points which recharge every tick
 
 # Roleplaying System
  
 ## Base Stats
 
-Base Stats are defined the beginning with the character creation. They define the mere essence of the character, its strength and weaknesses. Base Stats **cannot** be changed after character creation, however some equipment or Corpus Enhancements may be able to increase some of the base stats as long as the user wears them.
+Base Stats are defined in the beginning with the character creation. They define the mere essence of the character, its strength and weaknesses. Base Stats **cannot** be changed after character creation, however some equipment or Corpus Mods may be able to increase some of the base stats as long as the user wears them.
 
-Base stats are use to calculate complex stats.
+Base stats are used to calculate complex stats.
 
 Reading:
 - +: Adds
 - -: Removes
 - ^: Bonus
-Each derivative quality is compromised of 4 segments. So ++++ means 100%.
+Each derivative quality is compromised of four(4) 4ths. So, four pluses (++++) means 100%.
 
-### Strength: Defines physical fortitude such as physical resilience, and ability to cause damage
+However some other base stats can add a bonus of 25% more. Those are marked with ^.
+
+### Strength: Defines physical fortitude such as physical resilience, and ability to cause physical close ranged damage
     - Melee Blunt               (++++)
     - Melee Sharp               (+)
     - Physical dmg & def        (++++)
@@ -61,8 +63,7 @@ Each derivative quality is compromised of 4 segments. So ++++ means 100%.
     - Blunt Physical Damage Rate: Used to calculate Damage when using blunt weapons.
     - Sharp Physical Damage Rate: Used to calculate Damage when using sharp weapons.
 ### Ranged Damage
-
-
+    
 
 
 

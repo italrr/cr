@@ -819,7 +819,7 @@ CR::Gfx::Renderable *CR::Gfx::Draw::MeshBatch(std::vector<CR::Gfx::MeshData*> *m
 
 
 
-// We'll do font rendering here for now, but ideally should be move to Font.cpp
+// We'll do font rendering here for now, but ideally should be moved to Font.cpp
 static void __RENDER_TEXT(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
     auto *obj = static_cast<CR::Gfx::RenderableText*>(renobj);
 
@@ -838,13 +838,21 @@ static void __RENDER_TEXT(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl)
         .scale(CR::Vec3<float>(0.0f));
 
 
-    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[0] = obj->outline.r;
-    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[1] = obj->outline.g;
-    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[2] = obj->outline.b;
+    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[0] = 1.0;
+    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[1] = 0.0;
+    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[2] = 0.0;
 
-    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[0] = obj->fill.r;
-    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[1] = obj->fill.g;
-    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[2] = obj->fill.b;
+    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[0] = 1.0f;
+    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[1] = 1.0f;
+    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[2] = 1.0f;
+
+    // static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[0] = obj->outline.r;
+    // static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[1] = obj->outline.g;
+    // static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[2] = obj->outline.b;
+
+    // static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[0] = obj->fill.r;
+    // static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[1] = obj->fill.g;
+    // static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[2] = obj->fill.b;
 
     CR::Gfx::applyShader(transGText.shader->getRsc()->shaderId, transGText.shAttrsLocVec, transGText.shAttrsValVec);
 
