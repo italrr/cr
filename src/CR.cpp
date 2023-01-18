@@ -383,7 +383,7 @@ int main(int argc, char* argv[]){
             
 
             uiL->renderOn([&](CR::Gfx::RenderLayer *layer){  
-                layer->add(CR::Gfx::Draw::Text(font->getRsc(), "_THIS_IS_A_TEST_", CR::Vec2<float>(128), opts));
+                layer->add(CR::Gfx::Draw::Text(font->getRsc(), "_", CR::Vec2<float>(128), opts));
                 auto atlasSize = CR::Vec2<int>(font->getRsc()->atlasSize.x, font->getRsc()->atlasSize.y);
                 layer->add(CR::Gfx::Draw::Texture(font->getRsc()->atlas, CR::Vec2<float>(5, 400), atlasSize, CR::Vec2<float>(0), CR::Math::rads(0)));
                 // layer->add(CR::Gfx::Draw::RenderLayer(dummyLayer, CR::Vec2<float>(layer->size.x - dummyLayer->size.x,layer->size.y - dummyLayer->size.y), CR::Vec2<int>(dummyLayer->size), CR::Vec2<float>(0.0f), 0.0f));

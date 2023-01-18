@@ -264,9 +264,11 @@ bool CR::Gfx::Font::load(const std::string &path, const CR::Gfx::FontStyle &styl
             continue;
         }             
         FT_Glyph_StrokeBorder(&stroke, stroker, 0, 1);
-        renderGlyph(face, ((i == 'Y' || i == '_') ? dummyg : glyph), stroke, sg.get(), style);
+        renderGlyph(face, glyph, stroke, sg.get(), style);
 
         if(sg->w == 0 || sg->h == 0){ CR::log("%c %i %i\n", (char)i, sg->w, sg->h); continue;}
+
+
 
         maxHeight = std::max(sg->_coors.y, maxHeight);
         sgs[i] = sg;
@@ -310,6 +312,7 @@ bool CR::Gfx::Font::load(const std::string &path, const CR::Gfx::FontStyle &styl
     rsc->atlasSize.set(expectedSize.x, expectedSize.y);
 
     // render into atlas
+    
     for(unsigned i = ENCODING_ASCII_RANGE_MIN; i < ENCODING_ASCII_RANGE_MAX; ++i){
         auto it = sgs.find(i);
         if(it == sgs.end()){
@@ -338,7 +341,25 @@ bool CR::Gfx::Font::load(const std::string &path, const CR::Gfx::FontStyle &styl
         rsc->glyphMap[i] = CR::Gfx::FontGlyph();
         auto &gproxy = rsc->glyphMap[i];
         gproxy.glyph = i;
-        sg->transferSpec(gproxy, expectedSize);
+        
+        if(i == '_'){
+            auto weirdit = sgs.find('A');
+            // auto &gproxy = rsc->glyphMap['A'];
+
+            // weirdit->second->transferSpec(gproxy, expectedSize);
+            CR::log("Coors %f %f | Index  %f %f | BSize %i %i\n",    
+
+                gproxy.coors.x * expectedSize.x,
+                gproxy.coors.y * expectedSize.y,
+
+                gproxy.index.x * expectedSize.x, 
+                gproxy.index.y * expectedSize.y,
+                
+                gproxy.bmpSize.x, 
+                gproxy.bmpSize.y);            
+        }else{
+            sg->transferSpec(gproxy, expectedSize);
+        }       
         // sg->clear();
     }
 
