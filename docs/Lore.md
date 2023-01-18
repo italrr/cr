@@ -69,6 +69,31 @@ Almost every UHCI chip comes with a NeuroProjector. There also are external Neur
 
 The biggest industry utilizing TPP is the porn industry. But it's also used in Education for training.
 
+### The Genus Race or Ultimate Battle Survival
+
+The Genus Race is a bloodsport hosted by the criminal organization Saborou. It started in the year 2099 when Saborou bought an abandoned Asteroid mining rig off the UNT that was adrift in Venus.
+
+This bloodsport consists of 10 teams of 3 people that fight to death in this mining rig. There is no time limit. A single match usually takes between 3 to 6 hours. It's televised across the solar system by many major streaming networks. The Genus is the brainchild of Jem, who was the original announcer until the third season.
+
+Genus takes place every 6 months, although there has been a few exceptions in which there has been 3 games in a year.
+
+The winning team takes a prize pool of around 100,000 GEMS on average, which is the equivalent of 500 million USD in the year 2023.
+
+Most players of the Genus are some of the most ruthless people in the solar system. The survivors and victors are considered celebrities. The death rate on average of a single match is 80%.
+
+Rules:
+- A team may consist of up to 3 players
+- Only weapons allowed are gunpowdered guns, electric bows and any type of sharp non-electronic weapon such as swords and knifes. Non-energy grenades are also allowed
+- Players drop from the start ship on a position on the rig of their choosing
+- Players may only carry up to 50 pounds of stuff at the start of the match
+- Players may equip energy chest armor and energy helmet to the match. These discharge with every impact and can be charged in specific charging stations spread across the rig
+- Players must equip an Unemotic Control band on their necks. This bad discharges electricity to the nerveous system when players are outside of the zone. Players are completely disallowed to unequip this band. If they do, they're immediatly disquilified and escorted out of the game.
+- Friendly fire is allowed
+- A player can anytime voluntarily drop out of a match by yelling the keyword at one of the camaras. Although this does not assure that the player's safety.
+- Cyborg players cannot bring any specialized battle corpus mods.
+
+UNT and Wayland often send their own official teams to these games.
+
 ## Officially Recognized Nations/Colonies
 
 ### United Nations of Terra (UNT)
@@ -116,11 +141,15 @@ The Vega Group is a conglomerate of the most powerful and richest companies in t
 
 It's a massive interplanetary crimical organization headed by Jem. Saborou specializes in human traficking and drugs. But they do, from time to time, jobs for the highest bidder.
 
+Saborou also hosts The Genus Games which is their highest grossing bussiness.
+
 Saborou is actually split in two groups that cohesively act as one. Although Jem is regarded to be the unquestionable boss, the other side of Saborou is actually led by Jem's fiance, Zanzan. 
 
 ### Nefastus
 
 It's another interplanetary criminal organization headed by an unknown figure. They're the rivals of Saborou. They also specialize in human trafficking and drugs.
+
+Nefastus send their own official team to the Genus Race. Nefastus holds 40% of the victories of all the matches.
 
 ### Nomads
 
@@ -151,7 +180,7 @@ Bloodchungs is the rival gang of the Bibi Snakes.
 
 It's multi-trillionare from Earth. It's unknown how old he really is, but it's speculated to be over a hundred years old. Arthur is considered a humanitarian, and father of the IVTE that allowed the human species to trascend from earth. Arthur's entire body is prosthetic, even his brain.
 
-It's unknown what's dedicating his life to now, as he's been barely seen in the public for a few years now.
+It's unknown what's dedicating his life to now, as he's been barely seen in the public for a few years.
 
 Arthur is an honorable Abadiú in Veracrúz, although he holds no political power.
 
@@ -228,6 +257,30 @@ Victor's an energetic upbeat person most of the time, but has a huge temper when
 - Mona Missa
 
 Mona is an ex-drugaddict that met Victor Vetsu in an AA meeting. Mona was murdered by the rival gang.
+
+- Maximillian "Jelly" Johnson
+
+Maximillian is considered one of the best players of The Genus Race. He's played 5 matches, and has won 2. Maximillian is an incredibly dangerous individual, wanted by the UNT and Wayland for murdering the head of security of Romdo in a failed heist attempt in the year 2102.
+
+Maxilliam has a high-end prosthetic body, specially designed for hand to hand combat.
+
+Most people call him Jelly. Maximillian likes using swords.
+
+- Anamura "Mephisto" Kalo
+
+Anamura is a very popular actor and Movie-Teleprojection producer, and one of the best players of the Genus Race. Anamura is also one of the wealthiest people the in showbiz. She goes by the nickname of Mephisto in the Genus Race. Anamura was originally born male, but through prosthetic body moditifications legally transitioned to female.
+
+She has a high-end prosthetic body. She mentioned in one interviewed that her body costs around 10 million Gems
+
+- Nicki "El Chulo" Rodriguez
+
+Nicki is considered one of the best players of the Genus Race, having played 5 games and winning 3. Nicki a very dubious person, of unknown origins, besides Genus, he's mostly known for being very smooth with women. Some gossip networks call him "El Chulo" for having such success with women. Interestingly, there has never been reports of him mistreating women.
+
+Nicki is only one of the tops players of Genus that has almost no prosthetics in his body.
+
+- James Loukart
+
+James was originally a software engineer born in a wealthy family in Wayland that was disowned by his father. James became a black hat hacker, and the joined Nefastus. He became a recurrent player of the Genus Race.
 
 
 ## How it starts
