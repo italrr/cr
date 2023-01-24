@@ -22,8 +22,8 @@ struct SingleGlyph {
     unsigned symbol;
 
     CR::Vec2<unsigned> _coors;
-    CR::Vec2<unsigned> _size;
-    CR::Vec2<unsigned> _orig;      
+    CR::Vec2<float> _size;
+    CR::Vec2<int> _orig;      
     CR::Vec2<unsigned> _index;  
 
 
@@ -139,8 +139,7 @@ static void renderGlyph(FT_Face &face, FT_Glyph &glyph, FT_Glyph &stroke, Single
             FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, NULL, true);
             FT_BitmapGlyph bitmap = reinterpret_cast<FT_BitmapGlyph>(glyph);
             sg->solid(bitmap->bitmap.width, bitmap->bitmap.rows, bitmap->bitmap.buffer);
-            // CR::log("[%c] %ix%i\n", (char) sg->symbol, bitmap->bitmap.width, bitmap->bitmap.rows);
-            sg->readSpecs(bitmap, face);
+            sg->readSpecs(bitmap, face);         
         } break;
         case CR::Gfx::FontStyleType::OUTLINE_ONLY: {
 			FT_Glyph_To_Bitmap(&stroke, FT_RENDER_MODE_NORMAL, NULL, true);
@@ -266,9 +265,7 @@ bool CR::Gfx::Font::load(const std::string &path, const CR::Gfx::FontStyle &styl
         FT_Glyph_StrokeBorder(&stroke, stroker, 0, 1);
         renderGlyph(face, glyph, stroke, sg.get(), style);
 
-        if(sg->w == 0 || sg->h == 0){ CR::log("%c %i %i\n", (char)i, sg->w, sg->h); continue;}
-
-
+        if(sg->w == 0 || sg->h == 0){ continue; }
 
         maxHeight = std::max(sg->_coors.y, maxHeight);
         sgs[i] = sg;
@@ -305,8 +302,6 @@ bool CR::Gfx::Font::load(const std::string &path, const CR::Gfx::FontStyle &styl
         } break;        
     }
 
-    // CR::log("%i\n", useImgFormat);
-
 
     rsc->atlas = CR::Gfx::createTexture2D(0, expectedSize.x, expectedSize.y, useImgFormat, 1);
     rsc->atlasSize.set(expectedSize.x, expectedSize.y);
@@ -316,24 +311,8 @@ bool CR::Gfx::Font::load(const std::string &path, const CR::Gfx::FontStyle &styl
     for(unsigned i = ENCODING_ASCII_RANGE_MIN; i < ENCODING_ASCII_RANGE_MAX; ++i){
         auto it = sgs.find(i);
         if(it == sgs.end()){
-            CR::log("%i\n", i);
             continue;
         }
-        // if(i == 'Y'){
-        //     auto it2 = sgs.find('A');
-
-        //     auto sg = it->second;
-        //     auto sg2 = it2->second;
-        //     // Paste glyph into atlas
-        //     CR::Gfx::pasteSubTexture2D(rsc->atlas, sg2->buffer, sg2->bw, sg2->bh, sg->_index.x, sg->_index.y, useImgFormat, 1);
-        //     // Transfer glyph data
-        //     rsc->glyphMap[i] = CR::Gfx::FontGlyph();
-        //     auto &gproxy = rsc->glyphMap[i];
-        //     gproxy.glyph = i;
-        //     sg->transferSpec(gproxy, expectedSize);
-
-        //     continue;
-        // }
         auto sg = it->second;
         // Paste glyph into atlas
         CR::Gfx::pasteSubTexture2D(rsc->atlas, sg->buffer, sg->bw, sg->bh, sg->_index.x, sg->_index.y, useImgFormat, 1);
@@ -341,26 +320,7 @@ bool CR::Gfx::Font::load(const std::string &path, const CR::Gfx::FontStyle &styl
         rsc->glyphMap[i] = CR::Gfx::FontGlyph();
         auto &gproxy = rsc->glyphMap[i];
         gproxy.glyph = i;
-        
-        if(i == '_'){
-            auto weirdit = sgs.find('A');
-            // auto &gproxy = rsc->glyphMap['A'];
-
-            // weirdit->second->transferSpec(gproxy, expectedSize);
-            CR::log("Coors %f %f | Index  %f %f | BSize %i %i\n",    
-
-                gproxy.coors.x * expectedSize.x,
-                gproxy.coors.y * expectedSize.y,
-
-                gproxy.index.x * expectedSize.x, 
-                gproxy.index.y * expectedSize.y,
-                
-                gproxy.bmpSize.x, 
-                gproxy.bmpSize.y);            
-        }else{
-            sg->transferSpec(gproxy, expectedSize);
-        }       
-        // sg->clear();
+        sg->transferSpec(gproxy, expectedSize);
     }
 
     CR::log("[GFX] Loaded Font %s | Size %ipx | Encoding %s\n", path.c_str(), rscFont->style.size, CR::Gfx::FontEncondig::str(rscFont->style.encoding).c_str());

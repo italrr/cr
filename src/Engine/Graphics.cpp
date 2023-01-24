@@ -837,22 +837,13 @@ static void __RENDER_TEXT(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl)
         .rotate(0.0f, CR::Vec3<float>(0.0f))
         .scale(CR::Vec3<float>(0.0f));
 
+    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[0] = obj->outline.r;
+    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[1] = obj->outline.g;
+    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[2] = obj->outline.b;
 
-    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[0] = 1.0;
-    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[1] = 0.0;
-    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[2] = 0.0;
-
-    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[0] = 1.0f;
-    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[1] = 1.0f;
-    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[2] = 1.0f;
-
-    // static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[0] = obj->outline.r;
-    // static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[1] = obj->outline.g;
-    // static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[2] = obj->outline.b;
-
-    // static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[0] = obj->fill.r;
-    // static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[1] = obj->fill.g;
-    // static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[2] = obj->fill.b;
+    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[0] = obj->fill.r;
+    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[1] = obj->fill.g;
+    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[2] = obj->fill.b;
 
     CR::Gfx::applyShader(transGText.shader->getRsc()->shaderId, transGText.shAttrsLocVec, transGText.shAttrsValVec);
 
@@ -869,18 +860,18 @@ static void __RENDER_TEXT(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl)
         
         // Handle Special Tokens
         switch(current){
-            // case ' ':{
-            //     cursor.x += fontMWidth;
-            //     continue;
-            // };
-            // case '\t':{
-            //     cursor.x += fontMWidth * 4;
-            //     continue;
-            // };      
-            // case '\n':{
-            //     cursor.y += fontMHeight;
-            //     continue;
-            // };   
+            case ' ':{
+                cursor.x += fontMWidth + (obj->horBearingBonus > 0 ? obj->horBearingBonus : 0);
+                continue;
+            };
+            case '\t':{
+                cursor.x += fontMWidth * 4;
+                continue;
+            };      
+            case '\n':{
+                cursor.y += fontMHeight;
+                continue;
+            };   
         }
 
         auto &glyph = obj->rsc->glyphMap[current];
@@ -889,17 +880,12 @@ static void __RENDER_TEXT(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl)
         auto yyi = glyph.index.y;
         auto wwi = xxi + glyph.coors.x;
         auto hhi = yyi + glyph.coors.y;
-        
+
+        auto posX = static_cast<float>(cursor.x) + glyph.orig.x;
+        auto posY = static_cast<float>(cursor.y) + fontMHeight - glyph.size.y;
 
 
-        // if(current == '_'){
-        //     xxi = glyph.index.x * 0.5f;
-        //     yyi = glyph.index.y * 0.5f;            
-        //     wwi = xxi + glyph.coors.x * 2;
-        //     hhi = yyi + glyph.coors.y * 2;
-        // }
-
-        auto position = CR::Vec2<float>(cursor.x + glyph.orig.x, static_cast<float>(cursor.y) + fontMHeight - glyph.size.y);
+        auto position = CR::Vec2<float>(posX, posY);
         auto size = CR::Vec2<float>(glyph.bmpSize.x, glyph.bmpSize.y);
 
         static_cast<CR::Gfx::ShaderAttrMat4*>(transGText.shAttrsValVec[1])->mat = CR::MAT4Identity
@@ -945,6 +931,7 @@ CR::Gfx::Renderable *CR::Gfx::Draw::Text(CR::Gfx::FontResource *font, const std:
     self->alignment = opts.alignment;
     self->spaceWidth = opts.spaceWidth;
     self->lineHeight = opts.lineHeight;
+    self->horBearingBonus = opts.horBearingBonus;
     return self;
 }
 

@@ -211,6 +211,7 @@
                 float maxWidth;
                 unsigned alignment;
                 float spaceWidth;
+                float horBearingBonus;
                 float lineHeight; 
 
                 RenderableText(){

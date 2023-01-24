@@ -83,6 +83,7 @@
                 unsigned alignment;
                 float spaceWidth;
                 float lineHeight;                
+                float horBearingBonus;
                 TextRenderOpts(){
                     outline.set(1.0f, 1.0f, 1.0f, 1.0f);
                     fill.set(0.0f, 0.0f, 0.0f, 1.0f);
@@ -91,6 +92,7 @@
                     alignment = TextAlignType::LEFT;
                     spaceWidth = 0; // 0 uses default
                     lineHeight = 0; // 0 used default
+                    horBearingBonus = 0;
                 }
                 TextRenderOpts(const CR::Color &fill){
                     this->fill = fill;

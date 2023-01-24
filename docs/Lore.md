@@ -29,9 +29,11 @@ The French government quickly took over as the first prototype was succesfully t
 
 Azulumiun is a very rare metal nowdays, however there's an artificial substitute known as Azulumiun-1010, which is cheaper. Azulumiun-1010 is only 50% as efficient as pure Azulumiun, therefore its energy througput is limited in comparison. Most cheap Azula knockoffs are built using 1010.
 
+It's worth mentioning that these reactors are incapable of reaching critical mass without the use of a fissible fuel such as uranium or plutonium.
+
 ### IVTE and Intrisic Fields Manipulation
 
-Interplanetary traveling was made possible by the Interplanetary Vacuumless Thrust Engine (IVTE, or eeft as it's called colloquially). IVTE produces immense accelation capable of reaching 0.99c (99% of the speed of light) in less than one minute. This is however only possible with a Massless Drive (MD). The Massless Drive is capable of physically faking the mass of certain objects connected to the field (including the IVTE), meaning objects within or inside of the husk of the spaceship weight less than a gram but only to the engine as the effect is purely relativistic. One issue of the IVTE is that combining it with the Massless Drive, causes a massive gravitational pull and push around the ship that could potentially cause havok around civialian areas. That's why it's highly illegal engaging full throttle with the IVTE close to a populated areas. There are systems in place to take down any ship that engages full throttle within the bounds of a colony or space station.
+Interplanetary traveling was made possible by the break of the century: the Interplanetary Vacuumless Thrust Engine (IVTE, or eeft as it's called colloquially). IVTE produces immense accelation capable of reaching 0.99c (99% of the speed of light) in less than one minute. This is however only possible with a Massless Drive (MD). The Massless Drive is capable of physically faking the mass of certain objects connected to the field (including the IVTE), meaning objects within or inside of the husk of the spaceship weight less than a gram but only to the engine as the effect is purely relativistic. One issue of the IVTE is that combining it with the Massless Drive, causes a massive gravitational pull and push around the ship that could potentially cause havok around civialian areas. That's why it's highly illegal engaging full throttle with the IVTE close to a populated areas. There are systems in place to take down any ship that engages full throttle within the bounds of a colony or space station.
 
 The IVTE and Massless Drive were both created by Alana Industries. The MD was the first created, and it was meant to be used for asteroid mining, but never left testing phases. The MD started as a paper on potential applications using Intrisic Fields Manipulation on the Higgs Boson. IVTE also uses theories proposed by this paper.
 
@@ -250,11 +252,11 @@ Victor is the leader of the Bibi Snakes. The character can choose to work for Vi
 
 Victor used to be a drug addict, that lost his job, and friends. Eventually he quit, and put together the Bibi Snakes. Victor is slender, but built.
 
-Victor's best friend was Mona Missa which was murdered by the rival gang Bloodchungs.
+Victor's best friend was Mona Miss which was murdered by the rival gang Bloodchungs.
 
 Victor's an energetic upbeat person most of the time, but has a huge temper when it comes to work.
 
-- Mona Missa
+- Mona Miss
 
 Mona is an ex-drugaddict that met Victor Vetsu in an AA meeting. Mona was murdered by the rival gang.
 
@@ -268,9 +270,9 @@ Most people call him Jelly. Maximillian likes using swords.
 
 - Anamura "Mephisto" Kalo
 
-Anamura is a very popular actor and Movie-Teleprojection producer, and one of the best players of the Genus Race. Anamura is also one of the wealthiest people the in showbiz. She goes by the nickname of Mephisto in the Genus Race. Anamura was originally born male, but through prosthetic body moditifications legally transitioned to female.
+Anamura is a very popular actress and Movie-Teleprojection producer, and one of the best players of the Genus Race. Anamura is also one of the wealthiest people the in showbiz. She goes by the nickname of Mephisto in the Genus Race. Anamura was originally born male, but through prosthetic body moditifications legally transitioned to female.
 
-She has a high-end prosthetic body. She mentioned in one interviewed that her body costs around 10 million Gems
+She has a high-end prosthetic body. She mentioned in one interviewed that her body costs around 1 million Gems
 
 - Nicki "El Chulo" Rodriguez
 
@@ -321,7 +323,7 @@ Evergrandis is also the second wealthiest colony, after Nova Horizon, in the sol
 
 ### Ecarus Nexus [**Wayland**]
 
-### Red Bartalo [**Veracrúz**]
+### Red Bartalomeo [**Veracrúz**]
 
 ### Neu Santos [**Veracrúz**]
 
@@ -329,7 +331,7 @@ Evergrandis is also the second wealthiest colony, after Nova Horizon, in the sol
 
 ### Yorkers [**UNT**]
 
-### Romdo or The Interplanetary Space Station[INDEPENDENT]
+### Romdo or The Interplanetary Space Station[**INDEPENDENT**]
 
 It's a luxurious neutral zone Space Station built within 5 years of the destruction of earth with the purpose of hosting the main headquaters of The Federation for the Future of Humanity. Although through time it also became a comercial and residential structure. Most of the wealthiests and high society individuals live in Romdo. There are around 150 thousand people living there. It's said it has cost around 3 trillion Gems to build.
 
