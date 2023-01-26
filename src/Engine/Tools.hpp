@@ -113,7 +113,7 @@
 
         namespace String {
             std::string toLower(const std::string &str);
-            std::vector<std::string> split(const std::string &str, const std::string &sep);
+            std::vector<std::string> split(const std::string &str, const char sep);
             std::string format(const std::string &str, ...);
             std::string formatByes(int n);
             std::string str(float n);

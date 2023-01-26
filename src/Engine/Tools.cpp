@@ -137,7 +137,7 @@ namespace CR {
 			CR::Result result(CR::ResultType::noop);
 			DIR *directory;
 			struct dirent *ent;
-			std::vector<std::string> formats = String::split(format, "|");
+			std::vector<std::string> formats = String::split(format, '|');
 			bool anyf = !((int)formats.size());
 			directory = opendir(path.c_str());
 			if (directory == NULL){
@@ -199,14 +199,15 @@ std::string CR::String::toLower(const std::string &str){
 	}
 	return out;
 }
-std::vector<std::string> CR::String::split(const std::string &str, const std::string &sep){
-    std::vector<std::string> tokens;
-    char *token = strtok((char*)str.c_str(), sep.c_str()); 
-    while(token != NULL){ 
-        tokens.push_back(std::string(token));
-        token = strtok(NULL, "-"); 
-    } 
-    return tokens;
+std::vector<std::string> CR::String::split(const std::string &str, const char sep){
+  std::vector<std::string> tokens;
+  std::size_t start = 0, end = 0;
+  while ((end = str.find(sep, start)) != std::string::npos) {
+    tokens.push_back(str.substr(start, end - start));
+    start = end + 1;
+  }
+  tokens.push_back(str.substr(start));
+  return tokens;
 }
 
 std::string CR::String::format(const std::string &_str, ...){

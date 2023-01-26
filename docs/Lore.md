@@ -302,7 +302,7 @@ Dóluz is famous because of its night life. Dóluz is one of the few colonies wi
 
 Dóluz law enforcement is called the Protection Squad. Most basic rights of a citizen in Dóluz include protection from the Squad, but many of their services are paid such as murder and missing persons investigations.
 
-The city is completely domed, but the ground under it is actually highly fertile as of now, and inhabited by small purple worms. It's unknown how it happened, but it's said that a secret project carried by an unknown group which consisted in terraforming the floor using a mutated type of worm that survived by eating waste. It seems the city waste management system has been leaking through the base and reaching the worms, keeping them alive.
+The city is completely doomed, but the ground under it is actually highly fertile as of now, and inhabited by small purple worms. It's unknown how it happened, but it's said that a secret project carried by an unknown group which consisted in terraforming the floor using a mutated type of worm that survived by eating waste. It seems the city waste management system has been leaking through the base and reaching the worms, keeping them alive.
 
 
 ## Important places

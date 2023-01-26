@@ -148,19 +148,14 @@ static void renderGlyph(FT_Face &face, FT_Glyph &glyph, FT_Glyph &stroke, Single
             sg->readSpecs(bitmapStroke, face);
         } break;
         case CR::Gfx::FontStyleType::SOLID_OUTLINED: {
-            
             FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, NULL, true);
             FT_BitmapGlyph bitmap = reinterpret_cast<FT_BitmapGlyph>(glyph);
-
 			FT_Glyph_To_Bitmap(&stroke, FT_RENDER_MODE_NORMAL, NULL, true);
 			FT_BitmapGlyph bitmapStroke = reinterpret_cast<FT_BitmapGlyph>(stroke);   
-
 			sg->strong(0, 0, bitmapStroke->bitmap.width, bitmapStroke->bitmap.rows, 0, 0, bitmapStroke->bitmap.buffer);
 			sg->blitz(0, 0, bitmap->bitmap.width, bitmap->bitmap.rows, 0, 0, bitmap->bitmap.buffer);	
-
             sg->readSpecs(bitmapStroke, face);
         } break;
-
         case CR::Gfx::FontStyleType::SOLID_SHADOWED: {
 
         } break;                        
@@ -209,19 +204,19 @@ bool CR::Gfx::Font::load(const std::string &path, const CR::Gfx::FontStyle &styl
 
     std::vector<FT_UInt> mapping;
 
-
-    // switch(style.encoding){
-    //     case CR::Gfx::FontEncondig::ASCII: {
-    //         for(unsigned i = ENCODING_ASCII_RANGE_MIN; i < ENCODING_ASCII_RANGE_MAX; ++i){
-    //             mapping.push_back(cindex);
-    //             rsc->ASCIITrans[i] = cindex;
-    //         }
-    //     } break;
-    //     default:
-    //     case CR::Gfx::FontEncondig::UTF8: {
-    //         CR::log("[GFX] Font::load: UTF-8 is unimplemented\n");
-    //     } break;         
-    // }
+    switch(style.encoding){
+        case CR::Gfx::FontEncondig::ASCII: {
+            for(unsigned i = ENCODING_ASCII_RANGE_MIN; i < ENCODING_ASCII_RANGE_MAX; ++i){
+                auto cindex = FT_Get_Char_Index(face, i);
+                mapping.push_back(cindex);
+                rsc->ASCIITrans[i] = cindex;
+            }
+        } break;
+        default:
+        case CR::Gfx::FontEncondig::UTF8: {
+            CR::log("[GFX] Font::load: UTF-8 is unimplemented\n");
+        } break;         
+    }
 
     unsigned maxHeight = 0;
     static const CR::Vec2<unsigned> maxSize = {8192, 8192};
@@ -236,16 +231,16 @@ bool CR::Gfx::Font::load(const std::string &path, const CR::Gfx::FontStyle &styl
     rsc->horiBearingY = face->glyph->metrics.horiBearingY >> 6;    
 
     FT_Glyph dummyg;
-    auto id = FT_Get_Char_Index(face, 'A');
-    FT_Load_Glyph(face, id, FT_LOAD_DEFAULT);
+    auto dummid = FT_Get_Char_Index(face, 'A');
+    FT_Load_Glyph(face, dummid, FT_LOAD_DEFAULT);
     FT_Get_Glyph(face->glyph, &dummyg);
 
     // Get Glyphs
     std::unordered_map<FT_UInt, std::shared_ptr<SingleGlyph>> sgs;
-    for(unsigned i = ENCODING_ASCII_RANGE_MIN; i < ENCODING_ASCII_RANGE_MAX; ++i){
+    for(unsigned i = 0; i < mapping.size(); ++i){
         FT_Glyph glyph, stroke;
         std::shared_ptr<SingleGlyph> sg = std::make_shared<SingleGlyph>(SingleGlyph());
-        auto id = FT_Get_Char_Index(face, i);
+        auto id = mapping[i];
         sg->symbol = i;
         // Load glyph
         if(FT_Load_Glyph(face, id, FT_LOAD_DEFAULT)){
@@ -268,7 +263,7 @@ bool CR::Gfx::Font::load(const std::string &path, const CR::Gfx::FontStyle &styl
         if(sg->w == 0 || sg->h == 0){ continue; }
 
         maxHeight = std::max(sg->_coors.y, maxHeight);
-        sgs[i] = sg;
+        sgs[id] = sg;
 
         sg->_index.x = cursor.x;
         sg->_index.y = cursor.y;
@@ -306,10 +301,9 @@ bool CR::Gfx::Font::load(const std::string &path, const CR::Gfx::FontStyle &styl
     rsc->atlas = CR::Gfx::createTexture2D(0, expectedSize.x, expectedSize.y, useImgFormat, 1);
     rsc->atlasSize.set(expectedSize.x, expectedSize.y);
 
-    // render into atlas
-    
-    for(unsigned i = ENCODING_ASCII_RANGE_MIN; i < ENCODING_ASCII_RANGE_MAX; ++i){
-        auto it = sgs.find(i);
+    // paste into atlas
+    for(unsigned i = 0; i < mapping.size(); ++i){
+        auto it = sgs.find(mapping[i]);
         if(it == sgs.end()){
             continue;
         }
@@ -317,9 +311,9 @@ bool CR::Gfx::Font::load(const std::string &path, const CR::Gfx::FontStyle &styl
         // Paste glyph into atlas
         CR::Gfx::pasteSubTexture2D(rsc->atlas, sg->buffer, sg->bw, sg->bh, sg->_index.x, sg->_index.y, useImgFormat, 1);
         // Transfer glyph data
-        rsc->glyphMap[i] = CR::Gfx::FontGlyph();
-        auto &gproxy = rsc->glyphMap[i];
-        gproxy.glyph = i;
+        rsc->glyphMap[mapping[i]] = CR::Gfx::FontGlyph();
+        auto &gproxy = rsc->glyphMap[mapping[i]];
+        gproxy.glyph = sg->symbol;
         sg->transferSpec(gproxy, expectedSize);
     }
 

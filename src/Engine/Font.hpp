@@ -87,7 +87,7 @@
                 TextRenderOpts(){
                     outline.set(1.0f, 1.0f, 1.0f, 1.0f);
                     fill.set(0.0f, 0.0f, 0.0f, 1.0f);
-                    autobreak = 0;
+                    autobreak = false;
                     maxWidth = 0;
                     alignment = TextAlignType::LEFT;
                     spaceWidth = 0; // 0 uses default
@@ -96,10 +96,22 @@
                 }
                 TextRenderOpts(const CR::Color &fill){
                     this->fill = fill;
+                    autobreak = false;
+                    maxWidth = 0;
+                    alignment = TextAlignType::LEFT;
+                    spaceWidth = 0; // 0 uses default
+                    lineHeight = 0; // 0 used default
+                    horBearingBonus = 0;                    
                 }
                 TextRenderOpts(const CR::Color &fill, const CR::Color &outline){
                     this->fill = fill;
                     this->outline = outline;
+                    autobreak = false;
+                    maxWidth = 0;
+                    alignment = TextAlignType::LEFT;
+                    spaceWidth = 0; // 0 uses default
+                    lineHeight = 0; // 0 used default
+                    horBearingBonus = 0;                    
                 }                
             };
 
@@ -107,6 +119,7 @@
                 unsigned atlas;
                 CR::Vec2<unsigned> atlasSize;
                 std::unordered_map<unsigned, CR::Gfx::FontGlyph> glyphMap;
+                std::unordered_map<unsigned, unsigned> ASCIITrans;
                 CR::Gfx::FontStyle style;
                 unsigned vertAdvance;
                 unsigned advanceX;
@@ -124,6 +137,8 @@
                 Font();                
                 bool load(const std::string &path, const CR::Gfx::FontStyle &style = CR::Gfx::FontStyle(16, CR::Gfx::FontEncondig::ASCII, 1.0f, FontStyleType::SOLID));
                 void unload();
+                float getWidth(const std::string &str);
+                float getHeight();
                 CR::Gfx::FontResource *getRsc(){
                     return static_cast<CR::Gfx::FontResource*>(rsc.get());
                 }                

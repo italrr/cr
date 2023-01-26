@@ -815,103 +815,286 @@ CR::Gfx::Renderable *CR::Gfx::Draw::MeshBatch(std::vector<CR::Gfx::MeshData*> *m
 
 
 
+struct RT_Word {
+	std::string str;
+	float width;
+	float height;
+	float dx;
+	float dy;    
+};
 
+struct RT_Token {
+	int type;
+	CR::Color color;
+	int position;
+	std::string value;
+	bool found;
+	RT_Token(){
+		found = false;
+	}
+};
 
+namespace RT_TokenType {
+	enum RT_TokenType : int {
+		UNDEFINED,
+		SET_OUTLINE,
+        SET_FILL,
+		COLOR_RESET
+	};
+	static int type(const std::string &name){
+		if(name == "oc"){
+			return SET_OUTLINE;
+		}else
+		if(name == "fc"){
+			return SET_FILL;
+		}else        
+		if(name == "cr"){
+			return COLOR_RESET;
+		}else{
+			return UNDEFINED;
+		}
+	}
+}
 
+static RT_Token fetchToken(int stPos, const std::string &input){
+	std::string found = "";
+	RT_Token token;
+	for(int i = stPos; i < input.size(); ++i){
+		if(i < input.size()-1 && input[i] == '$' && input[i+1] == '['){
+			int end = input.find("]", i+1);
+			if(end != std::string::npos){
+				found = input.substr(i+2, end-i-2);
+				token.position = end;
+				break;
+			}
+		}
+	}
+	if(found.size() > 0){
+		int colon = found.find(":");
+		if(colon != std::string::npos){
+			std::string first = found.substr(0, colon);
+			std::string value = found.substr(colon+1, found.length()-colon);
+			token.type = RT_TokenType::type(first);
+			token.value = value;
+		}else{
+			token.type = RT_TokenType::type(found);
+		}
+		token.found = true;
+	}
+	return token;
+}
 
 // We'll do font rendering here for now, but ideally should be moved to Font.cpp
 static void __RENDER_TEXT(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
     auto *obj = static_cast<CR::Gfx::RenderableText*>(renobj);
 
     auto origin = CR::Vec2<float>(0.0f);
-    // auto &angle = obj->angle;
-    auto angle = 0.0f;
-    // auto position = CR::Vec2<float>(0);
-    auto size = CR::Vec2<float>(512);
 
+    // Treating ASCII for now
+    auto fontMWidth = obj->rsc->glyphMap[obj->rsc->ASCIITrans['A']].bmpSize.x;
+    auto fontMHeight = obj->rsc->glyphMap[obj->rsc->ASCIITrans['A']].bmpSize.y;
     
+    CR::Vec2<float> cursor(obj->position.x, obj->position.y);
+    
+    // PARSE TEXT
+    auto wordList = CR::String::split(obj->text, ' '); 
+	std::vector<RT_Word> words;
+	float totalWidth = 0;
+	float vertAdv = obj->rsc->vertAdvance;
+	float horAdv = fontMWidth;	
+	for(int i = 0; i < wordList.size(); ++i){
+		RT_Word word;
+		word.str = wordList[i];
+		unsigned w = 0, h = 0;
+		for(unsigned j = 0; j < wordList[i].size(); j++){
+			char current =  wordList[i][j];
+            // ignore tokens for word's width
+            if(j < word.str.size()-1 && word.str[j] == '$' && word.str[j+1] == '['){
+				auto token = fetchToken(j, word.str);
+				if(token.found){
+					j = token.position;
+					continue;                    
+                }
+            }
+            auto &glyph = obj->rsc->glyphMap[obj->rsc->ASCIITrans[current]]; 
+			w += glyph.size.x + (obj->horBearingBonus > 0 ? obj->horBearingBonus : 0);
+			h = std::max(fontMHeight, h);
+		}
+		totalWidth += w;
+		word.width = w;
+		word.height = h;
+		words.push_back(word);
+	}    
+    
+	// add spaces to totalWidth
+	for(int i = 0; i < wordList.size()-1; ++i){
+		totalWidth += fontMWidth;
+	}
+
+	auto resetAlign = [&](float totalWidth){
+		switch(obj->alignment){
+			case CR::Gfx::TextAlignType::RIGHT:
+				cursor.x = obj->position.x + obj->spaceWidth - totalWidth;
+			break;
+			case CR::Gfx::TextAlignType::CENTER:
+				cursor.x = obj->position.x + obj->spaceWidth*0.5f - totalWidth*0.5f;
+			break;
+			case CR::Gfx::TextAlignType::LEFT:
+			default:
+				cursor.x = obj->position.x;
+			break;									
+		}
+	};
+
+	if(obj->spaceWidth > 0){
+		resetAlign(totalWidth);
+	}
+
     static_cast<CR::Gfx::ShaderAttrMat4*>(transGText.shAttrsValVec[2])->mat = rl->projection;
+
+    auto applyOutlineColor = [&](const CR::Color &c){
+        static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[0] = c.r;
+        static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[1] = c.g;
+        static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[2] = c.b;
+        CR::Gfx::applyShaderPartial(transGText.shAttrsLocVec[3], transGText.shAttrsValVec[3]);    
+    };
+
+    auto applyFillColor = [&](const CR::Color &c){
+        static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[0] = c.r;
+        static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[1] = c.g;
+        static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[2] = c.b;
+        CR::Gfx::applyShaderPartial(transGText.shAttrsLocVec[4], transGText.shAttrsValVec[4]);    
+    };    
     
+    // Setup rendering
     static_cast<CR::Gfx::ShaderAttrMat4*>(transGText.shAttrsValVec[1])->mat = CR::MAT4Identity
         .translate(CR::Vec3<float>(0.0f))
         .rotate(0.0f, CR::Vec3<float>(0.0f))
         .scale(CR::Vec3<float>(0.0f));
-
-    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[0] = obj->outline.r;
-    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[1] = obj->outline.g;
-    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[3])->color[2] = obj->outline.b;
-
-    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[0] = obj->fill.r;
-    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[1] = obj->fill.g;
-    static_cast<CR::Gfx::ShaderAttrColor*>(transGText.shAttrsValVec[4])->color[2] = obj->fill.b;
-
     CR::Gfx::applyShader(transGText.shader->getRsc()->shaderId, transGText.shAttrsLocVec, transGText.shAttrsValVec);
+    applyOutlineColor(obj->outline);
+    applyFillColor(obj->fill);    
 
     glActiveTexture(GL_TEXTURE0); INC_OPGL_DEBUG;
     glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA); INC_OPGL_DEBUG;
     glBindTexture(GL_TEXTURE_2D, obj->rsc->atlas); INC_OPGL_DEBUG;
-    CR::Vec2<float> cursor(obj->position.x, obj->position.y);
     
-    auto fontMWidth = obj->rsc->glyphMap['A'].bmpSize.x;
-    auto fontMHeight = obj->rsc->glyphMap['A'].bmpSize.y;
-    
-    for(unsigned i = 0; i < obj->text.length(); ++i){
-        char current =  obj->text[i];
-        
-        // Handle Special Tokens
-        switch(current){
-            case ' ':{
-                cursor.x += fontMWidth + (obj->horBearingBonus > 0 ? obj->horBearingBonus : 0);
+    auto render = [&](const std::string &word, CR::Vec2<float> &cursor, CR::Vec2<float> &origin){
+		for(unsigned j = 0; j < word.size(); j++){
+			char current =  word[j];
+			if(j < word.size()-1 && word[j] == '$' && word[j+1] == '['){
+				auto token = fetchToken(j, word);
+				if(token.found){
+					// process
+					if(token.type != RT_TokenType::UNDEFINED){
+						switch(token.type){
+							case RT_TokenType::SET_FILL: {
+								auto color = CR::Color(token.value);
+                                applyFillColor(color);
+							} break;
+							case RT_TokenType::SET_OUTLINE: {
+								auto color = CR::Color(token.value);
+								applyOutlineColor(color);
+							} break;                            
+							case RT_TokenType::COLOR_RESET: {
+								applyOutlineColor(obj->outline);
+                                applyFillColor(obj->fill);
+							} break;
+						}
+					}
+					j = token.position;
+					continue;
+				}
+			}
+            // Handle Special characters
+            if(current == ' '){
+                cursor.x += fontMWidth;
                 continue;
-            };
-            case '\t':{
-                cursor.x += fontMWidth * 4;
-                continue;
-            };      
-            case '\n':{
-                cursor.y += fontMHeight;
-                continue;
-            };   
+            }
+            auto &glyph = obj->rsc->glyphMap[obj->rsc->ASCIITrans[current]];
+
+            auto xxi = glyph.index.x;
+            auto yyi = glyph.index.y;
+            auto wwi = xxi + glyph.coors.x;
+            auto hhi = yyi + glyph.coors.y;            
+
+            auto posX = static_cast<float>(cursor.x) + glyph.orig.x;
+            auto posY = static_cast<float>(cursor.y) + fontMHeight - glyph.size.y;
+
+            auto position = CR::Vec2<float>(posX, posY);
+            auto size = CR::Vec2<float>(glyph.bmpSize.x, glyph.bmpSize.y);
+
+            static_cast<CR::Gfx::ShaderAttrMat4*>(transGText.shAttrsValVec[1])->mat = CR::MAT4Identity
+                .translate(CR::Vec3<float>(CR::Math::round(position.x), CR::Math::round(position.y), 0.0f))
+                .scale(CR::Vec3<float>(size.x, size.y, 1.0f));
+
+            CR::Gfx::applyShaderPartial(transGText.shAttrsLocVec[1], transGText.shAttrsValVec[1]);            
+            CR::Gfx::updateMesh(mGFontGlyph, CR::Gfx::VertexRole::TEXCOORD, {
+                xxi, hhi,
+                wwi, yyi,
+                xxi, yyi, 
+            
+                xxi, hhi,
+                wwi, hhi,
+                wwi, yyi             
+            });
+            glBindVertexArray(mGFontGlyph.vao); INC_OPGL_DEBUG;
+            glDrawArrays(GL_TRIANGLES, 0, 6); INC_OPGL_DEBUG;      
+            cursor.x += glyph.size.x + (obj->horBearingBonus > 0 ? obj->horBearingBonus : 0);
         }
+    };
 
-        auto &glyph = obj->rsc->glyphMap[current];
-
-        auto xxi = glyph.index.x;
-        auto yyi = glyph.index.y;
-        auto wwi = xxi + glyph.coors.x;
-        auto hhi = yyi + glyph.coors.y;
-
-        auto posX = static_cast<float>(cursor.x) + glyph.orig.x;
-        auto posY = static_cast<float>(cursor.y) + fontMHeight - glyph.size.y;
-
-
-        auto position = CR::Vec2<float>(posX, posY);
-        auto size = CR::Vec2<float>(glyph.bmpSize.x, glyph.bmpSize.y);
-
-        static_cast<CR::Gfx::ShaderAttrMat4*>(transGText.shAttrsValVec[1])->mat = CR::MAT4Identity
-            .translate(CR::Vec3<float>(position.x, position.y, 0.0f))
-            .scale(CR::Vec3<float>(size.x, size.y, 1.0f));
-
-        // Glyph position in atlas
-        CR::Gfx::applyShaderPartial(transGText.shAttrsLocVec[1], transGText.shAttrsValVec[1]);            
-        CR::Gfx::updateMesh(mGFontGlyph, CR::Gfx::VertexRole::TEXCOORD, {
-            xxi, hhi,
-            wwi, yyi,
-            xxi, yyi, 
-        
-            xxi, hhi,
-            wwi, hhi,
-            wwi, yyi             
-        });
-
-        glBindVertexArray(mGFontGlyph.vao); INC_OPGL_DEBUG;
-        glDrawArrays(GL_TRIANGLES, 0, 6); INC_OPGL_DEBUG;      
-        cursor.x += glyph.size.x;
-    }
-
+    if(obj->autobreak){
+		std::vector<std::vector<int>> lines;
+		std::vector<int> cl;
+		std::vector<float> lineW;
+		float longestLine = 0;
+		float c = 0;
+		for(int i = 0; i < words.size(); ++i){
+			if(c + horAdv + words[i].width > obj->spaceWidth){
+				lineW.push_back(c);
+				longestLine = std::max(c, longestLine);
+				c = 0;
+				lines.push_back(cl);
+				cl.clear();
+			}
+			cl.push_back(i);
+			c += words[i].width + horAdv;
+		}
+		longestLine = std::max(c, longestLine);
+		lines.push_back(cl);
+		lineW.push_back(c);
+		longestLine = std::max(obj->spaceWidth, longestLine);
+		CR::Vec2<float> origPos((int)(origin.x*longestLine), (int)(origin.y*((float)lines.size()*vertAdv)));
+		for(int i = 0; i < lines.size(); ++i){
+			resetAlign(lineW[i]);
+			for(int j = 0; j < lines[i].size(); ++j){
+				auto &word = words[lines[i][j]];
+				render(word.str, cursor, origPos);
+				if(j < lines[i].size()-1)render(" ", cursor, origPos);
+			}			
+			cursor.y += vertAdv;
+		}        
+	}else{
+    // Non-autobreak ignores alignment
+		CR::Vec2<float> orig(origin.x*totalWidth, origin.y*vertAdv);
+		for(int i = 0; i < words.size(); ++i){
+			auto &word = words[i];
+			bool nl = false;
+			if(obj->spaceWidth > 0 && ((cursor.x + word.width) > (cursor.x + obj->spaceWidth))){
+				cursor.y += vertAdv;
+                cursor.x = obj->position.x;
+				nl = true;
+			}
+			render(word.str, cursor, orig);
+			if(i < words.size()-1)
+                render(" ", cursor, orig);			
+		}
+	}
+    
     glBindVertexArray(0); INC_OPGL_DEBUG;       
     glUseProgram(0); INC_OPGL_DEBUG;   
-
+    
     return;
 }
 
