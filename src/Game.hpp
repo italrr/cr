@@ -100,16 +100,85 @@
             }
         }
 
-        namespace PlayerAction {
-
+        namespace Direction {
+            enum Direction : unsigned {
+                SOUTH = 0,
+                SOUTH_WEST,
+                WEST,
+                NORTH_WEST,
+                NORTH,
+                NORTH_EAST,
+                EAST,
+                SOUTH_EAST
+            };
+            static std::string inline str(unsigned f){
+                switch(f){
+                    case Direction::SOUTH: {
+                        return "SOUTH";
+                    } break;
+                    case Direction::SOUTH_WEST: {
+                        return "SOUTH_WEST";
+                    } break;
+                    case Direction::WEST: {
+                        return "WEST";
+                    } break;
+                    case Direction::NORTH_WEST: {
+                        return "NORTH_WEST";
+                    } break;
+                    case Direction::NORTH: {
+                        return "NORTH";
+                    } break;
+                    case Direction::NORTH_EAST: {
+                        return "NORTH_EAST";
+                    } break;
+                    case Direction::EAST: {
+                        return "EAST";
+                    } break;     
+                    case Direction::SOUTH_EAST: {
+                        return "SOUTH_EAST";
+                    } break;    
+                    default: {
+                        return "[NO_FACE]";
+                    }                                                                            
+                }
+            }
+            static unsigned inline faceFromAngle(float deg){
+                if(deg <= 22.5 && deg > 337.5 && deg >= 0){
+                    return Direction::EAST;
+                }else
+                if(deg > 22.5 && deg <= 67.5){
+                    return Direction::NORTH_EAST;
+                }else
+                if(deg > 67.5 && deg <= 112.5){
+                    return Direction::NORTH;
+                }else
+                if(deg > 112.5 && deg <= 157.5){
+                    return Direction::NORTH_WEST;
+                }else
+                if(deg > 157.5 && deg <= 202.5){
+                    return Direction::WEST;
+                }else
+                if(deg > 202.5 && deg <= 247.5){
+                    return Direction::SOUTH_WEST;
+                }else
+                if(deg > 247.5 && deg <= 292.5){
+                    return Direction::SOUTH;
+                }else
+                if(deg > 292.5 && deg <= 337.5){
+                    return Direction::SOUTH_EAST;
+                }else{
+                    // DEFAULT
+                    return Direction::SOUTH;
+                }                    
+            }
         }
-
         
         struct GridLoc {
-            T_WORLDPOS index; // tile
+            T_WORLDPOS index; // x+y*h
             T_WORLDPOS level; // height/altitude
-            CR::Vec2<T_WORLDPOS> position; 
-            CR::Vec3<float> lerpPos;
+            CR::Vec2<T_WORLDPOS> coords; //x,y
+            CR::Vec3<float> currentPos; //real 3d position
+            CR::Vec3<float> nextPos;
             GridLoc(T_WORLDPOS index, T_WORLDPOS level){
                 this->index = index;
                 this->level = level;
@@ -117,8 +186,9 @@
             GridLoc(){
                 index = 0;
                 level = 0;
-                position.set(0);
-                lerpPos.set(0);
+                coords.set(0);
+                currentPos.set(0.0f);
+                nextPos.set(0.0f);
             }
         };
 

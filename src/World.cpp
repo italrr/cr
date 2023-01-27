@@ -85,6 +85,24 @@ bool CR::World::apply(const std::shared_ptr<CR::Audit> &audit){
             OBJECT  
         */
         case CR::AuditType::OBJECT_CREATED: {
+            CR::T_OBJID objId = audit->affEnt[0];
+            T_OBJSIG objSig;
+            audit->data.read(&objSig, sizeof(T_OBJSIG));
+
+            switch(objSig){
+                case ObjSigType::ENTITY: {
+
+                } break;
+                case ObjSigType::PROP: {
+
+                } break;     
+                case ObjSigType::TRIGGER: {
+
+                } break;  
+                case ObjSigType::INTERACTABLE: {
+
+                } break;                                            
+            }
 
         } break;
         case CR::AuditType::OBJECT_DESTROYED: {

@@ -10,79 +10,6 @@
 
     namespace CR {
         
-        namespace CharFace {
-            enum CharFace : unsigned {
-                SOUTH = 0,
-                SOUTH_WEST,
-                WEST,
-                NORTH_WEST,
-                NORTH,
-                NORTH_EAST,
-                EAST,
-                SOUTH_EAST
-            };
-            static std::string inline str(unsigned f){
-                switch(f){
-                    case CharFace::SOUTH: {
-                        return "SOUTH";
-                    } break;
-                    case CharFace::SOUTH_WEST: {
-                        return "SOUTH_WEST";
-                    } break;
-                    case CharFace::WEST: {
-                        return "WEST";
-                    } break;
-                    case CharFace::NORTH_WEST: {
-                        return "NORTH_WEST";
-                    } break;
-                    case CharFace::NORTH: {
-                        return "NORTH";
-                    } break;
-                    case CharFace::NORTH_EAST: {
-                        return "NORTH_EAST";
-                    } break;
-                    case CharFace::EAST: {
-                        return "EAST";
-                    } break;     
-                    case CharFace::SOUTH_EAST: {
-                        return "SOUTH_EAST";
-                    } break;    
-                    default: {
-                        return "[NO_FACE]";
-                    }                                                                            
-                }
-            }
-            static unsigned inline faceFromAngle(float deg){
-                if(deg <= 22.5 && deg > 337.5 && deg >= 0){
-                    return CharFace::EAST;
-                }else
-                if(deg > 22.5 && deg <= 67.5){
-                    return CharFace::NORTH_EAST;
-                }else
-                if(deg > 67.5 && deg <= 112.5){
-                    return CharFace::NORTH;
-                }else
-                if(deg > 112.5 && deg <= 157.5){
-                    return CharFace::NORTH_WEST;
-                }else
-                if(deg > 157.5 && deg <= 202.5){
-                    return CharFace::WEST;
-                }else
-                if(deg > 202.5 && deg <= 247.5){
-                    return CharFace::SOUTH_WEST;
-                }else
-                if(deg > 247.5 && deg <= 292.5){
-                    return CharFace::SOUTH;
-                }else
-                if(deg > 292.5 && deg <= 337.5){
-                    return CharFace::SOUTH_EAST;
-                }else{
-                    // DEFAULT
-                    return CharFace::SOUTH;
-                }                    
-            }
-        }
-
         namespace AnimType {
             enum AnimType : uint8 {
                 STAND_SOUTH = 0,
@@ -211,7 +138,20 @@
         };
 
 
+        namespace EntityControlType {
+            enum EntityControlType : T_GENERICTYPE {
+                IDLE,
+                PLAYER,
+                AI
+            };
+        }
+
         struct Entity : CR::Object {
+
+            CR::T_GENERICTYPE controlType;
+            CR::T_OBJID controllerId;
+
+            Entity();
             
         };
 
