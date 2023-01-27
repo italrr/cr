@@ -14,7 +14,7 @@
 
             std::vector<std::shared_ptr<Audit>> auditQueue;
             std::mutex alMutex;
-            
+            uint64 startTime;
             uint32 lastClientId;
 
             CR::T_TIME lastWorldTick;

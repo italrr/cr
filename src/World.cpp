@@ -40,17 +40,6 @@ void CR::World::start(){
         this->auditBacklog.clear();
     }
     CR::log("World[%i] started simulation [%s]\n", this->wId, puppetMode ? "PUPPET" : "REAL");    
-
-    // imitate start up script  
-    if(!puppetMode){
-        // CR::spawn([&](CR::Job &ctx){
-        //     // auto job = CR::findJob({"TEMPORARY_SERVER"}, 1);
-        //     // job->addBacklog([&](CR::Job &ctx){
-        //     //     // add player
-        //     //     // auto paudit = createEntity("PLAYER", CR::EntityType::PLAYER, CR::GridLoc(0, 0));
-        //     // });
-        // }, false, false, false, 1000);
-    }
 }
 
 void CR::World::reqEnd(){

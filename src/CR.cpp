@@ -33,13 +33,23 @@ int main(int argc, char* argv[]){
     game = CR::Gfx::getRenderLayer("world", true);
 
     CR::Server server;
-
     CR::JobSpec svSpec(true, true, false, {"TEMPORARY_SERVER"});
+    server.listen("Social Room", 24, CR::NetworkDefaultPort);    
     CR::spawn([&](CR::Job &Ctx){
-        server.listen("Social Room", 24, CR::NetworkDefaultPort);
-    }, false, false, false)->hook([&](CR::Job &ctx){
         server.step();
-    }, true, true, false);
+    }, svSpec); 
+
+
+    // imitate start up script  
+    // if(!puppetMode){
+    //     CR::spawn([&](CR::Job &ctx){
+    //         auto job = CR::findJob({"TEMPORARY_SERVER"}, 1);
+    //         // job->addBacklog([&](CR::Job &ctx){
+    //         //     // add player
+    //         //     // auto paudit = createEntity("PLAYER", CR::EntityType::PLAYER, CR::GridLoc(0, 0));
+    //         // });
+    //     }, false, false, false, 1000);
+    // }    
 
     CR::Client client;
     CR::spawn([&](CR::Job &Ctx){

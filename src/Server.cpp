@@ -290,7 +290,17 @@ static void SV_PROCESS_PACKET(CR::Server *sv, CR::Packet &packet, bool ignoreOrd
     }   
 }
 
+static bool ssTrig = false;
+
 void CR::Server::step(){
+    if(!ssTrig && CR::ticks()-startTime > 2000){
+        auto entId = this->world->createEntity("PLAYER", CR::EntityType::PLAYER, CR::GridLoc(0, 0));    
+        auto audit = this->world->createAudit(CR::AuditType::PLAYER_GRANT_ENTITY_CONTROL);
+        audit->affEnt.push_back(entId);
+        audit->data.write(&this->clients.begin()->second->clientId, sizeof(CR::T_GENERICID));
+        this->world->auditBacklog.push_back(audit);
+        ssTrig = true;
+    }
     // update world
     if(world->state != CR::WorldState::IDLE && world->state != CR::WorldState::STOPPED){
         if(CR::ticks()-lastWorldTick >= world->tickRate){
@@ -366,6 +376,8 @@ bool CR::Server::listen(const std::string &name, uint8 maxClients, uint16 port){
     CR::log("[SERVER] Started server. Listening at %i | Max Players %i\n", port, maxClients);
     this->netState = CR::NetHandleState::LISTENING;
     CR::log("[SERVER] Waiting for clients...\n");
+
+    this->startTime = CR::ticks();
     return true;
 }
 
