@@ -7,6 +7,52 @@
     namespace CR {
         namespace Gfx {
 
+
+            namespace RT {
+                struct Word {
+                    std::string str;
+                    float width;
+                    float height;
+                    float dx;
+                    float dy;    
+                };
+
+                struct Token {
+                    int type;
+                    CR::Color color;
+                    int position;
+                    std::string value;
+                    bool found;
+                    Token(){
+                        found = false;
+                    }
+                };
+
+                namespace TokenType {
+                    enum RT_TokenType : int {
+                        UNDEFINED,
+                        SET_OUTLINE,
+                        SET_FILL,
+                        COLOR_RESET
+                    };
+                    static int type(const std::string &name){
+                        if(name == "oc"){
+                            return SET_OUTLINE;
+                        }else
+                        if(name == "fc"){
+                            return SET_FILL;
+                        }else        
+                        if(name == "cr"){
+                            return COLOR_RESET;
+                        }else{
+                            return UNDEFINED;
+                        }
+                    }
+                }
+
+                CR::Gfx::RT::Token fetchToken(int stPos, const std::string &input);               
+            }
+
             namespace FontEncondig {
                 enum FontEnconding : unsigned {
                     ASCII,
@@ -137,8 +183,7 @@
                 Font();                
                 bool load(const std::string &path, const CR::Gfx::FontStyle &style = CR::Gfx::FontStyle(16, CR::Gfx::FontEncondig::ASCII, 1.0f, FontStyleType::SOLID));
                 void unload();
-                float getWidth(const std::string &str);
-                float getHeight();
+                CR::Vec2<float> getDimensions(const std::string &str, const CR::Gfx::TextRenderOpts &opts = TextRenderOpts());
                 CR::Gfx::FontResource *getRsc(){
                     return static_cast<CR::Gfx::FontResource*>(rsc.get());
                 }                

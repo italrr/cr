@@ -815,74 +815,7 @@ CR::Gfx::Renderable *CR::Gfx::Draw::MeshBatch(std::vector<CR::Gfx::MeshData*> *m
 
 
 
-struct RT_Word {
-	std::string str;
-	float width;
-	float height;
-	float dx;
-	float dy;    
-};
 
-struct RT_Token {
-	int type;
-	CR::Color color;
-	int position;
-	std::string value;
-	bool found;
-	RT_Token(){
-		found = false;
-	}
-};
-
-namespace RT_TokenType {
-	enum RT_TokenType : int {
-		UNDEFINED,
-		SET_OUTLINE,
-        SET_FILL,
-		COLOR_RESET
-	};
-	static int type(const std::string &name){
-		if(name == "oc"){
-			return SET_OUTLINE;
-		}else
-		if(name == "fc"){
-			return SET_FILL;
-		}else        
-		if(name == "cr"){
-			return COLOR_RESET;
-		}else{
-			return UNDEFINED;
-		}
-	}
-}
-
-static RT_Token fetchToken(int stPos, const std::string &input){
-	std::string found = "";
-	RT_Token token;
-	for(int i = stPos; i < input.size(); ++i){
-		if(i < input.size()-1 && input[i] == '$' && input[i+1] == '['){
-			int end = input.find("]", i+1);
-			if(end != std::string::npos){
-				found = input.substr(i+2, end-i-2);
-				token.position = end;
-				break;
-			}
-		}
-	}
-	if(found.size() > 0){
-		int colon = found.find(":");
-		if(colon != std::string::npos){
-			std::string first = found.substr(0, colon);
-			std::string value = found.substr(colon+1, found.length()-colon);
-			token.type = RT_TokenType::type(first);
-			token.value = value;
-		}else{
-			token.type = RT_TokenType::type(found);
-		}
-		token.found = true;
-	}
-	return token;
-}
 
 // We'll do font rendering here for now, but ideally should be moved to Font.cpp
 static void __RENDER_TEXT(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
@@ -898,19 +831,19 @@ static void __RENDER_TEXT(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl)
     
     // PARSE TEXT
     auto wordList = CR::String::split(obj->text, ' '); 
-	std::vector<RT_Word> words;
+	std::vector<CR::Gfx::RT::Word> words;
 	float totalWidth = 0;
 	float vertAdv = obj->rsc->vertAdvance;
 	float horAdv = fontMWidth;	
 	for(int i = 0; i < wordList.size(); ++i){
-		RT_Word word;
+		CR::Gfx::RT::Word word;
 		word.str = wordList[i];
 		unsigned w = 0, h = 0;
 		for(unsigned j = 0; j < wordList[i].size(); j++){
 			char current =  wordList[i][j];
             // ignore tokens for word's width
             if(j < word.str.size()-1 && word.str[j] == '$' && word.str[j+1] == '['){
-				auto token = fetchToken(j, word.str);
+				auto token = CR::Gfx::RT::fetchToken(j, word.str);
 				if(token.found){
 					j = token.position;
 					continue;                    
@@ -983,20 +916,20 @@ static void __RENDER_TEXT(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl)
 		for(unsigned j = 0; j < word.size(); j++){
 			char current =  word[j];
 			if(j < word.size()-1 && word[j] == '$' && word[j+1] == '['){
-				auto token = fetchToken(j, word);
+				auto token = CR::Gfx::RT::fetchToken(j, word);
 				if(token.found){
 					// process
-					if(token.type != RT_TokenType::UNDEFINED){
+					if(token.type != CR::Gfx::RT::TokenType::UNDEFINED){
 						switch(token.type){
-							case RT_TokenType::SET_FILL: {
+							case CR::Gfx::RT::TokenType::SET_FILL: {
 								auto color = CR::Color(token.value);
                                 applyFillColor(color);
 							} break;
-							case RT_TokenType::SET_OUTLINE: {
+							case CR::Gfx::RT::TokenType::SET_OUTLINE: {
 								auto color = CR::Color(token.value);
 								applyOutlineColor(color);
 							} break;                            
-							case RT_TokenType::COLOR_RESET: {
+							case CR::Gfx::RT::TokenType::COLOR_RESET: {
 								applyOutlineColor(obj->outline);
                                 applyFillColor(obj->fill);
 							} break;

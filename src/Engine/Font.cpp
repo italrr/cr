@@ -13,6 +13,34 @@
 #define ENCODING_ASCII_RANGE_MAX 128
 
 
+CR::Gfx::RT::Token CR::Gfx::RT::fetchToken(int stPos, const std::string &input){
+    std::string found = "";
+    CR::Gfx::RT::Token token;
+    for(int i = stPos; i < input.size(); ++i){
+        if(i < input.size()-1 && input[i] == '$' && input[i+1] == '['){
+            int end = input.find("]", i+1);
+            if(end != std::string::npos){
+                found = input.substr(i+2, end-i-2);
+                token.position = end;
+                break;
+            }
+        }
+    }
+    if(found.size() > 0){
+        int colon = found.find(":");
+        if(colon != std::string::npos){
+            std::string first = found.substr(0, colon);
+            std::string value = found.substr(colon+1, found.length()-colon);
+            token.type = CR::Gfx::RT::TokenType::type(first);
+            token.value = value;
+        }else{
+            token.type = CR::Gfx::RT::TokenType::type(found);
+        }
+        token.found = true;
+    }
+    return token;
+} 
+
 
 struct SingleGlyph {
 	int w, h;
@@ -323,6 +351,51 @@ bool CR::Gfx::Font::load(const std::string &path, const CR::Gfx::FontStyle &styl
     FT_Done_Face(face);
     FT_Done_FreeType(library);
     return true;
+}
+
+/*
+    getWidth only works well when spaceWidth = 0 and autobreak = false
+*/
+CR::Vec2<float> CR::Gfx::Font::getDimensions(const std::string &text, const CR::Gfx::TextRenderOpts &opts){
+    auto obj = this->getRsc();
+    if(!obj){
+        return CR::Vec2<float>(0.0f);
+    }
+    // Treating ASCII for now
+    auto fontMWidth = obj->glyphMap[obj->ASCIITrans['A']].bmpSize.x;
+    auto fontMHeight = obj->glyphMap[obj->ASCIITrans['A']].bmpSize.y;
+
+    auto wordList = CR::String::split(text, ' '); 
+	std::vector<CR::Gfx::RT::Word> words;
+	float totalWidth = 0;
+    float maxHeight = 0;
+	float vertAdv = obj->vertAdvance;
+	float horAdv = fontMWidth;	
+	for(int i = 0; i < wordList.size(); ++i){
+		CR::Gfx::RT::Word word;
+		word.str = wordList[i];
+		unsigned w = 0, h = 0;
+		for(unsigned j = 0; j < wordList[i].size(); j++){
+			char current =  wordList[i][j];
+            // ignore tokens for word's width
+            if(j < word.str.size()-1 && word.str[j] == '$' && word.str[j+1] == '['){
+				auto token = CR::Gfx::RT::fetchToken(j, word.str);
+				if(token.found){
+					j = token.position;
+					continue;                    
+                }
+            }
+            auto &glyph = obj->glyphMap[obj->ASCIITrans[current]]; 
+			w += glyph.size.x + (opts.horBearingBonus > 0 ? opts.horBearingBonus : 0);
+			h = std::max(fontMHeight, h);
+		}
+		totalWidth += w;
+        maxHeight = std::max(maxHeight, (float)h);
+		word.width = w;
+		word.height = h;
+		words.push_back(word);
+	}   
+    return CR::Vec2<float>(totalWidth, maxHeight);
 }
 
 void CR::Gfx::Font::unload(){
