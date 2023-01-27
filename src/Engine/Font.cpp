@@ -399,5 +399,5 @@ CR::Vec2<float> CR::Gfx::Font::getDimensions(const std::string &text, const CR::
 }
 
 void CR::Gfx::Font::unload(){
-
+    this->rsc->unload();
 }

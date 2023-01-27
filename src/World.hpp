@@ -47,7 +47,7 @@
             std::shared_ptr<CR::Object> get(CR::T_OBJID id);
             std::shared_ptr<Audit> createAudit(T_AUDIT type);
             std::shared_ptr<Audit> createAudit(const std::string &msg);
-            CR::T_OBJID add(const std::shared_ptr<CR::Object> &obj);
+            CR::T_OBJID createEntity(const std::string &name, T_ENTTYPE type, const CR::GridLoc &loc);
             bool destroy(T_OBJID id);
             void render(const CR::Vec2<unsigned> &offset);
 

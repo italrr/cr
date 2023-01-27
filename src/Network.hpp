@@ -306,6 +306,11 @@
                 T_AUDITORD LAST APPLIED FRAME
                 T_AUDITORD LAST AUDIT APPLIED
             */
+            SIMULATION_CLIENT_ACTION,
+            /*
+                
+            */
+
 
 
 

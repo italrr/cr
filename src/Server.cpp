@@ -229,6 +229,7 @@ static void SV_PROCESS_PACKET(CR::Server *sv, CR::Packet &packet, bool ignoreOrd
             packet.read(nickname);
             packet.read(password);
             packet.read(token);
+            // TODO: some validation here
             // Add client
             auto nclient = sv->addClient(++sv->lastClientId, nickname, sender);
             CR::log("[SERVER] Accepted client %s as Client ID %i | Nickname '%s'\n", sender.str().c_str(), nclient->clientId, nickname.c_str());
@@ -249,7 +250,7 @@ static void SV_PROCESS_PACKET(CR::Server *sv, CR::Packet &packet, bool ignoreOrd
         */             
         case CR::PacketType::CLIENT_DISCONNECT: {
             if(!client || !isLast){
-                if(!client) CR::log("[SERVER] Fatal error: Client %s disconnected by does not exist in the server\n", sender.str().c_str());
+                if(!client) CR::log("[SERVER] Fatal error: Disconnected Client '%s' does not exist in the server\n", sender.str().c_str());
                 break;
             }
             CR::T_GENERICID clientId;

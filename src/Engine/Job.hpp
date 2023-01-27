@@ -14,6 +14,7 @@
             bool looped;
             bool lowLatency;
             bool threaded;
+            uint64 delayStart;
             std::shared_ptr<CR::SmallPacket> payload;
             std::vector<std::string> tags;
             std::shared_ptr<CR::Result> result;
@@ -22,6 +23,7 @@
                 this->lowLatency = false;
                 this->threaded = true;
                 this->payload = std::make_shared<CR::SmallPacket>(CR::SmallPacket());
+                this->delayStart = 0;
             }
             JobSpec(bool threaded, bool looped, bool lowLatency, const std::vector<std::string> &tags = {}){
                 this->threaded = threaded;
@@ -29,6 +31,7 @@
                 this->lowLatency = lowLatency;
                 this->tags = tags;
                 this->payload = std::make_shared<CR::SmallPacket>(CR::SmallPacket());
+                this->delayStart = 0;
             }
             bool hasTag(const std::string &tag){
                 for(int i = 0; i < this->tags.size(); ++i){
@@ -76,6 +79,7 @@
             int id;
             uint8 status;
             uint64 initTime;
+            uint64 createdTime;
             std::vector<std::shared_ptr<CR::Result>> listeners;
             bool succDeps;
             CR::JobSpec spec;
@@ -89,8 +93,8 @@
             std::shared_ptr<CR::PiggybackJob> addBacklog(const std::function<void(CR::Job &ctx)> &lambda);   
             std::shared_ptr<CR::PiggybackJob> setOnEnd(const std::function<void(CR::Job &ctx)> &onEnd);     
             std::shared_ptr<CR::PiggybackJob> setOnStart(const std::function<void(CR::Job &ctx)> &onStart);
-            std::shared_ptr<CR::Job> hook(std::function<void(CR::Job &ctx)> funct, bool threaded);
-            std::shared_ptr<CR::Job> hook(std::function<void(CR::Job &ctx)> funct, bool threaded, bool looped, bool lowLatency);
+            std::shared_ptr<CR::Job> hook(std::function<void(CR::Job &ctx)> funct, bool threaded, uint64 delayStart = 0);
+            std::shared_ptr<CR::Job> hook(std::function<void(CR::Job &ctx)> funct, bool threaded, bool looped, bool lowLatency, uint64 delayStart = 0);
             std::shared_ptr<CR::Job> hook(std::function<void(CR::Job &ctx)> funct, const CR::JobSpec &spec);
         };
 
@@ -98,11 +102,11 @@
         std::shared_ptr<CR::Job> findJob(const std::vector<std::string> &tags, int minmatch = 1);
         std::shared_ptr<CR::Job> findJob(int id);
 
-        std::shared_ptr<CR::Job> spawn(std::function<void(CR::Job &ctx)> funct, bool threaded);
-        std::shared_ptr<CR::Job> spawn(std::function<void(CR::Job &ctx)> funct, bool threaded, bool looped, bool lowLatency);
+        std::shared_ptr<CR::Job> spawn(std::function<void(CR::Job &ctx)> funct, bool threaded, uint64 delayStart = 0);
+        std::shared_ptr<CR::Job> spawn(std::function<void(CR::Job &ctx)> funct, bool threaded, bool looped, bool lowLatency, uint64 delayStart = 0);
         std::shared_ptr<CR::Job> spawn(std::function<void(CR::Job &ctx)> funct, const CR::JobSpec &spec);
 
-        std::shared_ptr<CR::Job> expect(const std::vector<std::shared_ptr<CR::Result>> &results, std::function<void(CR::Job &ctx)> funct, bool lowLatency = true);
+        std::shared_ptr<CR::Job> expect(const std::vector<std::shared_ptr<CR::Result>> &results, std::function<void(CR::Job &ctx)> funct, bool lowLatency = true, uint64 delayStart = 0);
     }
     
 

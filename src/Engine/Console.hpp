@@ -2,12 +2,13 @@
     #define CR_FONT_HPP
 
     #include "Types.hpp"
-    #include "Resource.hpp"
+    #include "Graphics.hpp"
+    #include "Font.hpp"
 
     namespace CR {
         
         namespace Console {
-            
+
         }
 
     }

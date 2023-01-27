@@ -29,7 +29,7 @@ static std::map<int, _Job> pool =  {};
 
 static void *thread_job(void *ctx){
     _Job *job = static_cast<_Job*>(ctx);
-    while(job->handle->status == CR::JobStatus::Waiting){
+    while( job->handle->status == CR::JobStatus::Waiting){
         CR::sleep(16);
     }
     if(job->handle->status != CR::JobStatus::Running){
@@ -39,7 +39,7 @@ static void *thread_job(void *ctx){
     auto &spec = job->handle->spec;
     // std::vector<std::shared_ptr<CR::PiggybackJob>> backlog;
     // run onStart
-    job->handle->initTime = CR::ticks();
+    job->handle->initTime = CR::ticks();    
     std::unique_lock<std::mutex> lkstart(job->handle->accesMutex);
     job->handle->onStart->lambda(*job->handle.get());
     if(job->handle->onStart->hasNext()){
@@ -77,7 +77,7 @@ static void *thread_job(void *ctx){
     pthread_exit(0);
     return NULL;
 }
-
+#include <iostream>
 struct _Scheduler {
     int startId;
     pthread_mutex_t genIdMutex;
@@ -272,6 +272,7 @@ struct _Scheduler {
         job->status = CR::JobStatus::Stopped;     
     }
 
+
     void janitor(bool lock = true){
         if(lock) pthread_mutex_lock(&poolMutex);
         std::vector<int> toRemove;
@@ -297,7 +298,9 @@ struct _Scheduler {
                 case CR::JobStatus::Waiting: {
                     auto it = pool.find(job.lead);
                     if(it == pool.end()){
-                        job.handle->status = CR::JobStatus::Running;
+                        if(job.handle->spec.delayStart == 0 || (job.handle->spec.delayStart > 0 && CR::ticks()-job.handle->createdTime > job.handle->spec.delayStart)){
+                            job.handle->status = CR::JobStatus::Running;
+                        }
                     }
                 } break;
                 case CR::JobStatus::Running: {
@@ -343,6 +346,7 @@ CR::Job::Job(){
     onEnd = std::make_shared<CR::PiggybackJob>(CR::PiggybackJob());
     onStart = std::make_shared<CR::PiggybackJob>(CR::PiggybackJob());
     succDeps = false;
+    createdTime = CR::ticks();
 }
 
 std::shared_ptr<CR::PiggybackJob> CR::Job::addBacklog(const std::function<void(CR::Job &ctx)> &lambda){
@@ -372,11 +376,29 @@ std::shared_ptr<CR::PiggybackJob> CR::Job::setOnStart(const std::function<void(C
     return pgb; 
 }
 
-std::shared_ptr<CR::Job> CR::Job::hook(std::function<void(CR::Job &ctx)> funct, bool threaded){
+// enum _QueueJobType : unsigned {
+//     HOOK,
+//     SPAWN,
+//     EXPECT
+// };
+
+// struct _QueueJob {
+//     unsigned type;
+//     unsigned headJob;
+//     std::function<void(CR::Job &ctx)> funct;
+//     CR::JobSpec spec;
+// };
+
+// static std::vector<_QueueJob> jobQueue;
+// static std::mutex jobQueueMutex;
+
+
+std::shared_ptr<CR::Job> CR::Job::hook(std::function<void(CR::Job &ctx)> funct, bool threaded, uint64 delayStart){
     CR::JobSpec spec;
     spec.looped = false;
     spec.threaded = threaded;
     spec.lowLatency = false;
+    spec.delayStart = delayStart;
     return sch.hook(id, funct, spec);
 }
 
@@ -384,35 +406,40 @@ std::shared_ptr<CR::Job> CR::Job::hook(std::function<void(CR::Job &ctx)> funct, 
     return sch.hook(id, funct, spec);
 }
 
-std::shared_ptr<CR::Job> CR::Job::hook(std::function<void(CR::Job &ctx)> funct, bool threaded, bool looped, bool lowLatency){
+std::shared_ptr<CR::Job> CR::Job::hook(std::function<void(CR::Job &ctx)> funct, bool threaded, bool looped, bool lowLatency, uint64 delayStart){
     CR::JobSpec spec;
     spec.looped = looped;
     spec.threaded = threaded;
     spec.lowLatency = lowLatency;
+    spec.delayStart = delayStart;
     return sch.hook(id, funct, spec);
 }
 
-std::shared_ptr<CR::Job> CR::spawn(std::function<void(CR::Job &ctx)> funct, bool threaded){
+std::shared_ptr<CR::Job> CR::spawn(std::function<void(CR::Job &ctx)> funct, bool threaded, uint64 delayStart){
     CR::JobSpec spec;
     spec.looped = false;
     spec.threaded = threaded;
     spec.lowLatency = false;
+    spec.delayStart = delayStart;
     return spawn(funct, spec);
 }
 
-std::shared_ptr<CR::Job> CR::spawn(std::function<void(CR::Job &ctx)> funct, bool threaded, bool looped, bool lowLatency){
+std::shared_ptr<CR::Job> CR::spawn(std::function<void(CR::Job &ctx)> funct, bool threaded, bool looped, bool lowLatency, uint64 delayStart){
     CR::JobSpec spec;
     spec.looped = looped;
     spec.threaded = threaded;
     spec.lowLatency = lowLatency;
+    spec.delayStart = delayStart;
+
     return spawn(funct, spec);
 }
 
-std::shared_ptr<CR::Job> CR::expect(const std::vector<std::shared_ptr<CR::Result>> &results, std::function<void(CR::Job &ctx)> funct, bool lowLatency){
+std::shared_ptr<CR::Job> CR::expect(const std::vector<std::shared_ptr<CR::Result>> &results, std::function<void(CR::Job &ctx)> funct, bool lowLatency, uint64 delayStart){
     CR::JobSpec spec;
     spec.looped = true;
     spec.threaded = true;
     spec.lowLatency = lowLatency;
+    spec.delayStart = delayStart;
     return sch.expect([funct](CR::Job &ctx){
         int t = 0;
         int allsucc = 0;

@@ -40,6 +40,17 @@ void CR::World::start(){
         this->auditBacklog.clear();
     }
     CR::log("World[%i] started simulation [%s]\n", this->wId, puppetMode ? "PUPPET" : "REAL");    
+
+    // imitate start up script  
+    if(!puppetMode){
+        // CR::spawn([&](CR::Job &ctx){
+        //     // auto job = CR::findJob({"TEMPORARY_SERVER"}, 1);
+        //     // job->addBacklog([&](CR::Job &ctx){
+        //     //     // add player
+        //     //     // auto paudit = createEntity("PLAYER", CR::EntityType::PLAYER, CR::GridLoc(0, 0));
+        //     // });
+        // }, false, false, false, 1000);
+    }
 }
 
 void CR::World::reqEnd(){
@@ -216,33 +227,18 @@ bool CR::World::run(unsigned ticks){
     return newChanges;
 }
 
-CR::T_OBJID CR::World::add(const std::shared_ptr<CR::Object> &obj){
-    if(obj->world != NULL || obj->id != CR::OBJ_ID_INVALID){
-        std::string errmsg = CR::String::format("World[%i] Failed to add object %i[%p]: it belongs to another world or wasn't properly destroyed", this->wId, obj->id, obj.get());
-        this->auditBacklog.push_back(this->createAudit(errmsg));
-        CR::log("%s\n", errmsg.c_str());
-        return CR::OBJ_ID_INVALID;
-    }
-    for(unsigned i = 0; i < this->objects.size(); ++i){
-        if(objects[i]->id == obj->id || objects[i].get() == obj.get()){          
-            std::string errmsg = CR::String::format("World[%i] Failed to add object %i[%p]: it already exists in it", this->wId, objects[i]->id, objects[i].get());
-            this->auditBacklog.push_back(this->createAudit(errmsg));
-            CR::log("%s\n", errmsg.c_str());
-            return CR::OBJ_ID_INVALID;
-        }
-    }
-    obj->id = genObjId();
-    obj->world = this;
-    obj->destroyed = false;
-    CR::log("World[%i] added object[%i] at <%i,%i>\n", this->wId, obj->id);
+CR::T_OBJID CR::World::createEntity(const std::string &name, T_ENTTYPE type, const CR::GridLoc &loc){
+    auto objId = genObjId();
     auto audit = this->createAudit(AuditType::OBJECT_CREATED);
-    audit->affEnt.push_back(obj->id);
-    audit->data.write(&obj->sigType, sizeof(T_OBJSIG));
-    audit->data.write(&obj->loc->index, sizeof(T_WORLDPOS));
-    audit->data.write(&obj->loc->level, sizeof(T_WORLDPOS));
+    static const auto sigType = ObjSigType::ENTITY;
+    audit->affEnt.push_back(objId);
+    audit->data.write(&sigType, sizeof(T_OBJSIG));
+    audit->data.write(&loc.index, sizeof(T_WORLDPOS));
+    audit->data.write(&loc.level, sizeof(T_WORLDPOS));
+    audit->data.write(name);
+    audit->data.write(&type, sizeof(T_ENTTYPE));
     this->auditBacklog.push_back(audit);
-    obj->onCreate();
-    return obj->id;
+    return objId;
 }
 
 bool CR::World::exists(CR::T_OBJID id){

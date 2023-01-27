@@ -3,7 +3,6 @@
 
     #include "../Types.hpp"
 
-
     namespace CR {
         namespace UI {
             
@@ -38,6 +37,8 @@
                 UI::Base *head;
                 std::vector<std::shared_ptr<UI::Base>> children;
 
+                
+
                 virtual void create(){};
                 virtual void draw(){};
                 virtual void step(){};
@@ -45,6 +46,17 @@
                 void clear();
 
             };
+
+
+            struct Window : Base {
+                std::string title;
+
+                void move(const CR::Vec2<unsigned> &nPos);
+                void close();
+            };
+
+
+            std::shared_ptr<CR::UI::Base> build(const std::string &path);
 
         }
     }

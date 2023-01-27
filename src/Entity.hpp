@@ -212,12 +212,10 @@
 
 
         struct Entity : CR::Object {
-
-
-
+            
         };
 
-
+        
 
 
 

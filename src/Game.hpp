@@ -100,12 +100,20 @@
             }
         }
 
+        namespace PlayerAction {
+
+        }
+
         
         struct GridLoc {
             T_WORLDPOS index; // tile
             T_WORLDPOS level; // height/altitude
             CR::Vec2<T_WORLDPOS> position; 
             CR::Vec3<float> lerpPos;
+            GridLoc(T_WORLDPOS index, T_WORLDPOS level){
+                this->index = index;
+                this->level = level;
+            }
             GridLoc(){
                 index = 0;
                 level = 0;
@@ -151,7 +159,7 @@
             }            
         };        
 
-        struct Audit { // Audit are terms used interchangeably 
+        struct Audit { 
             T_AUDIT type;                   // Type of Audit
             T_AUDITORD tick;                // Which tick it belongs to
             T_AUDITORD order;               // Order in which the Audit was applied during a tick
