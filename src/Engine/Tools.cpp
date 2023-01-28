@@ -490,6 +490,12 @@ namespace CR {
 		lk.unlock();
 	}
 
+	void  SmallPacket::allocate(){
+		if(this->data == NULL){
+			this->data = (char*)malloc(CR_SMALLPACKET_SIZE);
+		}	
+	}
+
 	void SmallPacket::setIndex(size_t index){
 		std::unique_lock<std::mutex> lk(accesMutex);
 		this->index = index;
@@ -507,7 +513,14 @@ namespace CR {
 			lk.unlock();
 			return r;
 		}
+		auto sread = index;
 		for(size_t i = index; i < CR_SMALLPACKET_SIZE; ++i){
+			if(this->data[i] == '\0' && i == sread){
+				// add one byte to index
+				index += 1;
+				lk.unlock();
+				return r;
+			}
 			if (this->data[i] == '\0'){
 				size_t size = i - index; // don't include the nullterminated
 				char buff[size];
@@ -549,6 +562,15 @@ namespace CR {
 		}	
 		if((index >= CR_SMALLPACKET_SIZE) || (index + str.length() + 1 > CR_SMALLPACKET_SIZE)){
 			r->setFailure("packet full or won't fit");
+			lk.unlock();
+			return r;
+		}
+		// just write \0 if the string is empty
+		if(str.size() == 0){
+			data[index] = '\0';
+			// add one byte to index
+			index += 1;
+			this->size += 1;
 			lk.unlock();
 			return r;
 		}

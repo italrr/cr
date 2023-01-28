@@ -146,12 +146,23 @@
             };
         }
 
+        namespace EntityType {
+            enum EntityControlType : T_GENERICTYPE {
+                INERT,
+                HUMANOID,
+                ASSAULT_TANK,
+            };
+        }        
+
         struct Entity : CR::Object {
 
+            CR::T_GENERICTYPE entType;
             CR::T_GENERICTYPE controlType;
-            CR::T_OBJID controllerId;
+            CR::T_GENERICID controllerId;
 
             Entity();
+            void build(CR::T_GENERICTYPE entType);
+            void setControlType(CR::T_GENERICTYPE ctype, CR::T_GENERICID cId);
             
         };
 

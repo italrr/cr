@@ -255,6 +255,7 @@
 			void reset();
 			void clear();
 			void setIndex(size_t index);
+            void allocate();
 			std::shared_ptr<CR::Result> write(const void *data, size_t Si);
 			std::shared_ptr<CR::Result> read(std::string &str);
 			std::shared_ptr<CR::Result> read(void *data, size_t Si);

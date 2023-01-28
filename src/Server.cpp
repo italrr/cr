@@ -111,10 +111,11 @@ static void SV_SEND_AUDITS(CR::Server *sv, CR::T_AUDITORD fromAudit, CR::T_AUDIT
 
         while(copy.size() > 0){     
             auto &dt = copy[0];
+            dt->data.reset();
             CR::SmallPacket buffer;
             buffer.write(&dt->type, sizeof(dt->type));
             buffer.write(&dt->state, sizeof(dt->state));
-            buffer.write(&dt->msg, sizeof(dt->msg));
+            buffer.write(dt->msg);
             uint8 affEnt = dt->affEnt.size();
             buffer.write(&affEnt, sizeof(affEnt));
             for(unsigned j = 0; j < dt->affEnt.size(); ++j){
@@ -294,6 +295,7 @@ static bool ssTrig = false;
 
 void CR::Server::step(){
     if(!ssTrig && CR::ticks()-startTime > 2000){
+        // CR::log("CREATE PLAYERS SENT\n");
         auto entId = this->world->createEntity("PLAYER", CR::EntityType::PLAYER, CR::GridLoc(0, 0));    
         auto audit = this->world->createAudit(CR::AuditType::PLAYER_GRANT_ENTITY_CONTROL);
         audit->affEnt.push_back(entId);

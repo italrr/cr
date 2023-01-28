@@ -140,6 +140,12 @@ bool CR::Packet::write(const std::string str){
         CR::log("failed to write to packet: too big\n");
 		return false;
 	}
+	if(str.size() == 0){
+		data[index] = '\0';
+		// add one byte to index
+		index += 1;
+		return true;
+	}	
 	size_t sl = str.length() + 1;
 	memcpy(data + index, str.c_str(), sl);
 	maxSize += sl; 
@@ -151,7 +157,13 @@ bool CR::Packet::read(std::string &str){
 	if(index >= CR::NetworkMaxPacketSize){
 		return false;
 	}
+	auto sread = index;
 	for(size_t i = index; i < CR::NetworkMaxPacketSize; ++i){
+		if(this->data[i] == '\0' && i == sread){
+			// add one byte to index
+			index += 1;
+			return true;
+		}		
 		if (this->data[i] == '\0'){
 			size_t size = i - index; // don't include the nullterminated
 			char buff[size];

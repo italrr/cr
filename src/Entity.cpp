@@ -69,3 +69,17 @@ bool CR::EntityAnim::load(const std::string &path){
     CR::log("Loaded EntityAnim  %s\n", path.c_str());
     return true;
 }
+
+
+CR::Entity::Entity(){
+    this->controlType = CR::EntityControlType::IDLE;
+    this->entType = CR::EntityType::INERT;
+}
+
+void CR::Entity::build(CR::T_GENERICTYPE entType){
+
+}
+
+void CR::Entity::setControlType(CR::T_GENERICTYPE ctype, CR::T_GENERICID cId){
+
+}

@@ -222,6 +222,7 @@ void CR::Client::processPacket(CR::Packet &packet, bool ignoreOrder){
                 packet.read(&audit->type, sizeof(audit->type));
                 packet.read(&audit->state, sizeof(audit->state));
                 packet.read(audit->msg);
+                // packet.index += 1;
                 uint8 affEnt;
                 packet.read(&affEnt, sizeof(affEnt));
                 for(unsigned j = 0; j < affEnt; ++j){
@@ -231,6 +232,7 @@ void CR::Client::processPacket(CR::Packet &packet, bool ignoreOrder){
                 }
                 uint8 plSize;
                 packet.read(&plSize, sizeof(plSize));
+                audit->data.allocate();
                 packet.read(audit->data.data, plSize);
                 audit->data.size = plSize;
                 audit->time = epoch;
