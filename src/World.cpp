@@ -321,4 +321,9 @@ bool CR::World::destroy(T_OBJID id){
 
 void CR::World::render(const CR::Vec2<unsigned> &offset){
 
+    // Objects from world are rendered on the overworld directly
+    for(unsigned i = 0; i < this->objects.size(); ++i){
+        
+    }
+
 }
