@@ -40,7 +40,7 @@ void CR::World::start(){
     }else{
         this->auditBacklog.clear();
     }
-    CR::log("World[%i] started simulation [%s]\n", this->wId, puppetMode ? "PUPPET" : "REAL");    
+    CR::log("World[%i]%s started simulation [%s]\n", this->wId, this->puppetMode ? "[P]" : "[M]", puppetMode ? "PUPPET" : "MASTER");    
 }
 
 void CR::World::reqEnd(){
@@ -109,7 +109,7 @@ bool CR::World::apply(const std::shared_ptr<CR::Audit> &audit){
                     }
                     this->objects.push_back(ent);
                     #ifdef CR_ENABLE_DEBUG_BUILD
-                        CR::log("World[%i] Created entity Id %i '%s': Type %i \n", this->wId, objId, name.c_str(), entType);    
+                        CR::log("World[%i]%s Created entity Id %i '%s': Type %i \n", this->wId, this->puppetMode ? "[P]" : "[M]", objId, name.c_str(), entType);    
                     #endif
                 } break;
                 case ObjSigType::PROP: {
@@ -168,7 +168,7 @@ void CR::World::setState(T_STATE nstate){
 
 bool CR::World::run(const std::vector<std::shared_ptr<CR::Audit>> &audits){
     if(!puppetMode){ // client
-        CR::log("World[%i] run providing audits was used in non-puppetMode\n");
+        CR::log("World[%i]%s run providing audits was used in non-puppetMode\n", this->wId, this->puppetMode ? "[P]" : "[M]");
         return false;
     }   
     for(unsigned i = 0; i < audits.size(); ++i){
@@ -177,7 +177,7 @@ bool CR::World::run(const std::vector<std::shared_ptr<CR::Audit>> &audits){
         if(apply(audit)){
             this->auditHistory[audit->tick].push_back(audit);   
         }else{
-            CR::log("World[%i] Fatal error has occured applying an audit: game will stop\n");
+            CR::log("World[%i]%s Fatal error has occured applying an audit: game will stop\n", this->wId, this->puppetMode ? "[P]" : "[M]");
             CR::Core::exit(1); // TODO: Find a better way to handle this. probably full resync?
             return false;
         }        
@@ -192,7 +192,7 @@ void CR::World::setPuppet(bool puppetMode, CR::T_OBJID wId){
 
 bool CR::World::run(unsigned ticks){
     if(puppetMode){ // client
-        CR::log("World[%i] run was used in puppetMode\n");
+        CR::log("World[%i]%s run was used in puppetMode\n", this->wId, this->puppetMode ? "[P]" : "[M]");
         return false;
     }
 
@@ -206,7 +206,7 @@ bool CR::World::run(unsigned ticks){
             if(apply(audit)){
                 this->auditHistory[audit->tick].push_back(audit);   
             }else{
-                CR::log("World[%i] Fatal error has occured applying an audit: game will stop\n");
+                CR::log("World[%i]%s Fatal error has occured applying an audit: game will stop\n", this->wId, this->puppetMode ? "[P]" : "[M]");
                 CR::Core::exit(1); // TODO: Find a better way to handle this
                 return false;
             }
@@ -242,7 +242,7 @@ bool CR::World::run(unsigned ticks){
             if(apply(audit)){
                 this->auditHistory[audit->tick].push_back(audit);   
             }else{
-                CR::log("World[%i] Fatal error has occured applying an audit: game will stop\n");
+                CR::log("World[%i]%s Fatal error has occured applying an audit: game will stop\n", this->wId, this->puppetMode ? "[P]" : "[M]");
                 CR::Core::exit(1); // TODO: Find a better way to handle this
                 return false;
             }
@@ -287,14 +287,14 @@ std::shared_ptr<CR::Object> CR::World::get(CR::T_OBJID id){
 
 bool CR::World::destroy(T_OBJID id){
     if(!exists(id)){
-        std::string errmsg = CR::String::format("World[%i] Failed to destroy object %i[%p]: it's not part of it", this->wId, id);
+        std::string errmsg = CR::String::format("World[%i]%s Failed to destroy object %i: it's not part of it", this->wId, this->puppetMode ? "[P]" : "[M]", id);
         this->auditBacklog.push_back(this->createAudit(errmsg));
         CR::log("%s\n", errmsg.c_str());        
         return false;
     }
     auto obj = get(id);
     if(obj.get() == NULL){
-        std::string errmsg = CR::String::format("World[%i] FATAL ERROR: Failed to destroy object %i[%p]: this object is null", this->wId, id);
+        std::string errmsg = CR::String::format("World[%i]%s FATAL ERROR: Failed to destroy object %i: this object is null", this->wId, this->puppetMode ? "[P]" : "[M]", id);
         this->auditBacklog.push_back(this->createAudit(errmsg));
         CR::log("%s\n", errmsg.c_str());        
         return false; 
