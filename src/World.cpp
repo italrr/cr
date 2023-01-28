@@ -80,7 +80,14 @@ bool CR::World::apply(const std::shared_ptr<CR::Audit> &audit){
         } break;
 
         case CR::AuditType::PLAYER_GRANT_ENTITY_CONTROL: {
-
+            CR::T_OBJID entId;
+            CR::T_GENERICID clId;
+            entId = audit->affEnt[0];
+            audit->data.read(&clId, sizeof(CR::T_GENERICID));
+            #ifdef CR_ENABLE_DEBUG_BUILD
+                int eId = entId;
+                CR::log("World[%i]%s Client '%i' was granted control over Entity '%i' \n", this->wId, this->puppetMode ? "[P]" : "[M]", clId, eId);    
+            #endif            
         } break;  
         /*
             OBJECT  
