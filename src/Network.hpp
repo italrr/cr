@@ -85,6 +85,7 @@
         }
 
         struct ClientHandle {
+            CR::PlayerInput input;
             CR::T_GENERICID clientId;
             CR::T_AUDITORD lastFrame;
             CR::T_AUDITORD lastAudit;
@@ -111,6 +112,7 @@
         };
 
         struct NetHandle {
+            CR::PlayerInput input;
             std::shared_ptr<CR::World> world;
 
             T_GENERICTYPE netState;

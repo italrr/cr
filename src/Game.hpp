@@ -1,8 +1,11 @@
 #ifndef CR_GAME_BASE_HPP
     #define CR_GAME_BASE_HPP
 
+    #include <unordered_map>
+
     #include "Engine/Types.hpp"
     #include "Engine/Tools.hpp"
+    #include "Engine/Input.hpp"
 
 
     namespace CR {
@@ -84,6 +87,7 @@
                 OBJECT_CREATED,
                 OBJECT_DESTROYED,
                 OBJECT_MOVED,
+                OBJECT_MOVING,
 
                 ENTITY_STATE_CHANGED,
                 ENTITY_STATUS_CHANGED,
@@ -173,6 +177,115 @@
             }
         }
         
+
+        namespace PlayerKey { 
+            enum PlayerKey : uint8 {
+                UP = 0,
+                DOWN,
+                RIGHT,
+                LEFT,
+                k1,
+                k2,
+                k3,
+                k4,
+                k5,
+                k6,
+                k7,
+                k8
+            };
+            static const uint8 total = 12;
+        }
+
+        namespace PlayerPressType {
+            enum PlayerPressType : uint8 {
+                None = 0,
+                Pressed,
+                Released
+            };
+        }
+
+        static const std::unordered_map<int, uint8> PlayerInputDefaultMapping = { 
+            { CR::Input::Key::W,            PlayerKey::UP },
+            { CR::Input::Key::S,            PlayerKey::DOWN },
+            { CR::Input::Key::A,            PlayerKey::LEFT },
+            { CR::Input::Key::D,            PlayerKey::RIGHT },
+            { CR::Input::Key::ONE,          PlayerKey::k1 },
+            { CR::Input::Key::TWO,          PlayerKey::k2 },
+            { CR::Input::Key::THREE,        PlayerKey::k3 },
+            { CR::Input::Key::FOUR,         PlayerKey::k4 },
+            { CR::Input::Key::FIVE,         PlayerKey::k5 },
+            { CR::Input::Key::SIX,          PlayerKey::k6 },
+            { CR::Input::Key::SEVEN,        PlayerKey::k7 },
+            { CR::Input::Key::EIGHT,        PlayerKey::k8 }
+        };
+
+        struct PlayerInputCompacter {
+            CR::Vec2<int> mpos;
+            uint8 states[PlayerKey::total];
+            bool changed;
+            PlayerInputCompacter(){
+                for(int i = 0; i < PlayerKey::total; ++i){
+                    states[i] = CR::PlayerPressType::Released;
+                }                
+            }            
+            bool set(uint8 key, uint16 v){
+                if(key >= CR::PlayerKey::total){
+                    return false;
+                }
+                states[key] = v;
+                return true;
+            }
+            void setAll(uint16 v){
+                for(int i = 0; i < CR::PlayerKey::total; ++i){
+                    states[i] = v;
+                }
+            }
+            bool isKeyPress(uint8 key){
+                if(key >= CR::PlayerKey::total){
+                    return false;
+                }
+                return states[key] == CR::PlayerPressType::Pressed;                
+            }
+            uint16 getCompat(){
+                uint16 compat = 0;
+                for(int i = 0; i < CR::PlayerKey::total; ++i){
+                    compat =  compat | ((states[i] == CR::PlayerPressType::Pressed) ? (1 << (i+1)) : 0);
+                }
+                return compat;
+            }
+            void loadCompat(uint16 v){
+                for(int i = 0; i < CR::PlayerKey::total; ++i){
+                    states[i] = v & (1 << (i+1)) ? CR::PlayerPressType::Pressed : CR::PlayerPressType::Released;
+                }
+            }
+        };
+
+        struct PlayerInput : PlayerInputCompacter {
+            CR::Vec2<int> mpos;
+            uint64 lastChange;
+            uint64 lastCheck;
+            std::unordered_map<int, uint8> mapping; // CR key -> game key
+            PlayerInput(){
+                this->mapping = CR::PlayerInputDefaultMapping;
+            }
+            void update(bool ignore){
+                auto nmp = CR::Input::mousePosition();
+                for(auto key : this->mapping){ 
+                    bool check = !ignore && (key.first > 200 ? CR::Input::mouseCheck(key.first) : CR::Input::mouseCheck(key.first));
+                    auto nv = check ? CR::PlayerPressType::Pressed : CR::PlayerPressType::Released;
+                    if(states[key.second] != nv){
+                        states[key.second] = nv;
+                        lastChange = CR::ticks();
+                        changed = true;
+                    }
+                }
+                if(nmp.x != mpos.x || nmp.y != mpos.y){
+                    mpos.set(nmp.x, nmp.y);
+                    lastChange = CR::ticks();
+                }
+            }
+        };
+
         struct GridLoc {
             T_WORLDPOS index; // x+y*h
             T_WORLDPOS level; // height/altitude
@@ -210,6 +323,10 @@
                 this->name = "NO_NAME";
                 this->solid = false;
                 this->world = NULL;
+            }
+
+            void setPosition(const CR::GridLoc &npos){
+
             }
 
             virtual void onCreate(){

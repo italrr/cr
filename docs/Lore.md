@@ -123,6 +123,8 @@ Veracrúz was an independent group of colonizers before the war, headed by Alana
 
 The official languages in Veracrúz are English, Spanish, French.
 
+Veracrúz posses a societal
+
 The Abadiú is the highest degree of recognition hierarchy wise in Veracrúz.
 
 ## Major Factions

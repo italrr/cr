@@ -6,7 +6,7 @@
 
     #define CR_ENABLE_DEBUG_BUILD 1
 
-    #if CR_ENABLE_DEBUG_BUILD 
+    #if CR_ENABLE_DEBUG_BUILD
 
         void ____CR_GFX_CHECK_OPENGL_ERROR();
 

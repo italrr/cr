@@ -41,6 +41,8 @@
             void setPuppet(bool puppetMode, T_OBJID wId);
             void start();
             void reqEnd();
+            bool isLocEmpty(T_WORLDPOS x, T_WORLDPOS y);
+            bool isLocEmpty(T_WORLDPOS index);
             bool run(unsigned ticks); // authoritative (for server)
             bool run(const std::vector<std::shared_ptr<Audit>> &audits);  // puppet mode (for clients)
             bool exists(CR::T_OBJID id);
