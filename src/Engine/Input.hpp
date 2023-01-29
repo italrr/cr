@@ -25,7 +25,7 @@
 
             namespace Button {
                 enum Button : int {
-                    LEFT,
+                    LEFT = 201,
                     MIDDLE,
                     RIGHT
                 };

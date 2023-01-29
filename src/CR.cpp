@@ -57,7 +57,21 @@ int main(int argc, char* argv[]){
     }, false, false, false, 100);
 
 
+    CR::Gfx::Font font;
+    CR::Gfx::FontStyle style;
+    style.outlineThickness = 5;
+    style.size = 64;
+    font.load("data/font/nk57_monoscape.ttf", style);
+
+    CR::Gfx::TextRenderOpts opts;
+    opts.fill = CR::Color(1.0f, 0.0f, 0.0f, 1.0f);
+    opts.outline = CR::Color(1.0f, 1.0f, 1.0f, 1.0f);
+    opts.horBearingBonus = 3;
+
     while(CR::Gfx::isRunning()){
+        uiL->renderOn([&](CR::Gfx::RenderLayer *layer){
+            layer->add(CR::Gfx::Draw::Text(font.getRsc(), "HOLA", CR::Vec2<float>(25.0f), opts));
+        });
         client.step();
         CR::Gfx::render();
     }

@@ -39,6 +39,7 @@
             static const uint32 CLIENT_UNRESPONSIVE_TIMEOUT = 30 * 1000; // 30 seconds before dropping unresponsive client
             static const uint32 CLIENT_CONNECT_TRY_TIMEOUT_INTERVAL = 4;  // retries 3 times + 1 initial connection
             static const uint64 CLIENT_CONNECT_TIMEOUT = 1000 * 5;
+            static const uint64 CLIENT_INPUT_STATUS_UPDATE = 16;
         }
 
         namespace ClientOriginType {
@@ -308,9 +309,16 @@
                 T_AUDITORD LAST APPLIED FRAME
                 T_AUDITORD LAST AUDIT APPLIED
             */
-            SIMULATION_CLIENT_ACTION,
+            CLIENT_INPUT_STATUS,
             /*
-                
+                T_AUDITORD CURRENT TICK
+                UINT16 KEY STATES
+                INT16 MOUSE POSITION X
+                INT16 MOUSE POSITION Y            
+            */
+            CLIENT_SEND_ACTION,
+            /*
+
             */
 
 

@@ -16,6 +16,12 @@
 	#define int64 int64_t
 	#define uint64 uint64_t   
 
+	// #define PRIu8 "hu"
+	// #define PRId8 "hd"
+	// #define PRIx8 "hx"
+	// #define PRIu16 "hu"
+	// #define PRId16 "hd"	
+
     namespace CR {
 
 		namespace Math {

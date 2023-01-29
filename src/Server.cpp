@@ -282,6 +282,24 @@ static void SV_PROCESS_PACKET(CR::Server *sv, CR::Packet &packet, bool ignoreOrd
             #endif            
            
         } break;
+        /* 
+            CLIENT_INPUT_STATUS
+        */
+       case CR::PacketType::CLIENT_INPUT_STATUS: {
+            if(!client || !isLast){
+                break;
+            }
+            CR::T_AUDITORD tick;
+            uint16 keys;
+            uint16 mouseX;
+            uint16 mouseY;
+            packet.read(&tick, sizeof(tick));
+            packet.read(&keys, sizeof(keys));
+            packet.read(&mouseX, sizeof(mouseX));
+            packet.read(&mouseY, sizeof(mouseY));
+            client->input.setAll(keys);
+            client->input.mpos.set(mouseX, mouseY);
+       } break;
 
         default: {
             // TODO: this can be abused

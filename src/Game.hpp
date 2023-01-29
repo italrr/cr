@@ -271,7 +271,7 @@
             void update(bool ignore){
                 auto nmp = CR::Input::mousePosition();
                 for(auto key : this->mapping){ 
-                    bool check = !ignore && (key.first > 200 ? CR::Input::mouseCheck(key.first) : CR::Input::mouseCheck(key.first));
+                    bool check = !ignore && (key.first > 200 ? CR::Input::mouseCheck(key.first) : CR::Input::keyboardCheck(key.first));
                     auto nv = check ? CR::PlayerPressType::Pressed : CR::PlayerPressType::Released;
                     if(states[key.second] != nv){
                         states[key.second] = nv;

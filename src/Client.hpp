@@ -20,6 +20,7 @@
             uint64 ping;
             uint64 lastPing;
             uint64 lastSentPing;
+            uint64 lastInputStatus;
             // Packet delivery
             uint32 rcvOrder;
             uint32 sentOrder;

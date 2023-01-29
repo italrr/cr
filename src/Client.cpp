@@ -261,6 +261,7 @@ void CR::Client::processPacket(CR::Packet &packet, bool ignoreOrder){
 void CR::Client::step(){
     CR::Packet packet;
     CR::IP_Port sender;           
+    this->input.update(false);
     if(netState == CR::NetHandleState::CONNECTING){
         int nb = this->socket.recv(sender, packet);
         if(nb > 0){
@@ -311,6 +312,21 @@ void CR::Client::step(){
         rcvPackets.push_back(packet);
     }    
             
+    // Send input status
+    if(this->lastInputStatus-CR::ticks() > CR::Net::CLIENT_INPUT_STATUS_UPDATE){
+        auto tick = this->world->currentTick;
+        auto keys = this->input.getCompat();
+        uint16 mouseX = this->input.mpos.x;
+        uint16 mouseY = this->input.mpos.y;
+        CR::Packet packet(CR::PacketType::CLIENT_INPUT_STATUS);
+        packet.setOrder(++sentOrder);
+        packet.write(&tick, sizeof(tick));
+        packet.write(&keys, sizeof(keys));
+        packet.write(&mouseX, sizeof(mouseX));
+        packet.write(&mouseY, sizeof(mouseY));
+        this->socket.send(this->svAddress, packet);
+        this->lastInputStatus = CR::ticks();
+    }
     // process packet queue
     if(rcvPackets.size() > 0){
         for(unsigned i = 0; i < rcvPackets.size(); ++i){
