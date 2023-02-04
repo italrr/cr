@@ -72,23 +72,6 @@ static void SV_SEND_AUDITS(CR::Server *sv, CR::T_AUDITORD fromAudit, CR::T_AUDIT
 
     auto copy = it->second;
 
-    #if CR_ENABLE_DEBUG_BUILD == 1
-        if(WS_AUDIT_LIST_FILE == NULL){
-            WS_AUDIT_LIST_FILE = fopen(WORLD_SIM_AUDIT_LIST, "w");
-            fprintf(WS_AUDIT_LIST_FILE, "--- NEW RUN ---\n");
-        }
-        // fprintf(fp, "This is the line #%d\n", i + 1);
-        fprintf(WS_AUDIT_LIST_FILE, "[FRAME %i START]\n", tick);
-        for(unsigned i = 0; i < copy.size(); ++i){
-            if(copy[i]->msg.length() > 0){
-                fprintf(WS_AUDIT_LIST_FILE, "%i: '%s'\n", copy[i]->type, copy[i]->msg.c_str());
-            }else{
-                fprintf(WS_AUDIT_LIST_FILE, "%i\n", copy[i]->type);
-            }
-        }
-        fprintf(WS_AUDIT_LIST_FILE, "[FRAME %i END]\n", tick);
-    #endif
-
     if(fromAudit > 0){ // we delete the ones before
         copy.erase(copy.begin(), copy.begin() + fromAudit);
     }
@@ -181,6 +164,7 @@ static void SV_PROCESS_PACKET(CR::Server *sv, CR::Packet &packet, bool ignoreOrd
                 CR::Packet holder;
                 packet.read(holder.data, sizes[i]);
                 holder.sender = client->ip;
+                holder.reset();
                 SV_PROCESS_PACKET(sv, holder, true);
             }
         } break;       
@@ -324,6 +308,28 @@ void CR::Server::step(){
     if(world->state != CR::WorldState::IDLE && world->state != CR::WorldState::STOPPED){
         if(CR::ticks()-lastWorldTick >= world->tickRate){
             world->run(1);
+            lastWorldTick = CR::ticks();
+            #if CR_ENABLE_DEBUG_BUILD == 1
+                if(WS_AUDIT_LIST_FILE == NULL){
+                    WS_AUDIT_LIST_FILE = fopen(WORLD_SIM_AUDIT_LIST, "w");
+                    fprintf(WS_AUDIT_LIST_FILE, "--- NEW RUN ---\n");
+                }
+                auto lt = this->world->currentTick-1;
+                auto it = this->world->auditHistory.find(lt);
+                if(it != this->world->auditHistory.end()){
+                    auto copy = it->second;
+                    // fprintf(fp, "This is the line #%d\n", i + 1);
+                    fprintf(WS_AUDIT_LIST_FILE, "[FRAME %i START]\n", lt);
+                    for(unsigned i = 0; i < copy.size(); ++i){
+                        if(copy[i]->msg.length() > 0){
+                            fprintf(WS_AUDIT_LIST_FILE, "%i: '%s'\n", copy[i]->type, copy[i]->msg.c_str());
+                        }else{
+                            fprintf(WS_AUDIT_LIST_FILE, "%i\n", copy[i]->type);
+                        }
+                    }
+                    fprintf(WS_AUDIT_LIST_FILE, "[FRAME %i END]\n", lt);
+                }
+            #endif
         }
     }
     // run server controller

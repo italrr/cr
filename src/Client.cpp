@@ -311,22 +311,6 @@ void CR::Client::step(){
     if(nb > 0){
         rcvPackets.push_back(packet);
     }    
-            
-    // Send input status
-    if(this->lastInputStatus-CR::ticks() > CR::Net::CLIENT_INPUT_STATUS_UPDATE){
-        auto tick = this->world->currentTick;
-        auto keys = this->input.getCompat();
-        uint16 mouseX = this->input.mpos.x;
-        uint16 mouseY = this->input.mpos.y;
-        CR::Packet packet(CR::PacketType::CLIENT_INPUT_STATUS);
-        packet.setOrder(++sentOrder);
-        packet.write(&tick, sizeof(tick));
-        packet.write(&keys, sizeof(keys));
-        packet.write(&mouseX, sizeof(mouseX));
-        packet.write(&mouseY, sizeof(mouseY));
-        this->socket.send(this->svAddress, packet);
-        this->lastInputStatus = CR::ticks();
-    }
     // process packet queue
     if(rcvPackets.size() > 0){
         for(unsigned i = 0; i < rcvPackets.size(); ++i){
@@ -334,6 +318,20 @@ void CR::Client::step(){
         }
         rcvPackets.clear();
     }
+    // Send input status
+    if(CR::ticks()-this->lastInputStatus > CR::Net::CLIENT_INPUT_STATUS_UPDATE){
+        CR::T_AUDITORD tick = this->world->currentTick;
+        uint16 keys = this->input.getCompat();
+        uint16 mouseX = this->input.mpos.x;
+        uint16 mouseY = this->input.mpos.y;
+        CR::Packet packet(CR::PacketType::CLIENT_INPUT_STATUS);
+        packet.write(&tick, sizeof(tick));
+        packet.write(&keys, sizeof(keys));
+        packet.write(&mouseX, sizeof(mouseX));
+        packet.write(&mouseY, sizeof(mouseY));
+        this->sendPacketFor(svAddress, packet);
+        this->lastInputStatus = CR::ticks();
+    }       
     deliverPacketQueue();
     if(CR::ticks()-lastSentPing > 1000){
         lastSentPing = CR::ticks();
@@ -341,7 +339,7 @@ void CR::Client::step(){
         CR::Packet ping(CR::PacketType::PING);
         ping.setOrder(++sentOrder);
         this->socket.send(this->svAddress, ping);
-    }    
+    } 
 }
 
 

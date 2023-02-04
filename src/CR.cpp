@@ -33,7 +33,7 @@ int main(int argc, char* argv[]){
     game = CR::Gfx::getRenderLayer("world", true);
 
     CR::Server server;
-    CR::JobSpec svSpec(true, true, false, {"TEMPORARY_SERVER"});
+    CR::JobSpec svSpec(true, true, true, {"TEMPORARY_SERVER"});
     server.listen("Social Room", 24, CR::NetworkDefaultPort);    
     CR::spawn([&](CR::Job &Ctx){
         server.step();
@@ -70,7 +70,11 @@ int main(int argc, char* argv[]){
 
     while(CR::Gfx::isRunning()){
         uiL->renderOn([&](CR::Gfx::RenderLayer *layer){
-            layer->add(CR::Gfx::Draw::Text(font.getRsc(), "HOLA", CR::Vec2<float>(25.0f), opts));
+            if(server.clients.size() < 1 || server.world->objects.size() < 1){
+                return;
+            }
+            auto ppos = CR::String::format("Player %i,%i", server.world->objects[0]->loc->coords.x, server.world->objects[0]->loc->coords.y);
+            layer->add(CR::Gfx::Draw::Text(font.getRsc(), ppos, CR::Vec2<float>(25.0f), opts));
         });
         client.step();
         CR::Gfx::render();

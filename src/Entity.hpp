@@ -150,12 +150,42 @@
             enum EntityControlType : T_GENERICTYPE {
                 INERT,
                 HUMANOID,
-                ASSAULT_TANK,
+                ASSAULT_MECH,
+                DRONE
             };
         }        
 
-        struct Entity : CR::Object {
+        namespace EntityState {
+            enum EntityState : uint8 {
+                IDLE,
+                WALKING,
+                RUNNING,
+                SHOOTING_RANGED_WEAPON,
+                IDLE_RANGED_WEAPON,
+                WAVING_MELEE_WEAPON,
+                IDLE_MELEE_WEAPON,
+                WAVING_MELEE_FIST,
+                USING_CONSUMABLE,
+                SWAPPING_EQUIPMENT,
+                IDLE_FIST,
+                UHCI_WIRELESS,     // Universal Human Computer Interface 
+                UHCI_WIRED,
+                BLINKING,
+                SPEAKING,
+                GROANING
+            };
+        }
 
+        namespace EntityStateSlot {
+            enum EntityStateSlot : uint8 {
+                HEAD,
+                BODY,
+                LEGS
+            };
+        }
+
+        struct Entity : CR::Object {
+            CR::T_GENERICTYPE entState[3];         // Entity can hold up 8 different states
             CR::T_GENERICTYPE entType;
             CR::T_GENERICTYPE controlType;
             CR::T_GENERICID controllerId;
