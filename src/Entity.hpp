@@ -170,9 +170,10 @@
                 IDLE_FIST,
                 UHCI_WIRELESS,     // Universal Human Computer Interface 
                 UHCI_WIRED,
-                BLINKING,
-                SPEAKING,
-                GROANING
+                FACE_BLINKING,
+                FACE_SPEAKING,
+                FACE_GROANING,
+                FACE_FAINTING
             };
         }
 
@@ -186,6 +187,9 @@
 
         struct Entity : CR::Object {
             CR::T_GENERICTYPE entState[3];         // Entity can hold up 8 different states
+            CR::T_AUDITORD entStateTarget[3];
+            CR::T_AUDITORD entStateStart[3];
+
             CR::T_GENERICTYPE entType;
             CR::T_GENERICTYPE controlType;
             CR::T_GENERICID controllerId;
