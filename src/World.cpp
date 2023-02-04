@@ -174,11 +174,7 @@ bool CR::World::apply(const std::shared_ptr<CR::Audit> &audit){
 
         case CR::AuditType::ENTITY_KILLED: {
 
-        } break;     
-
-        case CR::AuditType::ENTITY_MOVED: {
-
-        } break;                                
+        } break;                               
     }
 
     return true;

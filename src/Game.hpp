@@ -86,14 +86,13 @@
 
                 OBJECT_CREATED,
                 OBJECT_DESTROYED,
-                OBJECT_MOVED,
                 OBJECT_MOVING,
+                OBJECT_MOVED,
 
                 ENTITY_STATE_CHANGED,
                 ENTITY_STATUS_CHANGED,
                 ENTITY_DAMAGED,
-                ENTITY_KILLED,
-                ENTITY_MOVED
+                ENTITY_KILLED
             };
             static std::string str(CR::T_AUDIT type){
                 switch(type){

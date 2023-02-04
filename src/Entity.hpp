@@ -185,6 +185,18 @@
             };
         }
 
+        struct EntityAttr {
+            
+        };
+
+        struct EntityStat {
+
+        };
+
+        struct EntityComplexStat {
+
+        };
+
         struct Entity : CR::Object {
             CR::T_GENERICTYPE entState[3];         // Entity can hold up 8 different states
             CR::T_AUDITORD entStateTarget[3];
