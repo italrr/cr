@@ -19,6 +19,7 @@ set (cr_src
     src/Engine/Shader.cpp
     src/Engine/Network.cpp
     src/Engine/Texture.cpp
+    src/Engine/Model.cpp
     src/Engine/Resource.cpp
     src/Engine/3rdparty/glad.c
     src/Engine/3rdparty/Jzon.cpp

@@ -10,6 +10,7 @@
 
     namespace CR {
         
+        typedef uint16      T_GENERICATTR;
         typedef uint8       T_OBJSIG;
         typedef uint8       T_ENTTYPE;
         typedef uint8       T_GENERICTYPE;
@@ -18,7 +19,7 @@
         typedef uint16      T_AUDIT;
         typedef uint32      T_GENERICID;
         typedef uint32      T_AUDITORD;
-        typedef uint32      T_WORLDPOS;
+        typedef int32       T_WORLDPOS;
         typedef uint64      T_TIME;
         typedef uint8       T_VERSION_SEG;
 

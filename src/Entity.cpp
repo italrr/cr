@@ -77,9 +77,17 @@ CR::Entity::Entity(){
 }
 
 void CR::Entity::build(CR::T_GENERICTYPE entType){
-
+    // reset animations
+    for(unsigned i = 0; i < 3; ++i){
+        this->entStateTarget[i] = CR::EntityState::IDLE;
+        this->entStateStart[i] = 0;
+        this->entStateTarget[i] = 0;
+    }
+    this->controlType = CR::EntityControlType::IDLE;
+    this->controllerId = 0;
 }
 
 void CR::Entity::setControlType(CR::T_GENERICTYPE ctype, CR::T_GENERICID cId){
-
+    this->controllerId = cId;
+    this->controlType = ctype;
 }

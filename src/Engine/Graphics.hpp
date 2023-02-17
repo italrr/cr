@@ -96,6 +96,7 @@
 					HEIGHT,
                     NONE
                 };
+                static const unsigned total = 4;
                 static std::string str(int t){
                     switch(t){
                         case DIFFUSE: return "DIFFUSE";
@@ -127,24 +128,41 @@
                 unsigned vao;
                 unsigned ebo;
                 unsigned vertn;
+                unsigned indices;
                 void copy(const CR::Gfx::MeshData &other){
                     this->vbo[0] = other.vbo[0];
                     this->vbo[1] = other.vbo[1];
                     this->vao = other.vao;
                     this->ebo = other.ebo;
                     this->vertn = other.vertn;
+                    this->indices = other.indices;
                 }
+                MeshData& operator=(const CR::Gfx::MeshData& other){
+                    this->vbo[0] = other.vbo[0];
+                    this->vbo[1] = other.vbo[1];
+                    this->vao = other.vao;
+                    this->ebo = other.ebo;
+                    this->vertn = other.vertn;
+                    this->indices = other.indices;                    
+                    return *this;
+                }                
                 MeshData(){
                     vbo[0] = vbo[1] = 0;
                     vao = 0;
                     ebo = 0;
                     vertn = 0;
+                    indices = 0;
                 }
             };
             
 
             struct Mesh {
-                CR::Gfx::MeshData md;             
+                unsigned textures[CR::Gfx::TextureRole::total];
+                CR::Gfx::MeshData md;   
+                unsigned int mIndex;
+                unsigned int nIndices;
+                unsigned int bVertex;
+                unsigned int bIndex;                           
                 Mesh(){
                     
                 }
@@ -320,6 +338,8 @@
             std::shared_ptr<FramebufferObj> createFramebuffer(unsigned w, unsigned h);
             bool deleteFramebuffer(unsigned id);
             
+
+            CR::Gfx::MeshData createMesh(const std::vector<float> &pos, const std::vector<float> &tex, const std::vector<unsigned int> &indices, unsigned vPosStType, unsigned vTexStType);
             CR::Gfx::MeshData createMesh(const std::vector<float> &pos, const std::vector<float> &tex);
             CR::Gfx::MeshData createMesh(const std::vector<float> &pos, const std::vector<float> &tex, unsigned vPosStType, unsigned vTexStType);
             bool updateMesh(CR::Gfx::MeshData &md, unsigned vrole, const std::vector<float> &vertex);

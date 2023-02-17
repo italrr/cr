@@ -723,7 +723,7 @@ bool CR::Gfx::init(){
 
 
 static void __RENDER_MESH(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl){
-    auto *obj = static_cast<CR::Gfx::Renderable3D*>(renobj);
+    auto *obj = static_cast<CR::Gfx::Renderable3D*>(renobj);    
 
     static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->shAttrsValVec[2])->mat = rl->camera.getView();
     static_cast<CR::Gfx::ShaderAttrMat4*>(obj->transform->shAttrsValVec[3])->mat = rl->projection;
@@ -734,7 +734,9 @@ static void __RENDER_MESH(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl)
     glBindTexture(GL_TEXTURE_2D, obj->transform->textures[CR::Gfx::TextureRole::DIFFUSE]); INC_OPGL_DEBUG;
 
     glBindVertexArray(obj->md.vao); INC_OPGL_DEBUG;
-    glDrawArrays(GL_TRIANGLES, 0, obj->md.vertn); INC_OPGL_DEBUG;
+    // glDrawArrays(GL_TRIANGLES, 0, obj->md.vertn); INC_OPGL_DEBUG;
+    glDrawElements(GL_TRIANGLES, obj->md.indices, GL_UNSIGNED_INT, 0); INC_OPGL_DEBUG;
+
     glBindVertexArray(0); INC_OPGL_DEBUG;       
     glUseProgram(0); INC_OPGL_DEBUG;  
 
@@ -1342,6 +1344,52 @@ bool CR::Gfx::updateMesh(CR::Gfx::MeshData &md, unsigned vrole, const std::vecto
 }
 
 
+CR::Gfx::MeshData CR::Gfx::createMesh(const std::vector<float> &pos, const std::vector<float> &tex, const std::vector<unsigned int> &indices, unsigned vPosStType, unsigned vTexStType){
+    unsigned vbo[2], vao, ebo;
+
+    glGenVertexArrays(1, &vao); INC_OPGL_DEBUG;
+    glGenBuffers(2, vbo); INC_OPGL_DEBUG;
+    glGenBuffers(1, &ebo);
+    
+    // GENERATE POSITION BUFFER
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[VertexRole::POSITION]); INC_OPGL_DEBUG;
+    glBufferData(GL_ARRAY_BUFFER, pos.size() * sizeof(float), &pos[0], vPosStType == VertexStoreType::DYNAMIC ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW); INC_OPGL_DEBUG;
+
+    // GENERATE TEXTURE COORDINATES
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[VertexRole::TEXCOORD]); INC_OPGL_DEBUG;
+    glBufferData(GL_ARRAY_BUFFER, tex.size() * sizeof(float), &tex[0], vTexStType == VertexStoreType::DYNAMIC ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW); INC_OPGL_DEBUG;
+
+    glBindVertexArray(vao); INC_OPGL_DEBUG;
+
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo); INC_OPGL_DEBUG;
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW); INC_OPGL_DEBUG;    
+
+
+    // BIND POSITION TO VAO
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[VertexRole::POSITION]); INC_OPGL_DEBUG;
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); INC_OPGL_DEBUG;
+    glEnableVertexAttribArray(0); INC_OPGL_DEBUG;
+
+    // BIND TEXCOORDS TO VAO
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[VertexRole::TEXCOORD]); INC_OPGL_DEBUG;
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0); INC_OPGL_DEBUG;
+    glEnableVertexAttribArray(1); INC_OPGL_DEBUG;
+    
+    glBindBuffer(GL_ARRAY_BUFFER, 0); INC_OPGL_DEBUG;
+    glBindVertexArray(0); INC_OPGL_DEBUG;
+
+
+    CR::Gfx::MeshData md;
+    md.vao = vao;
+    md.vbo[0] = vbo[0];
+    md.vbo[1] = vbo[1];
+    md.ebo = ebo;
+    md.indices = indices.size();
+    md.vertn = static_cast<float>(pos.size()) / 3.0f;
+    return md;
+}
+
 CR::Gfx::MeshData CR::Gfx::createMesh(const std::vector<float> &pos, const std::vector<float> &tex){
     return CR::Gfx::createMesh(pos, tex, VertexStoreType::STATIC, VertexStoreType::STATIC);
 }
@@ -1360,7 +1408,7 @@ CR::Gfx::MeshData CR::Gfx::createMesh(const std::vector<float> &pos, const std::
 
     // GENERATE TEXTURE COORDINATES
     glBindBuffer(GL_ARRAY_BUFFER, vbo[VertexRole::TEXCOORD]); INC_OPGL_DEBUG;
-    glBufferData(GL_ARRAY_BUFFER, pos.size() * sizeof(float), &tex[0], vTexStType == VertexStoreType::DYNAMIC ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW); INC_OPGL_DEBUG;
+    glBufferData(GL_ARRAY_BUFFER, tex.size() * sizeof(float), &tex[0], vTexStType == VertexStoreType::DYNAMIC ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW); INC_OPGL_DEBUG;
 
 
     glBindVertexArray(vao); INC_OPGL_DEBUG;
@@ -1382,7 +1430,6 @@ CR::Gfx::MeshData CR::Gfx::createMesh(const std::vector<float> &pos, const std::
 
     CR::Gfx::MeshData md;
     md.vao = vao;
-    // memcpy(md.vbo, vbo, sizeof(vbo));
     md.vbo[0] = vbo[0];
     md.vbo[1] = vbo[1];
     md.vertn = static_cast<float>(pos.size()) / 3.0f;

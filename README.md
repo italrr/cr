@@ -91,17 +91,17 @@ Example:
 ## Requirements
 
 - C++11 capable compiler
-- AMD64/x64 or ARMv8. Other architectures might work, but the game is not prepared to handle anything else.
+- AMD64/x64 or ARMv8. Other architectures might work.
 - OpenGL 4.5 or Vulkan 1.3 GPU capable GPU
 - 1024MB VRAM
 - 4GB RAM
-- Windows, Linux or OS X (OS X is not working as of now, but it will). Other OSes might work, but again, not prepared to handle environments different than these.
+- Windows, Linux or OS X (Although other *NIX might work)
 
 ## Dependencies
 
 - GLFW3
 - Vulkan 1.3 and/or OpenGL 4.4/4.5 (Either can be disabled)
-- Assimp 5.0 or higher
+- Assimp 4.0 or higher
 - FreeType 2
 - OpenAL 1.1 or higher
 - pthreads 

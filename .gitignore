@@ -3,6 +3,7 @@ cmake_install.cmake
 CMakeCache.txt
 cr.exe
 cr
+libassimp.dll
 .vscode/*
 libcr_bin.a
 Makefile

@@ -185,19 +185,41 @@
             };
         }
 
+        struct EntityStatus {
+            bool dead;
+            CR::T_GENERICATTR health;
+            CR::T_GENERICATTR maxHealth;
+            CR::T_GENERICATTR lv;
+        };        
+
         struct EntityAttr {
+            CR::T_GENERICATTR str;
+            CR::T_GENERICATTR bstr;
+
+            CR::T_GENERICATTR agi;
+            CR::T_GENERICATTR bagi;      
+
+            CR::T_GENERICATTR dex;
+            CR::T_GENERICATTR bdex;             
+
+            CR::T_GENERICATTR pers;
+            CR::T_GENERICATTR bpers;            
+
+            CR::T_GENERICATTR intel;
+            CR::T_GENERICATTR bintel;   
+
+            CR::T_GENERICATTR statPoints;                  
+        };
+
+        struct EntityComplexAttr {
+
+            CR::T_GENERICATTR carry;
+            CR::T_GENERICATTR maxCarry;
             
         };
 
-        struct EntityStat {
-
-        };
-
-        struct EntityComplexStat {
-
-        };
-
         struct Entity : CR::Object {
+
             CR::T_GENERICTYPE entState[3];         // Entity can hold up 8 different states
             CR::T_AUDITORD entStateTarget[3];
             CR::T_AUDITORD entStateStart[3];
@@ -209,7 +231,7 @@
             Entity();
             void build(CR::T_GENERICTYPE entType);
             void setControlType(CR::T_GENERICTYPE ctype, CR::T_GENERICID cId);
-            
+            void walk(CR::T_WORLDPOS x, CR::T_WORLDPOS y);
         };
 
         

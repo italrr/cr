@@ -92,6 +92,14 @@ bool CR::World::apply(const std::shared_ptr<CR::Audit> &audit){
             CR::T_GENERICID clId;
             entId = audit->affEnt[0];
             audit->data.read(&clId, sizeof(CR::T_GENERICID));
+            auto obj = this->get(entId).get();
+            if(!obj){
+                int eId = entId;
+                CR::log("World[%i]%s Client '%i' was about to be granted control over Entity '%i': But it doesn't exist \n", this->wId, this->puppetMode ? "[P]" : "[M]", clId, eId);    
+                break;
+            }
+            auto ent = static_cast<CR::Entity*>(obj);
+            ent->setControlType(CR::EntityControlType::PLAYER, clId);
             #if CR_ENABLE_DEBUG_BUILD
                 int eId = entId;
                 CR::log("World[%i]%s Client '%i' was granted control over Entity '%i' \n", this->wId, this->puppetMode ? "[P]" : "[M]", clId, eId);    

@@ -33,7 +33,8 @@ void CR::Rsc::Index::autotag(){
     }    
     if(format == "obj"){
         tags.push_back("model");
-    }        
+    }
+    tags.push_back(format);
 }
 
 bool CR::Rsc::Index::isIt(const std::string &tag){

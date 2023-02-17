@@ -190,13 +190,13 @@ Arthur is an honorable Abadiú in Veracrúz, although he holds no political powe
 
 - Jem 
 
-Jem is a cyborg, extremely dangerous individual, wanted crimininal across all colonies, head of the Saborou Group. Jem posses a military-grade prosthetic body. Jem likes to be called by She/her pronous, but her body looks anything but feminine.
+Jem is a cyborg, extremely dangerous individual, wanted crimininal across all colonies, head of the Saborou Group. Jem posses a military-grade prosthetic body. Jem likes to be called by She/her pronous, but her body looks anything but feminine. 
 
 - Zanzan
 
-Zanzan is another cyborg, also extremely dangerous, and wanted crimininal. Zanzan is Jem's fiance and right-hand. Zanzan is regarded to be a male, but his body shows exhibits a lot of feminine traits. He passes as androgenous most of the time.
+Zanzan is another cyborg, also extremely dangerous, and wanted crimininal. Zanzan is Jem's fiance and right-hand. Zanzan is regarded to be a male, but his body exhibits a lot of feminine traits. He passes as androgenous most of the time.
 
-He has a high-end prosthetic body. It's said his brain is also prosthetic, making him one of the people featuring a digitized brains.
+He has a high-end prosthetic body. It's said his brain is also prosthetic, making him one of the few people featuring a digitized brains.
 
 Zanzan's body also feature a very unique set of decorative wings.
 
@@ -272,9 +272,9 @@ Most people call him Jelly. Maximillian likes using swords.
 
 - Anamura "Mephisto" Kalo
 
-Anamura is a very popular actress and Movie-Teleprojection producer, and one of the best players of the Genus Race. Anamura is also one of the wealthiest people the in showbiz. She goes by the nickname of Mephisto in the Genus Race. Anamura was originally born male, but through prosthetic body moditifications legally transitioned to female.
+Anamura is a very popular actress and Movie-Teleprojection producer, and one of the best players of the Genus Race. Anamura is also one of the wealthiest people the in showbiz. She goes by the nickname of Mephisto in the Genus Race. Anamura was originally born male, but through prosthetic body moditifications legally transitioned to female in an early age.
 
-She has a high-end prosthetic body. She mentioned in one interviewed that her body costs around 1 million Gems
+She has a high-end prosthetic body. She mentioned in one interview that her body costs around 1 million Gems
 
 - Nicki "El Chulo" Rodriguez
 
@@ -315,7 +315,7 @@ It's the first and biggest major city/colony in mars part of the UNT. NH was one
 
 ### Evergrandis [**Wayland**]
 
-It's the second and second biggest major city in  mars, part of Wayland. The UNT and Wayland agreed on sharing mars, thus spliting the ownership of the land in half.
+It's the second founded and second biggest major city in  mars, part of Wayland. The UNT and Wayland agreed on sharing mars, thus spliting the ownership of the land in half.
 
 Evergrandis is also the second wealthiest colony, after Nova Horizon, in the solar system. Evergrandis is famous because of the high-luxury restaurants and vacation spots. Evergrandis features the biggest artificial ocean in the solar system, very realistically emulating a earth's ocean. 
 
@@ -335,11 +335,11 @@ Evergrandis is also the second wealthiest colony, after Nova Horizon, in the sol
 
 ### Romdo or The Interplanetary Space Station[**INDEPENDENT**]
 
-It's a luxurious neutral zone Space Station built within 5 years of the destruction of earth with the purpose of hosting the main headquaters of The Federation for the Future of Humanity. Although through time it also became a comercial and residential structure. Most of the wealthiests and high society individuals live in Romdo. There are around 150 thousand people living there. It's said it has cost around 3 trillion Gems to build.
+It's a luxurious neutral zone Space Station built within 5 years of the destruction of earth with the purpose of hosting the headquaters of The Federation for the Future of Humanity. Although through time it also became a comercial and residential structure. Most of the wealthiests and high society individuals live in Romdo. There are around 150 thousand people living there. It's said it has cost around 3 trillion Gems to build.
 
 The most advanced hospital in the solar system is located in Romdo.
 
-Romdo is orbiting mars on a fixed direction as to be always on top of New Horizon.
+Romdo is orbiting mars on a fixed direction as to be always on top of Nova Horizon.
 
 
 
