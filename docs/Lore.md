@@ -337,7 +337,7 @@ Evergrandis is also the second wealthiest colony, after Nova Horizon, in the sol
 
 It's a luxurious neutral zone Space Station built within 5 years of the destruction of earth with the purpose of hosting the headquaters of The Federation for the Future of Humanity. Although through time it also became a comercial and residential structure. Most of the wealthiests and high society individuals live in Romdo. There are around 150 thousand people living there. It's said it has cost around 3 trillion Gems to build.
 
-The most advanced hospital in the solar system is located in Romdo.
+The most advanced medical center in the solar system is located in Romdo.
 
 Romdo is orbiting mars on a fixed direction as to be always on top of Nova Horizon.
 

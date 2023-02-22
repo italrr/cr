@@ -40,8 +40,11 @@ static void initMesh(   const unsigned int index,
                         CR::Gfx::Model *model);
 
 static void initScene(const aiScene* pScene, CR::Gfx::Model *model);
+static void initTexture(const unsigned int index, const aiScene* scene, const aiMesh *mesh, CR::Gfx::Mesh *crmesh);
+
+
+
 static void initBones(const unsigned int index, const aiMesh *mesh, CR::Gfx::Mesh *amesh, CR::Gfx::Model *model);
-static void initTexture(const aiScene* scene, const aiMesh *mesh, std::vector<TextureDep> &textures);
 static void initAnimation(const aiScene* scene, CR::Gfx::Model *model);
 
 
@@ -75,10 +78,66 @@ static void initScene(const aiScene* scene, CR::Gfx::Model *model){
     for(unsigned int i = 0; i < nmeshes; ++i){
         auto &mesh = rsc->mesh[i];
         initMesh(i, scene, scene->mMeshes[i], model);
+        initTexture(i, scene, scene->mMeshes[i], mesh.get());
     }
     // init animation
     // initAnimation(scene, model);
 }
+
+static void initBones(const unsigned int index, const aiMesh *mesh, CR::Gfx::Mesh *amesh, CR::Gfx::Model *model){
+
+    // auto rsc = model->getRsc();
+
+    // for(int i = 0; i < mesh->mNumBones; ++i){
+    //     auto aiBone = mesh->mBones[i];
+    //     std::string name(aiBone->mName.data);
+
+    //     int boneIndex = rsc->boneInfo.size();
+        
+    //     if(rsc->boneMapping.find(name) == rsc->boneMapping.end()){
+    //         // map index
+    //         rsc->boneMapping[name] = boneIndex;
+    //         // add bone info
+    //         CR::Gfx::BoneInfo boneInfo;
+    //         rsc->boneInfo.push_back(boneInfo);   
+    //     }else{
+    //         boneIndex = rsc->boneMapping[name];      
+    //     }       
+
+    //     rsc->boneInfo[boneIndex].offset = aiMat2CR(aiBone->mOffsetMatrix);
+    //     rsc->boneInfo[boneIndex].name = name;    
+
+    //     // add weights
+    //     for(int j = 0; j < aiBone->mNumWeights; ++j){
+    //         unsigned int vertId = aiBone->mWeights[j].mVertexId;
+    //         float weight = aiBone->mWeights[j].mWeight;
+    //         amesh->vertices[vertId].setBoneData(boneIndex, weight);
+    //     }
+    // }
+  
+}
+
+static void initTexture(const unsigned int index, const aiScene* pScene, const aiMesh *mesh, CR::Gfx::Mesh *crmesh){
+
+    static auto process = [&](aiMaterial *mat, aiTextureType type, int rtypeName){
+        for(unsigned int i = 0; i < mat->GetTextureCount(type); ++i){
+            aiString str;
+            mat->GetTexture(type, i, &str);
+            std::string fpath = CR::String::format("data/texture/%s", str.C_Str());
+            if(CR::File::exists(fpath)){
+                crmesh->textures[rtypeName].load(fpath);
+            }
+        }            
+    };  
+
+    aiMaterial* material = pScene->mMaterials[mesh->mMaterialIndex];  
+    process(material, aiTextureType_DIFFUSE, CR::Gfx::TextureRole::DIFFUSE);
+    process(material, aiTextureType_SPECULAR, CR::Gfx::TextureRole::SPECULAR);
+    process(material, aiTextureType_HEIGHT, CR::Gfx::TextureRole::NORMAL);
+    process(material, aiTextureType_AMBIENT, CR::Gfx::TextureRole::HEIGHT); 
+};
+
+
 
 static void initMesh(   const unsigned int index,
                         const aiScene* pScene,

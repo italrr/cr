@@ -3,6 +3,7 @@
 
     #include "Types.hpp"
     #include "Resource.hpp"
+    #include "Texture.hpp"
 
     #define CR_ENABLE_DEBUG_BUILD 1
 
@@ -143,7 +144,7 @@
                     this->vao = other.vao;
                     this->ebo = other.ebo;
                     this->vertn = other.vertn;
-                    this->indices = other.indices;                    
+                    this->indices = other.indices;
                     return *this;
                 }                
                 MeshData(){
@@ -154,25 +155,25 @@
                     indices = 0;
                 }
             };
-            
+
+            struct ShaderAttr;
+            struct Texture;
+            struct Shader;
+            struct FontResource;
+            struct TextRenderOpts;            
 
             struct Mesh {
-                unsigned textures[CR::Gfx::TextureRole::total];
+
+                CR::Gfx::Texture textures[CR::Gfx::TextureRole::total];
                 CR::Gfx::MeshData md;   
                 unsigned int mIndex;
                 unsigned int nIndices;
                 unsigned int bVertex;
                 unsigned int bIndex;                           
                 Mesh(){
-                    
+                  
                 }
             };
-                        
-            struct ShaderAttr;
-            struct Texture;
-            struct Shader;
-            struct FontResource;
-            struct TextRenderOpts;
 
             struct Transform {
                 std::shared_ptr<CR::Gfx::Shader> shader;

@@ -734,9 +734,13 @@ static void __RENDER_MESH(CR::Gfx::Renderable *renobj, CR::Gfx::RenderLayer *rl)
     glBindTexture(GL_TEXTURE_2D, obj->transform->textures[CR::Gfx::TextureRole::DIFFUSE]); INC_OPGL_DEBUG;
 
     glBindVertexArray(obj->md.vao); INC_OPGL_DEBUG;
-    // glDrawArrays(GL_TRIANGLES, 0, obj->md.vertn); INC_OPGL_DEBUG;
-    glDrawElements(GL_TRIANGLES, obj->md.indices, GL_UNSIGNED_INT, 0); INC_OPGL_DEBUG;
-
+    // if indices are provided, we use them to draw
+    if(obj->md.indices > 0){
+        glDrawElements(GL_TRIANGLES, obj->md.indices, GL_UNSIGNED_INT, 0); INC_OPGL_DEBUG;
+    // otherwise we just draw the vertex in order
+    }else{
+        glDrawArrays(GL_TRIANGLES, 0, obj->md.vertn); INC_OPGL_DEBUG;
+    }
     glBindVertexArray(0); INC_OPGL_DEBUG;       
     glUseProgram(0); INC_OPGL_DEBUG;  
 
