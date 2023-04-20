@@ -2,14 +2,10 @@
 
 out vec4 FragColor;
 
+in vec2 texCoords;
+
 uniform sampler2D image;
 uniform vec3 color;
-
-in vec3 FragPos;  
-in vec3 Normal;  
-in vec2 texCoords;
-flat in ivec4 ID;
-in vec4 Weight;
 
 void main(){
     vec4 texColor = texture(image, texCoords);

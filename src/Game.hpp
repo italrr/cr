@@ -6,6 +6,7 @@
     #include "Engine/Types.hpp"
     #include "Engine/Tools.hpp"
     #include "Engine/Input.hpp"
+    #include "Engine/Graphics.hpp"
 
 
     namespace CR {
@@ -341,7 +342,7 @@
 
             }
 
-            virtual void draw(){
+            virtual void draw(CR::Gfx::RenderLayer *layer){
                 
             }            
         };        

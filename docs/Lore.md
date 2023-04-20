@@ -41,6 +41,10 @@ The Intrisic Fields Manipulation (IFM) was a major scientific breakthrough by th
 
 The IVTE and MD were very power hungry, and needed a highly specialized setup to run. Alana proposed a concept of a portable nuclear reactor but was soon discarded when the French government reached out to them with the Azula Reactor. After both parties reaching an agreement, the Azula Reactor was selected as the ideal power source for the IVTE/MD combination.
 
+### Principle Of Jemeran and Zakzzuz Energy conversion
+
+The Principle J
+
 ### Negative-Vacuum Implosive Bomb
 
 With the creation of the IVTE came another revolution in War Weaponary. The NVIB is a planet destroyer bomb. It works the same as the IVTE, but in an inwards manner, utilizing a much bigger version than a standard sized one, and equipped with a several gigatons power source to drive the reaction. This bomb is extremely hard and costly to build. Only one group of people posses this bomb.

@@ -5,6 +5,7 @@
     #include "Engine/Graphics.hpp"
     #include "Engine/Texture.hpp"
     #include "Engine/Shader.hpp"
+    #include "Engine/Model.hpp"
 
     #include "Game.hpp"
 
@@ -119,25 +120,6 @@
             }
         }
 
-        struct AnimFrame {
-            std::string name;
-            bool vflip;
-            bool hflip;
-            unsigned dir;
-            std::vector<CR::Rect<float>> frames;
-            AnimFrame();
-        };
-
-        struct EntityAnim {
-            float framerate;
-            CR::Vec2<float> frameSize;
-            std::shared_ptr<CR::Gfx::Texture> atlas;            
-            std::vector<CR::AnimFrame> anims;
-            EntityAnim();
-            bool load(const std::string &path);
-        };
-
-
         namespace EntityControlType {
             enum EntityControlType : T_GENERICTYPE {
                 IDLE,
@@ -218,7 +200,14 @@
             
         };
 
+        struct EntityAnim {
+            CR::Gfx::Model model;
+            CR::Gfx::Transform trans;
+        };
+
         struct Entity : CR::Object {
+            
+            std::shared_ptr<CR::EntityAnim> anim;
 
             CR::T_GENERICTYPE entState[3];         // Entity can hold up 8 different states
             CR::T_AUDITORD entStateTarget[3];
@@ -232,6 +221,7 @@
             void build(CR::T_GENERICTYPE entType);
             void setControlType(CR::T_GENERICTYPE ctype, CR::T_GENERICID cId);
             void walk(CR::T_WORLDPOS x, CR::T_WORLDPOS y);
+            void draw(CR::Gfx::RenderLayer *layer);              
         };
 
         

@@ -341,7 +341,7 @@ void CR::World::render(const CR::Vec2<unsigned> &offset){
     // Objects from world are rendered on the overworld directly
     gameLayer->renderOn([&](CR::Gfx::RenderLayer *layer){    
         for(unsigned i = 0; i < this->objects.size(); ++i){
-            this->objects[i]->draw();
+            this->objects[i]->draw(gameLayer.get());
         }
     });   
 }

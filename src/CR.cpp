@@ -386,7 +386,7 @@ int main(int argc, char* argv[]){
     sh->findAttrs({"color", "model", "projection", "image", "view"});
 
     CR::Gfx::Model model;
-    model.load("data/model/nathan.fbx");
+    model.load("data/model/Male_Standing.fbx");
 
     auto transform = new CR::Gfx::Transform();
     transform->shader = sh;
@@ -396,7 +396,7 @@ int main(int argc, char* argv[]){
     auto position = CR::MAT4Identity
                     .translate(CR::Vec3<float>(0.0f, -30.0f, 0.0f))
                     .rotate(0, CR::Vec3<float>(0, 0, 0))
-                    .scale(CR::Vec3<float>(10.0f));
+                    .scale(CR::Vec3<float>(50.0f));
 
     transform->shAttrsVal = {
         {"image", std::make_shared<CR::Gfx::ShaderAttrInt>(0)},
@@ -469,7 +469,7 @@ int main(int argc, char* argv[]){
 
         gameL->renderOn([&](CR::Gfx::RenderLayer *layer){
             auto rsc = model.getRsc();
-            
+
             for(unsigned i = 0; i < rsc->mesh.size(); ++i){
                 layer->add(CR::Gfx::Draw::Mesh(rsc->mesh[i]->md, transform));
             }
