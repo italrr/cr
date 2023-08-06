@@ -22,8 +22,7 @@ The social and political implications of these events radically changed humanity
 
 ### Azula Portable Nuclear Fusion Reactor (AZPNFR) or Azula Reactor or Azula
 
-Azula Portable Nuclear Reactor is a design for a Portable Fusion Reactor proposed by a french scientist known as Piere Halloway in 2062. The original design for this reactor weighted 500 pounds, but there are modern revisions of it weighting less than 100 pounds. The Azula Reactor
-works similarly to generic Fusion Reactors, but instead of using steam to drive turbines, it uses a very rare type of metal called Azulumiun. Azulumiun when heated produces an electrical discharge 85% proportional in energy to the heat applied. Meaning it has a 85% conversion of thermal energy. This mysterious metal was first found in the core of an asteroid that was theorized to contain large quantities of diamonds. Azulumiun melting point is completely dependant of its ability to discharge. The more heated it gets, the higher the discharge. However, if it were to be isolated, incapable of discharging, it would start losing is structural integratiy. The start melting point of Azulumiun without discharging is 545 C.
+Azula Portable Nuclear Reactor is a design for a Portable Fusion Reactor proposed by a french scientist known as Piere Halloway in 2062. The original design for this reactor weighted 500 pounds, but there are modern revisions of it weighting less than 100 pounds. The Azula Reactor works similarly to generic Fusion Reactors, but instead of using steam to drive turbines, it uses a very rare type of metal called Azulumiun. Azulumiun when heated produces an electrical discharge 85% proportional in energy to the heat applied. Meaning it has a 85% conversion of thermal energy. This mysterious metal was first found in the core of an asteroid that was theorized to contain large quantities of diamonds. Azulumiun melting point is completely dependant of its ability to discharge. The more heated it gets, the higher the discharge. However, if it were to be isolated, incapable of discharging, it would start losing is structural integratiy. The start melting point of Azulumiun without discharging is 545 C.
 
 The French government quickly took over as the first prototype was succesfully tested. The project was never made public up until Alana Industries reported their first successul test of the IVTE. The French government offered their reactor as the potential power source for the IVTE. Alana agreed to work together.
 
@@ -31,19 +30,21 @@ Azulumiun is a very rare metal nowdays, however there's an artificial substitute
 
 It's worth mentioning that these reactors are incapable of reaching critical mass without the use of a fissible fuel such as uranium or plutonium.
 
-### IVTE and Intrisic Fields Manipulation
+### IVTE and Instrinsict Fields Manipulation
 
 Interplanetary traveling was made possible by the break of the century: the Interplanetary Vacuumless Thrust Engine (IVTE, or eeft as it's called colloquially). IVTE produces immense accelation capable of reaching 0.99c (99% of the speed of light) in less than one minute. This is however only possible with a Massless Drive (MD). The Massless Drive is capable of physically faking the mass of certain objects connected to the field (including the IVTE), meaning objects within or inside of the husk of the spaceship weight less than a gram but only to the engine as the effect is purely relativistic. One issue of the IVTE is that combining it with the Massless Drive, causes a massive gravitational pull and push around the ship that could potentially cause havok around civialian areas. That's why it's highly illegal engaging full throttle with the IVTE close to a populated areas. There are systems in place to take down any ship that engages full throttle within the bounds of a colony or space station.
 
-The IVTE and Massless Drive were both created by Alana Industries. The MD was the first created, and it was meant to be used for asteroid mining, but never left testing phases. The MD started as a paper on potential applications using Intrisic Fields Manipulation on the Higgs Boson. IVTE also uses theories proposed by this paper.
+The IVTE and Massless Drive were both created by Alana Industries. The MD was the first created, and it was meant to be used for asteroid mining, but never left testing phases. The MD started as a paper on potential applications using Instrinsict Fields Manipulation on the Higgs Boson. IVTE also uses theories proposed by this paper.
 
-The Intrisic Fields Manipulation (IFM) was a major scientific breakthrough by the end of 2060s. It works through the usage of extremely high energy beams on matter.
+The Instrinsict Fields Manipulation (IFM) was a major scientific breakthrough by the end of 2060s. It works through the usage of extremely high energy beams on matter.
 
 The IVTE and MD were very power hungry, and needed a highly specialized setup to run. Alana proposed a concept of a portable nuclear reactor but was soon discarded when the French government reached out to them with the Azula Reactor. After both parties reaching an agreement, the Azula Reactor was selected as the ideal power source for the IVTE/MD combination.
 
-### Principle Of Jemeran and Zakzzuz Energy conversion
+### Theorem Of Jemeran and Zakzzuz in Space Teletarptulation
 
-The Principle J
+It's a thesis project by Livio Jemeran y Mellany Zakzzuz that tries to connect two fundamental qualities in the study of Instrinsict Fields that is speculated to allow space bending manipulation. Jemeran and Zakzzuz were born in right before the nuclear war broke out, but their parents manage to get them both on a Ascendance Mission Program designed for people of lower income to move to any of the colonies in the solar system with citizenship and scholarship included. Both were accepted by the UNT where they started their studies in theoretical physics after nailing the exam. They eventually joined the highly prestigious University of Grant Belverede, located in Romdo. Grant Belverede was originally founded by the The Vega Group, but later on the UNT joined the benefectors list. Grant Belverede's specialty is its theorical physics and medicine schools. The majority of the best doctors in the solar system come from GB.
+
+Jemeran and Zakzzuz became the founders of a new field of study derived from the original discovery of the Higgs boson at CERN on earth in the year 2012. This new fields is known as Teletarptulation. In layman terms it's basically the study of space bending and its practical applications. Many scientists regard Teletarptulation as the next major breakthrough in transporation, superseding the IVTE. However many others consider it waste of time and even the seeking of a snake oil. Teletarptulation has presented a lot of problems and barriers. The first one being the amount of energy required to bend space. Every experiment made by both Jemeran and Zakzzuz has cost millions of GEMS to the University.
 
 ### Negative-Vacuum Implosive Bomb
 
@@ -95,7 +96,7 @@ Rules:
 - Players may equip energy chest armor and energy helmet to the match. These discharge with every impact and can be charged in specific charging stations spread across the rig
 - Players must equip an Unemotic Control band on their necks. This bad discharges electricity to the nerveous system when players are outside of the zone. Players are completely disallowed to unequip this band. If they do, they're immediatly disquilified and escorted out of the game.
 - Friendly fire is allowed
-- A player can anytime voluntarily drop out of a match by yelling the keyword at one of the camaras. Although this does not assure that the player's safety.
+- A player can anytime voluntarily drop out of a match by yelling the keyword at one of the camaras. Although this does not assure that the player's safety
 - Cyborg players cannot bring any specialized battle corpus mods.
 
 UNT and Wayland often send their own official teams to these games.
@@ -127,9 +128,14 @@ Veracrúz was an independent group of colonizers before the war, headed by Alana
 
 The official languages in Veracrúz are English, Spanish, French.
 
-Veracrúz posses a societal
+Veracrúz's government structure is actually a hierarchy system tightly correlated to  people's bloodlines. 
 
-The Abadiú is the highest degree of recognition hierarchy wise in Veracrúz.
+Hirarchy: 
+
+Abadiú:
+    It's the highest recognition. Can only be granted by the Chief Officer Council in charge of Veracruz. In order to part of this county one must be a
+
+Nebado
 
 ## Major Factions
 
@@ -290,6 +296,15 @@ Nicki is only one of the tops players of Genus that has almost no prosthetics in
 
 James was originally a software engineer born in a wealthy family in Wayland that was disowned by his father. James became a black hat hacker, and the joined Nefastus. He became a recurrent player of the Genus Race.
 
+- Livio Jemeran
+
+Livio is an incredibly eccentric but brilliant theorical physicists. He's a professor and lead scientists at the most prestigious university in the field of phyisics and medicine, the University of Grant Belverede. Livio's a genius considered to have an IQ of 150. He and Mellany Zakzzuz both founded a new field of study known as Teletarptulation.
+
+Livio and Mellany are very competitive, both usually insult each other constantly and cause a lot of banter. Although ironically they both like to have sex when they're left alone in the lab.
+
+- Mellany Zakzzuz
+
+Mellany is a brilliant theorical physicist and a professor at the University of Grant Belverede
 
 ## How it starts
 

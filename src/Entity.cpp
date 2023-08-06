@@ -30,5 +30,5 @@ void CR::Entity::walk(CR::T_WORLDPOS x, CR::T_WORLDPOS y){
 }
 
 void CR::Entity::draw(CR::Gfx::RenderLayer *layer){
-    layer->add(CR::Gfx::Draw::Mesh(rsc->mesh[i]->md, transform));
+    // layer->add(CR::Gfx::Draw::Mesh(rsc->mesh[i]->md, transform));
 } 

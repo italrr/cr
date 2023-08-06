@@ -16,8 +16,16 @@
 
             namespace SupportedPlatform {
                 enum SupportedPlatform : int {
+                    // 
                     WINDOWS,
                     LINUX,
+                    OSX,
+                    STEAM_DECK,
+                    // Consoles
+                    N_SWITCH,
+                    S_PS5,
+                    XBOX_ONEX,
+                    PS_VITA,
                     UNSUPPORTED = -1
                 };
                 static std::string name(int plat){
