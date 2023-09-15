@@ -22,11 +22,11 @@ The social and political implications of these events radically changed humanity
 
 ### Azula Portable Nuclear Fusion Reactor (AZPNFR) or Azula Reactor or Azula
 
-Azula Portable Nuclear Reactor is a design for a Portable Fusion Reactor proposed by a french scientist known as Piere Halloway in 2062. The original design for this reactor weighted 500 pounds, but there are modern revisions of it weighting less than 100 pounds. The Azula Reactor works similarly to generic Fusion Reactors, but instead of using steam to drive turbines, it uses a very rare type of metal called Azulumiun. Azulumiun when heated produces an electrical discharge 85% proportional in energy to the heat applied. Meaning it has a 85% conversion of thermal energy. This mysterious metal was first found in the core of an asteroid that was theorized to contain large quantities of diamonds. Azulumiun melting point is completely dependant of its ability to discharge. The more heated it gets, the higher the discharge. However, if it were to be isolated, incapable of discharging, it would start losing is structural integratiy. The start melting point of Azulumiun without discharging is 545 C.
+Azula Portable Nuclear Reactor is a design for a Portable Fusion Reactor proposed by a french scientist known as Piere Halloway in 2062. The original design for this reactor weighted 500 pounds, but there are modern revisions of it weighting less than 100 pounds. The Azula Reactor works similarly to generic Fusion Reactors, but instead of using steam to drive turbines, it uses a very rare type of metal called Azulumiun. Azulumiun when heated produces an electrical discharge 85% proportional in energy to the heat applied. Meaning it has a 85% conversion of thermal energy. This mysterious metal was first found in the core of an asteroid that was theorized to contain large quantities of diamonds. Azulumiun melting point is completely dependant of its ability to discharge. The more heated it gets, the higher the discharge. However, if it were to be isolated, incapable of discharging, it would start losing is structural integratiy. The start melting point of Azulumiun without discharging is 545 C. The material quickly cools off as soon as it's able to discharge.
 
 The French government quickly took over as the first prototype was succesfully tested. The project was never made public up until Alana Industries reported their first successul test of the IVTE. The French government offered their reactor as the potential power source for the IVTE. Alana agreed to work together.
 
-Azulumiun is a very rare metal nowdays, however there's an artificial substitute known as Azulumiun-1010, which is cheaper. Azulumiun-1010 is only 50% as efficient as pure Azulumiun, therefore its energy througput is limited in comparison. Most cheap Azula knockoffs are built using 1010.
+Azulumiun is a very rare metal nowdays, however there's an artificial substitute known as Azulumiun-1010, which is cheaper. Azulumiun-1010 is only 50% as efficient as pure Azulumiun, therefore its energy througput is limited in comparison. Most cheap Azula knockoffs are built using 1010. Low end ships that use 1010 could take around 300% more time to reach top speed.
 
 It's worth mentioning that these reactors are incapable of reaching critical mass without the use of a fissible fuel such as uranium or plutonium.
 
@@ -173,6 +173,12 @@ They do believe technology is evil, a given to humans by the Devil. They're wait
 
 ## Companies relevant to the game
 
+# Similán Rocketry
+
+Similán Rocketry is Spaceship manufacturer founded by The Vega Group in 2100. Their main factory is located in Orion. Similán specializes in the making of very high end spaceships. Their main line Infraray has some of the most advanced Spaceships ever created. Their version of the IVTE is capable of producing propulsion towards the front of the ship, something most IVTEs cannot do.
+
+Similán has an office in Doluz.
+
 ### Tesla Industries
 
 Tesla develops androids, and replacement parts, but also some lower-end prosthetics. It's mid level company located in Doluz.
@@ -260,7 +266,7 @@ Raemon now works for a local gang called the Bibi Snakes.
 
 - Victor Vetsu
 
-Victor is the leader of the Bibi Snakes. The character can choose to work for Victor/Bibis. The name comes from an artificial food created by the Chinese before the world broke out. It's served as a delicatessen.
+Victor is the leader of the Bibi Snakes. The character can choose to work for Victor/Bibis. The name comes from an artificial food created by the Chinese before the war broke out. It's served as a delicatessen.
 
 Victor used to be a drug addict, that lost his job, and friends. Eventually he quit, and put together the Bibi Snakes. Victor is slender, but built.
 
@@ -286,7 +292,7 @@ Anamura is a very popular actress and Movie-Teleprojection producer, and one of 
 
 She has a high-end prosthetic body. She mentioned in one interview that her body costs around 1 million Gems
 
-- Nicki "El Chulo" Rodriguez
+- Nicki "El Chulo" Gutierrez
 
 Nicki is considered one of the best players of the Genus Race, having played 5 games and winning 3. Nicki a very dubious person, of unknown origins, besides Genus, he's mostly known for being very smooth with women. Some gossip networks call him "El Chulo" for having such success with women. Interestingly, there has never been reports of him mistreating women.
 
@@ -356,7 +362,7 @@ Evergrandis is also the second wealthiest colony, after Nova Horizon, in the sol
 
 It's a luxurious neutral zone Space Station built within 5 years of the destruction of earth with the purpose of hosting the headquaters of The Federation for the Future of Humanity. Although through time it also became a comercial and residential structure. Most of the wealthiests and high society individuals live in Romdo. There are around 150 thousand people living there. It's said it has cost around 3 trillion Gems to build.
 
-The most advanced medical center in the solar system is located in Romdo.
+The most advanced medical center in the solar system is located in Romdo. They one possess one of the few Psudo-transcriptors in the solar system. A technology capacable of printing entire organs in a mater of hours.
 
 Romdo is orbiting mars on a fixed direction as to be always on top of Nova Horizon.
 
