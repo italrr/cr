@@ -1,6 +1,6 @@
 # Caribbean Raster
 
-[<img src="./docs/images/cr_logo.png" style="display: block; margin: 0 auto" />](./link/to/sql/file)
+[<img src="./docs/images/cr_logo.png" style="display: block; margin: 0 auto" />](https://github.com/italrr/cr)
 
 <p style="text-align: center; font-weight:bold; font-style: italic; font-size: 1.2em">Bringing You Savor In 'em Pixels 🔥</p>
 
