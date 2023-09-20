@@ -17,7 +17,7 @@ Early build test (Current version doesn't build this anymore):
 
 # Features
 - 3D & 2D rendering pipelines
-- Multilayer (3D and 2D) rendering pipelines. Allowing to easily with both at the same time
+- Multilayer (3D and 2D) rendering pipelines. Allowing to easily draw on both at the same time
 - UTF-8/ASCII Font rendering with basic formatting included (such as auto line break and left/center/right alignment)
 - Supported 3D Model formats: FBX/OBJ/CR3 (CR3 is CR's native 3D model format)
 - Job system (CR::Job) for multhreading, and single threaded asynchronous event driven logic which includes convenient error handling through CR::Result
@@ -95,7 +95,7 @@ Example:
 
 ## Requirements
 
-- C++11 capable compiler
+- C++11 capable compiler (with C++11 standard library available. Preferably GCC)
 - AMD64/x64 or ARMv8. Other architectures might work.
 - OpenGL 4.5 or Vulkan 1.3 GPU capable GPU
 - 1024MB VRAM
