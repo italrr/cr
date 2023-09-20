@@ -10,6 +10,10 @@ CR actually is the evolution of two differet game engines previously developed (
 - https://github.com/italrr/nite (Single threaded 2D game engine designed for RPG games made in C++11 and utilizing OpenGL 3.0 for rendering)
 - https://github.com/italrr/astro (Highly concurrent 3D game engine designed for simulation/open-world games also made in C++11, and utilizes OpenGL 4.4/4.5, and Vulkan for rendering)
 
+Early build test:
+![Alt text](/docs/videos/test.mp4?raw=true "Early build")
+
+
 # Features
 - 3D & 2D rendering pipelines
 - Multilayer (3D and 2D) rendering pipelines. Allowing to easily with both at the same time
