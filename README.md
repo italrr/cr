@@ -11,7 +11,9 @@ CR actually is the evolution of two differet game engines previously developed (
 - https://github.com/italrr/astro (Highly concurrent 3D game engine designed for simulation/open-world games also made in C++11, and utilizes OpenGL 4.4/4.5, and Vulkan for rendering)
 
 Early build test (Current version doesn't build this anymore):
-<video src='https://raw.githubusercontent.com/italrr/cr/master/docs/videos/test.mp4'  width=400/>
+
+[![Alt text](/docs/videos/test.gif?raw=true "Early build")](https://www.youtube.com/watch?v=bo8umj15AYM)
+
 
 # Features
 - 3D & 2D rendering pipelines
