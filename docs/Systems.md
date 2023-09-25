@@ -14,6 +14,7 @@ Reading:
 - +: Adds
 - -: Removes
 - ^: Bonus
+
 Each derivative quality is compromised of four(4) 4ths. So, four pluses (++++) means 100%.
 
 However some other base stats can add a bonus of 25% more. Those are marked with ^.
