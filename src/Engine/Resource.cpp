@@ -25,13 +25,16 @@ void CR::Rsc::Index::autotag(){
     if(format == "json"){
         tags.push_back("json");
     } 
+    if(format == "xml"){
+        tags.push_back("xml");
+    }     
     if(format == "glsl"){
         tags.push_back("shader");
     }       
     if(format == "txt"){
         tags.push_back("text");
     }    
-    if(format == "obj"){
+    if(format == "obj" || format == "dae" || format == "cr3"){
         tags.push_back("model");
     }
     tags.push_back(format);

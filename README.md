@@ -110,3 +110,7 @@ Example:
 - FreeType 2
 - OpenAL 1.1 or higher
 - pthreads 
+
+# Carbon Rift (Game)
+
+Carbon Rift is the name of the being which this engine is developed for. You may find information about the story, lore and gameplay in the docs/ directory.

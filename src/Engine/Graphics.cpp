@@ -604,7 +604,11 @@ bool CR::Gfx::init(){
     
     size.x = settings->width;
     size.y = settings->height;
-    CR::log("[GFX] CAVERN RUSH v%i.%i.%i | res: %dx%d | OS: %s | ARCH: %s | Mode: %s \n", GAME_VERSION[0], GAME_VERSION[1], GAME_VERSION[2], settings->width, settings->height, platformName, archName, wst.c_str());
+    // Chromatic Reverie
+    // Chromatic Rift
+    // Cross rift
+    // Carbon Rift
+    CR::log("[GFX] CARBON RIFT v%i.%i.%i | res: %dx%d | OS: %s | ARCH: %s | Mode: %s \n", GAME_VERSION[0], GAME_VERSION[1], GAME_VERSION[2], settings->width, settings->height, platformName, archName, wst.c_str());
 
 
     if (!glfwInit()){
@@ -620,7 +624,7 @@ bool CR::Gfx::init(){
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 
-    window = glfwCreateWindow(settings->width, settings->height, "C A V E R N   R U S H", NULL, NULL);
+    window = glfwCreateWindow(settings->width, settings->height, "C A R B O N   R I F T", NULL, NULL);
 
     if(!window){
         CR::log("[GFX] Failed to open window\n");

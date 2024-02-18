@@ -20,8 +20,8 @@
                     WINDOWS,
                     LINUX,
                     OSX,
-                    STEAM_DECK,
                     // Consoles
+                    STEAM_DECK,
                     N_SWITCH,
                     S_PS5,
                     XBOX_ONEX,
@@ -217,7 +217,7 @@
                 CR::Vec4<T> end = pEnd;
                 if(cosom < static_cast<T>(0.0)){
                     cosom = -cosom;
-                    end.x = -end.x;   // Reverse all signs
+                    end.x = -end.x;   
                     end.y = -end.y;
                     end.z = -end.z;
                     end.w = -end.w;
@@ -225,7 +225,7 @@
 
                 // Calculate coefficients
                 T sclp, sclq;
-                if((static_cast<T>(1.0) - cosom) > static_cast<T>(0.0001)){ // 0.0001 -> some epsillon{
+                if((static_cast<T>(1.0) - cosom) > static_cast<T>(0.0001)){ 
                     // Standard case (slerp)
                     T omega, sinom;
                     omega = acos(cosom); // extract theta from dot product's cos theta
@@ -233,7 +233,6 @@
                     sclp  = sin( (static_cast<T>(1.0) - pFactor) * omega) / sinom;
                     sclq  = sin( pFactor * omega) / sinom;
                 }else{
-                    // Very close, do linear interp (because it's faster)
                     sclp = static_cast<T>(1.0) - pFactor;
                     sclq = pFactor;
                 }

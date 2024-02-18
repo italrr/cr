@@ -9,6 +9,14 @@
     namespace CR {
         namespace Gfx {
 
+            namespace ModelType {
+                enum ModelType : unsigned {
+                    OBJ,        // WAVEFRONT
+                    COLLADA,    
+                    CR3,         // CR's native Model format
+                };
+            }
+
             struct SkeletalFrameRotation {
                 CR::Vec4<float> rotation;
                 float time;
