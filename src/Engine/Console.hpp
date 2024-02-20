@@ -9,6 +9,33 @@
         
         namespace Console {
 
+            namespace UserLevel {
+                enum UserLevel : int {
+                    PLAYER = 1,
+                    MOD,
+                    ADMIN
+                };
+            }
+
+            namespace Source {
+                enum UserLevel : int {
+                    LOCAL = 1,
+                    REMOTE
+                };
+            }
+
+            namespace VarType {
+                enum VarType : int {
+                    Int = 0,
+                    Float,
+                    Bool,
+                    Literal, // String
+                    Unknown
+                };
+            }            
+
+
+            std::shared_ptr<CR::Result> interpret(const std::string &input, int source, int userLevel);
         }
 
     }
