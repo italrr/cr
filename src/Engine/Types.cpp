@@ -41,6 +41,15 @@ CR::Color::Color(const std::string &hex){
 	set(hex);
 }
 
+std::vector<float> CR::Color::rgb(){
+	return {
+		CR::Math::round(this->r * 255.0f),
+		CR::Math::round(this->g * 255.0f),
+		CR::Math::round(this->b * 255.0f),
+		CR::Math::round(this->a * 255.0f)
+	};
+}
+
 void CR::Color::set(const std::string &hex){
 	char *p;
 	int hexValue = strtol(hex.substr(1).c_str(), &p, 16);

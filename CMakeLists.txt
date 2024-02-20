@@ -21,6 +21,8 @@ set (cr_src
     src/Engine/Texture.cpp
     src/Engine/Model.cpp
     src/Engine/Resource.cpp
+    src/Engine/Console.cpp
+    src/Engine/Flexie/Flexie.cpp
     src/Engine/3rdparty/glad.c
     src/Engine/3rdparty/Jzon.cpp
     src/Engine/3rdparty/MD5.cpp

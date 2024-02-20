@@ -19,6 +19,7 @@
                 std::string fname;
                 std::string fpath;
                 std::string path; //abs
+                std::string format;
                 size_t size;
                 bool loaded;
                 std::vector<std::string> tags;

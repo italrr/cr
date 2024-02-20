@@ -643,6 +643,7 @@
 
 		static const CR::Mat<4, 4, float>MAT4Identity(MAT4FIdentity);
 
+		// In unit
 		struct Color {
 			void operator=(float c);
 			bool operator<(const CR::Color &v);
@@ -681,7 +682,8 @@
 			float r;
 			float g;
 			float b;
-			float a;		
+			float a;
+			std::vector<float> rgb();
 			operator std::string();
 			std::string str();
 			std::string hex();

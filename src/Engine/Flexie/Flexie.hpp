@@ -2,6 +2,7 @@
     #define CR_FLEXIE_HPP
 
     #include "../Types.hpp"
+    #include "../Font.hpp"
 
     namespace CR {
         namespace UI {
@@ -19,6 +20,15 @@
             struct Position {
                 unsigned x;
                 unsigned y;
+            };
+
+            struct StyleSheet {
+                CR::Gfx::Font font;
+
+                CR::Color bgColor;
+                CR::Color textColor;
+                CR::Color borderColor;
+
             };
 
             struct Base {
@@ -43,7 +53,7 @@
                 virtual void draw(){};
                 virtual void step(){};
                 virtual void destroy(){};
-                void clear();
+                void clear(); // removes alll children
 
             };
 

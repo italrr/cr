@@ -6,6 +6,7 @@ void CR::Rsc::Index::read(const std::string &path){
     this->path = path;
     this->size = CR::File::size(path);
     this->fname = CR::File::filename(path);
+    this->format = CR::String::toLower(CR::File::format(path));
     this->loaded = true;
     this->autotag();
 }

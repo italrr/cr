@@ -16,7 +16,7 @@
 
             namespace SupportedPlatform {
                 enum SupportedPlatform : int {
-                    // 
+                    // Desktop
                     WINDOWS,
                     LINUX,
                     OSX,
@@ -197,10 +197,15 @@
             float rads(float deg);
             float abs(float n);
             float degs(float rads);
+            float clamp(float num, float min, float max);
+            float min(float a, float b);
+            float max(float a, float b);
             int odd(int n);
             int even(int n);
             float round(float n);
             double round(double n);
+            float lerp(float x1, float x2, float step, float delta, float limit = 0.0f);
+            float lerpUnit(float x1, float x2, float step, float delta, float limit = 0.0f);
             CR::Mat<4, 4, float> scale(const CR::Vec3<float> &dir);
             CR::Mat<4, 4, float> perspective(float fovy, float aspRatio, float nearPlane, float farPlane);
             CR::Mat<4, 4, float> orthogonal(float left, float right, float bottom, float top, float zNear, float zFar);
@@ -209,11 +214,8 @@
 
             template<typename T>
             CR::Vec4<T> slerp(CR::Vec4<T> pStart, CR::Vec4<T> pEnd, T pFactor){
-                // Taken from assimp source code
-                // calc cosine theta
                 T cosom = pStart.x * pEnd.x + pStart.y * pEnd.y + pStart.z * pEnd.z + pStart.w * pEnd.w;
 
-                // adjust signs (if necessary)
                 CR::Vec4<T> end = pEnd;
                 if(cosom < static_cast<T>(0.0)){
                     cosom = -cosom;

@@ -99,6 +99,17 @@ void __CR_init_job();
 void __CR_end_job();
 void __CR_update_job();
 
+void __CR_init_FLEXIE();
+void __CR_end_FLEXIE();
+void __CR_update_FLEXIE();
+void __CR_render_FLEXIE(CR::Gfx::RenderLayer *layer);
+
+void __CR_init_console();
+void __CR_end_console();
+void __CR_update_console();
+void __CR_render_console(CR::Gfx::RenderLayer *layer);
+
+
 
 static std::string getOpenGLError(int v){
 	switch(v){
@@ -643,6 +654,8 @@ bool CR::Gfx::init(){
     __CR_init_input(window);
     __CR_init_job();
     __CR_init_network();
+    __CR_init_console();
+    __CR_init_FLEXIE();
 
     // basic rectangle for 2d rendering
     shBRect->load("data/shader/b_rect_texture_f.glsl", "data/shader/b_rect_texture_v.glsl");
@@ -1101,12 +1114,19 @@ void CR::Gfx::render(){
 
 
     // uiL->clear();
-    // uiL->renderOn([](CR::Gfx::RenderLayer *layer){    
-    //     layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->getRsc()->size, CR::Vec2<float>(0.0f), CR::Math::rads(0)));
-    //     // layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->size, CR::Vec2<float>(0.5f), CR::Math::rads(0)));
-    //     // layer->add(CR::Gfx::Draw::RenderLayer(dummyLayer, CR::Vec2<float>(layer->size.x - dummyLayer->size.x,layer->size.y - dummyLayer->size.y), CR::Vec2<int>(dummyLayer->size), CR::Vec2<float>(0.0f), 0.0f));
-    // });
+    //uiL->renderOn([](CR::Gfx::RenderLayer *layer){    
+        //layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->getRsc()->size, CR::Vec2<float>(0.0f), CR::Math::rads(0)));
+        // layer->add(Draw::Texture(dummyTexture, CR::Vec2<float>(0), dummyTexture->size, CR::Vec2<float>(0.5f), CR::Math::rads(0)));
+        // layer->add(CR::Gfx::Draw::RenderLayer(dummyLayer, CR::Vec2<float>(layer->size.x - dummyLayer->size.x,layer->size.y - dummyLayer->size.y), CR::Vec2<int>(dummyLayer->size), CR::Vec2<float>(0.0f), 0.0f));
+    //});
     // uiL->flush();
+
+    uiL->clear();
+    uiL->renderOn([](CR::Gfx::RenderLayer *layer){    
+        __CR_render_FLEXIE(layer);
+        __CR_render_console(layer);
+    });
+    uiL->flush();    
 
     
     // Flush system layers
@@ -1136,6 +1156,8 @@ void CR::Gfx::render(){
     glfwSwapBuffers(window);
 
     __CR_update_job();
+    __CR_update_console();
+    __CR_update_FLEXIE();
     glfwPollEvents();
 }
 
@@ -1170,6 +1192,8 @@ void CR::Gfx::onEnd(){
     glfwDestroyWindow(window);
     glfwTerminate();    
     CR::log("[GFX] Done\n");
+    __CR_end_FLEXIE();
+    __CR_end_console();
     __CR_end_input();
     __CR_end_network();
     __CR_end_job();    

@@ -346,6 +346,15 @@ namespace CR {
 		float rads(float deg){
 			return deg * 0.01745329251994329576923690768489;
 		}
+		float clamp(float num, float min, float max){
+			return CR::Math::min(CR::Math::max(num, min), max);
+		}
+		float min(float a, float b){
+			return a < b ? a : b;
+		}
+		float max(float a, float b){
+			return a > b ? a : b;
+		}		
 		float degs(float rads){
 			// return rads * (180.0f/PI);
 			return (rads/PI*180) + (rads > 0 ? 0 : 360);
@@ -353,6 +362,18 @@ namespace CR {
 			// )
 			// return (-rads * PI) / 180.0f;
 			// return std::fmod((rads * 180.0f) / (PI), 360);	
+		}
+		float lerp(float x1, float x2, float step, float delta, float limit){
+			if(x1 == x2) return x1;	
+			if(step > 1.0 || step <= 0.0){
+				step = 1.0;
+			}	
+			const float f = (1.0 - std::pow(1.0 - step, delta));
+			x1 = (x1 * (1.0 - f)) + (x2 * f);	
+                return x1;       
+		}
+		float lerpUnit(float x1, float x2, float step, float delta, float limit){
+			return CR::Math::lerp(x1 * 100.0f, x2 * 100.0f, step, delta, limit) / 100.0f;                                			
 		}
 
 		Mat<4, 4, float> perspective(float fovy, float aspect, float zNear, float zFar){
