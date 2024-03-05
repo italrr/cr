@@ -20,6 +20,6 @@ void CR::UI::Window::render(CR::Gfx::RenderLayer *layer){
 
 }
 
-void CR::UI::Window::setSize(const CR::Vec2<unsigned> &nSize{
+void CR::UI::Window::setSize(const CR::Vec2<unsigned> &nSize){
     
 }

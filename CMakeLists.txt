@@ -24,6 +24,7 @@ set (cr_src
     src/Engine/Console.cpp
     src/Engine/cv/src/cv.cpp
     src/Engine/Flexie/Flexie.cpp
+    src/Engine/Flexie/Window.cpp
     src/Engine/3rdparty/glad.c
     src/Engine/3rdparty/Jzon.cpp
     src/Engine/3rdparty/json11.cpp

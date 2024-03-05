@@ -68,6 +68,15 @@
                 CR::Vec2<unsigned> size;
                 CR::Rect<unsigned> padding;
                 CR::Rect<unsigned> margin;
+                CR::Vec2<unsigned> getAbsoluteSize(){
+                    unsigned w = this->size.x + this->padding.x + this->padding.w + this->margin.x + this->margin.w;
+                    unsigned h = this->size.y + this->padding.y + this->padding.h + this->margin.y + this->margin.h;
+                    return CR::Vec2<unsigned>(w, h);
+                };
+                void setAccommodatedSize(const CR::Vec2<unsigned> &size){
+                    this->size.x = size.x - ((this->margin.x + this->margin.w) + (this->padding.x + this->padding.w));
+                    this->size.y = size.y - ((this->margin.y + this->margin.h) + (this->padding.y + this->padding.h));
+                }
             };
 
             struct Position {
@@ -77,11 +86,9 @@
 
             struct StyleSheet {
                 CR::Gfx::Font font;
-
                 CR::Color bgColor;
                 CR::Color textColor;
                 CR::Color borderColor;
-
             };
 
             struct Base {
@@ -106,12 +113,20 @@
                 virtual void step(){};
                 virtual void destroy(){};
                 virtual void rerender(){};
-                virtual void render(){};
-                virtual void accodomate(unsigned w, unsigned h){
-                    
-                };
-                virtual CR::Vec2<unsigned> computeSize(){
+                virtual void render(CR::Gfx::RenderLayer *layer){};
 
+                // accommodate resizes the object to fit the provided width and height
+                // this shoud only be used when the type is able to `fillup` (dims.fillup == true),
+                // for example, a panel or a button
+                virtual bool accommodate(const CR::Vec2<unsigned> &size){
+                    if(!this->dims.fillup) return false;
+                    this->dims.setAccommodatedSize(size);
+                    return true;
+                };
+                // typical size doesn't take into account margin and padding, that's why we
+                // use getAbsoluteSize
+                virtual CR::Vec2<unsigned> computeSize(){
+                    return this->dims.getAbsoluteSize();
                 }                
                 void clear(); // removes all children
 
