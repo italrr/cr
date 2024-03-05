@@ -22,9 +22,11 @@ set (cr_src
     src/Engine/Model.cpp
     src/Engine/Resource.cpp
     src/Engine/Console.cpp
+    src/Engine/cv/src/cv.cpp
     src/Engine/Flexie/Flexie.cpp
     src/Engine/3rdparty/glad.c
     src/Engine/3rdparty/Jzon.cpp
+    src/Engine/3rdparty/json11.cpp
     src/Engine/3rdparty/MD5.cpp
     src/Map.cpp
     src/Entity.cpp

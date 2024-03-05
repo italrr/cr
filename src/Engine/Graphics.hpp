@@ -261,10 +261,11 @@
 
             namespace RenderLayers {
                 enum RenderLayers : unsigned {
-                    BOTTOM = 0,
+                    BOTTOM = 1000,
                     GAME,
                     MIDDLE,
                     UI,
+                    CONSOLE,
                     TOP
                 };
             }

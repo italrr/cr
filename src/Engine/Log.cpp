@@ -7,6 +7,11 @@
 
 static std::mutex mutex;
 
+void __CR_console_add_line(const std::string &line);
+
+static const unsigned lineBufferSize = 1024*4;
+static char lineBuffer[lineBufferSize];
+
 static inline std::string getTimeStamp(){
     time_t currentTime;
     struct tm *localTime;
@@ -33,7 +38,9 @@ bool CR::log(const std::string &_format, ...){
     va_list arg;
     bool done;
     va_start (arg, _format);
-    done = vfprintf(stdout, format.c_str(), arg);
+    done = vsprintf(lineBuffer, format.c_str(), arg);
+    printf("%s", lineBuffer);
+    __CR_console_add_line(lineBuffer);
     va_end (arg);
     mutex.unlock();
     return done;

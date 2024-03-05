@@ -1,0 +1,3 @@
+[submodule "src/Engine/cv"]
+	path = src/Engine/cv
+	url = git@github.com:italrr/canvas.git

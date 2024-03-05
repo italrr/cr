@@ -10,7 +10,7 @@
         namespace Console {
 
             namespace UserLevel {
-                enum UserLevel : int {
+                enum UserLevel : unsigned {
                     PLAYER = 1,
                     MOD,
                     ADMIN
@@ -18,14 +18,14 @@
             }
 
             namespace Source {
-                enum UserLevel : int {
+                enum UserLevel : unsigned {
                     LOCAL = 1,
                     REMOTE
                 };
             }
 
             namespace VarType {
-                enum VarType : int {
+                enum VarType : unsigned {
                     Int = 0,
                     Float,
                     Bool,
