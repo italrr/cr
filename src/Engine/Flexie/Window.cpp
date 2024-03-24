@@ -29,10 +29,15 @@ void CR::UI::Window::setTitle(const std::string &title){
 }
 
 void CR::UI::Window::render(CR::Gfx::RenderLayer *layer){
-    // We expect this layer to be 2D
+    // We expect this layer to be 2D ^
+    if(!this->visible){
+        return;
+    }
+    this->rerender();
+    // Render Base
     layer->add(CR::Gfx::Draw::Texture(blank, {0.0f, 0.0f}, {300, 300}, {0.0f, 0.0f}, 0.0f));
-}
 
-void CR::UI::Window::setSize(const CR::Vec2<unsigned> &nSize){
-    
+    // Render children
+
+
 }

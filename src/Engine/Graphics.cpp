@@ -185,6 +185,16 @@ static void handleOpenGLError(const std::string &at){
 
 
 
+bool CR::Gfx::RenderLayer::resize(int width, int height){
+    if(this->fb.get()){
+        return false;
+    }
+    this->end();
+    this->size.set(width, height);
+    this->fb = CR::Gfx::createFramebuffer(this->size.x, this->size.y);
+    
+    return true;
+}
 
 bool CR::Gfx::RenderLayer::init(unsigned type, int width, int height){
 

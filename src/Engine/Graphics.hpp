@@ -321,6 +321,7 @@
                 void add(Renderable* obj);
                 bool init(unsigned type,  int width, int height);
                 bool init(unsigned type);
+                bool resize(int width, int height);
                 void setDepth(int n);
                 void renderOn(const std::function<void(RenderLayer *layer)> &what, bool flush, bool clear);
                 void renderOn(const std::function<void(RenderLayer *layer)> &whatr);

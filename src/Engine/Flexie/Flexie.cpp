@@ -6,6 +6,42 @@
 
 static std::vector<std::shared_ptr<CR::UI::Base>> windows;
 
+CR::UI::Base::Base(){
+    this->visible = true;
+    this->solid = true;
+}
+
+CR::UI::Panel::Panel(){
+}
+
+void CR::UI::Panel::create(){
+    this->toReRender = true;
+    this->layer->init(CR::Gfx::RenderLayerType::T_2D, this->dims.size.x, this->dims.size.y);
+}
+
+void CR::UI::Panel::recalculate(){
+    this->layer->resize(this->dims.size.x, this->dims.size.y);
+    this->toReRender = true;
+}
+
+void CR::UI::Panel::setSize(const CR::Vec2<unsigned> &nSize){
+    this->dims.setSize(nSize);
+    recalculate();
+}
+
+void CR::UI::Panel::rerender(){
+    if(!this->toReRender){
+        return;
+    }
+    this->layer->clear();
+    this->layer->renderOn([&](CR::Gfx::RenderLayer *layer){
+        for(int i = 0; i < this->children.size(); ++i){
+            this->children[i]->render(layer);
+        }
+    });
+    this->layer->flush();
+}
+
 
 static std::string readToString(const std::string &path){
     std::ifstream file(path);

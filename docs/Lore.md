@@ -224,9 +224,9 @@ Bloodchungs is another gang from Doluz that started to antagonize The Bibis afte
 
 - Sir Arthur Velanova
 
-It's multi-trillionare from Earth. It's unknown how old he really is, but it's speculated to be over a hundred years old. Arthur is considered a humanitarian, and father of the IVTE that allowed the human species to trascend from earth according to Marta's Scriptures. Arthur's entire body is prosthetic, even his brain.
+It's multi-trillionare from Earth. It's unknown how old he really is, but it's speculated to be over a hundred years old. Arthur is considered a humanitarian, and father of the IVTE that allowed the human species to trascend from earth. He's one important key element in Marta's Scriptures. Arthur's entire body is prosthetic, even his brain.
 
-It's unknown what's dedicating his life to now, as he's been barely seen in the public after his speech about his wife's death.
+It's unknown what's he dedicating his life to now, as he's been barely seen in the public after his speech about his wife's death.
 
 Arthur is an Abadiú, but he holds no political power.
 
@@ -236,11 +236,15 @@ She's Nuclear Physicist, originally from Mexico in Earth. She was Arthur's wife 
 
 Most of her body was completely metal, except for her brain. No more than a year later she developed brain cancer. She refused to go through brain digitalization as she believed it would corrupt her soul nor any cancer treatment. She was given 6 months to live.
 
-She took over Veracrúz's leadership as Arthur was nowhere to be found since the day of the war. She quickly developed Veracrúz's entire governmental system, assigning people she knew in positions of power and creating the Abadiú hierarchy. She's considered the first Abadiú.
+She took over Veracrúz's leadership as Arthur was nowhere to be found since the day of the war. She quickly developed Veracrúz's entire governmental system, getting all leaders from Veracrúz colonies together and creating the Abadiú society. She's considered the first Abadiú.
 
-By the end of her days she became very spiritual and developed a compilation of scriptures for her people to follow. She claimed she was blessed with pictures of the future and that she knows how humanity will perish but that she has the answer thrive when the time comes.
+By the end of her days she became very spiritual and developed a compilation of scriptures for her people to follow. She claimed she was blessed with pictures of the future and that she knows how humanity will perish but that she has the answer to thrive when the time comes.
 
 When Marta died, Arthur showed up to make a public announcement about her death.
+
+- Alexander Veracrúz
+
+Alexander is the unrecognized son of Marta Veracrúz Velanova.
 
 - Jem 
 
@@ -250,13 +254,13 @@ Jem is a cyborg, extremely dangerous individual, wanted crimininal across all co
 
 Zanzan is another cyborg, also extremely dangerous, and wanted crimininal. Zanzan is Jem's fiance and right-hand. Zanzan is regarded to be a male, but his body exhibits a lot of feminine traits. He passes as androgenous most of the time.
 
-He has a high-end prosthetic body. It's said his brain is digitized, making him one of the few people featuring a digitized brains.
+He has a high-end prosthetic body. It's said his brain is a prosthetic, making him one of the few people featuring a digitized brains.
 
 Zanzan's body also feature a very unique set of functional wings.
 
 - Luna Mayer
 
-It's an experienced hacker and wanted crimical that helped The Protagonist when their ship was shot down by Titan's Protection Squad. 
+She's an experienced hacker and wanted crimical that helped The Protagonist when their ship was shot down by Titan's Protection Squad. 
 Luna is the youngest of 3 sisters. Luna is around 22 years old. She got into the Cybersecurity School, and finished her junior year at 18 years old. But then her father died in a job accident. Her mother left when she was only 2 years old. Her sister Allison and Jessica left the house when their father died. She's been on her own ever since. She couldn't afford tuition at school, so she dropped out. She has dedicated her life to computers, software programming, and of course, hacking.
 
 Luna is acts really tough, and sometimes even cold, but deep inside she's very fragile, and suffers from abandoment issues. Luna is 5'9" tall, slim. She's from germanic ascendancy. Blond, blue-eyed, white skinned. Luna enjoys lowbeat music, and loves Neo Oriental Animation (still called Anime). She's tends to be contrarian out of spite sometimes.
@@ -283,7 +287,7 @@ Jessica Mayer is Luna's sister. Her whereabouts are unknown
 
 - Allison Mayer
 
-Allison is aNebado, and Luna's sister. She became the wife of Mark Ravabhem, director of Doluz, and was given the Nebado title.
+Allison is a Nebado, and Luna's sister. She became the wife of Mark Ravabhem, director of Doluz, and was given the Nebado title.
 
 - Mark Ravabhem
 
@@ -318,8 +322,7 @@ Mona is an ex-drugaddict that met Victor Vetsu in an AA meeting. Mona was murder
 
 - Maximillian "Jelly" Johnson
 
-Maximillian is considered one of the best players of The Genus Race. He's played 5 matches, and has won 2. Maximillian is an incredibly dangerous individual, wanted by the UNT and Wayland for murdering the head of security of Romdo in a failed heist attempt in the year 2102.
-Maxilliam was born in Wayland, on a space station for medical emergencies for Asteroid Mining Workers.
+Maximillian is considered one of the best players of The Genus Race. He's played 5 matches, and has won 2. Maximillian is an incredibly dangerous individual, wanted by the UNT and Wayland for murdering the head of security of Romdo in a failed heist attempt in the year 2102. Maxilliam was born in Wayland, on a space station for medical emergencies for Asteroid Mining Workers.
 
 Maxilliam has a high-end prosthetic body, specially designed for hand to hand combat.
 
@@ -327,11 +330,11 @@ Most people call him Jelly. Maximillian likes using swords.
 
 - Anamura "Mephisto" Kalo
 
-Anamura is a very popular actress and Movie-Teleprojection producer, and one of the best players of the Genus Race. Anamura is also one of the wealthiest people the in showbiz. She goes by the nickname of Mephisto in the Genus Race. Anamura was originally born male, but through prosthetic body moditifications legally transitioned to female in an early age. Anamura was born in the UNT from a very wealthy family. 
+Anamura is a very popular actress and Movie-Teleprojection producer, and one of the best players of the Genus Race. Anamura is also one of the wealthiest people the in showbiz. She goes by the nickname of Mephisto in the Genus Race. Anamura was originally born male, but through prosthetic body moditifications legally transitioned to female in an early age. Anamura was born in Nova Horizon from a very wealthy family. 
 
 She has a high-end prosthetic body. She mentioned in one interview that her body costs around 500 thousand Gems
 
-- Nicki "El Chulo" Gutierrez
+- Nicki "El Chulo" Gillian
 
 Nicki is considered one of the best players of the Genus Race, having played 5 games and winning 3. Nicki a very dubious person, of unknown origins, besides Genus, he's mostly known for being very smooth with women. Some gossip networks call him "El Chulo" for having such success with women. Interestingly, there has never been reports of him mistreating women.
 
@@ -339,7 +342,7 @@ Nicki is only one of the tops players of Genus that has almost no prosthetics in
 
 - James Loukart
 
-James was originally a software engineer born in a wealthy family in Wayland that was disowned by his father. James became a black hat hacker, and the joined Nefastus. He became a recurrent player of the Genus Race.
+James was originally a systems programmer born in a wealthy family in Wayland that was disowned by his father. James became a black hat hacker, and then joined Nefastus. He became a recurrent player of the Genus Race.
 
 - Livio Jemeran
 
@@ -349,7 +352,7 @@ Livio and Mellany are very competitive, both usually insult each other constantl
 
 - Mellany Zakzzuz
 
-Mellany is a brilliant theorical physicist and a professor at the University of Grant Belvedere
+Mellany is a brilliant theorical physicist and a professor at the University of Grant Belvedere.
 
 ## How it starts
 
@@ -364,9 +367,9 @@ Dóluz is a city/colony is Titan, one of the moons of Saturn. Dóluz was one of 
 There are 50 million people in Dóluz. Most of them low-lives. One of the main joints of Century Laboratories is located in Dóluz. 
 The main transporation in Dóluz is the metro as streets are too narrow for for full sized vehicles, and Flying Vehicles are too expensive for the middle class. Most people ride their personal electric vehicles such as bikes and scooters, and then everyone else uses public transportation.
 
-Dóluz is famous because of its night life. Dóluz is one of the few colonies without regulations on sex slaves and age of consent is 12 years old, also most drugs are unregulated.
+Dóluz is famous because of its night life. Dóluz is one of the few colonies without regulations on sex slaves and the age of consent is 12 years old, also most drugs are unregulated.
 
-Dóluz law enforcement is called the Protection Squad. Most basic rights of a citizen in Dóluz include protection from the Squad, but many of their services are paid such as murder and missing persons investigations.
+Dóluz law enforcement is called the Protection Squad. Most basic rights of a citizen in Dóluz include immediate threat protection from the Squad, but many of their services are paid such as murder and missing persons investigations.
 
 The city is completely domed, but the ground under it is actually highly fertile as of now, and inhabited by small purple worms. It's unknown how it happened, but it's said that a secret project carried by an unknown group which consisted in terraforming the floor using a mutated type of worm that survived by eating waste. It seems the city waste management system has been leaking through the base and reaching the worms, keeping them alive.
 
@@ -375,15 +378,13 @@ The city is completely domed, but the ground under it is actually highly fertile
 
 ### Nova Horizon [**UNT**]
 
-It's the first and biggest major city/colony in mars part of the UNT. NH was one of the first colonies created from the ground-up for rich people of earth to live before the war. When earth was destroyed in the war, many people migrated here. There are approximately 80 million people in NH. At least half of the population is middle class.
+It's the first and biggest major city/colony in mars part of the UNT. NH was one of the first colonies created from the ground-up for rich people of earth to live before the war. When earth was destroyed in the war, many people migrated here. There are approximately 150 million people in NH. At least half of the population is middle class.
 
 ### Evergrandis [**Wayland**]
 
-It's the second founded and second biggest major city in  mars, part of Wayland. The UNT and Wayland agreed on sharing mars, thus spliting the ownership of the land in half.
+It's the second founded and second biggest major city/colony in  mars, part of Wayland. The UNT and Wayland agreed on sharing mars, thus spliting the ownership of the planet in half. Evergrandis has a population of 200 million.
 
 Evergrandis is also the second wealthiest colony, after Nova Horizon, in the solar system. Evergrandis is famous because of the high-luxury restaurants and vacation spots. Evergrandis features the biggest artificial ocean in the solar system, very realistically imitating earth's oceans. 
-
-### Luciras [**UNT**]
 
 ### Azuras [**Wayland**]
 
@@ -397,9 +398,19 @@ Evergrandis is also the second wealthiest colony, after Nova Horizon, in the sol
 
 ### Darian Martin [**Veracrúz**]
 
+### Dóluz [**Veracrúz**]
+
+### Luciras [**UNT**]
+
 ### Orion [**UNT**]
 
 ### Yorkers [**UNT**]
+
+### Xylos [**UNT**]
+
+## New Olympia originally Far Outpost [**INDEPENDENT**]
+
+It's an independent city on the moon. New Olympia was the first construction by Alana Industries in 2084 after the invention of the IVTE. When Marta took over Veracrúz, New Olympia refused to join and decided to become independent. Gabriel Roso was a french engineer that was hired by Alana to design this city, but he quickly took over and became the leader. New Olympia has a population of 2 million people. Gabriel resigned his position years later, but still lives there.
 
 ### Romdo or The Interplanetary Space Station[**INDEPENDENT**]
 

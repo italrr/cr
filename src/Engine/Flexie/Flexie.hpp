@@ -73,6 +73,12 @@
                     unsigned h = this->size.y + this->padding.y + this->padding.h + this->margin.y + this->margin.h;
                     return CR::Vec2<unsigned>(w, h);
                 };
+                void setSize(const CR::Vec2<unsigned> &nSize){
+                    this->size = {
+                        nSize.x + this->margin.x + this->margin.w + this->padding.x + this->padding.w,
+                        nSize.y + this->margin.y + this->margin.h + this->padding.y + this->padding.h
+                    };
+                }
                 void setAccommodatedSize(const CR::Vec2<unsigned> &size){
                     this->size.x = size.x - ((this->margin.x + this->margin.w) + (this->padding.x + this->padding.w));
                     this->size.y = size.y - ((this->margin.y + this->margin.h) + (this->padding.y + this->padding.h));
@@ -101,18 +107,20 @@
                 unsigned depth;
                 unsigned layout;
                 bool solid;
+                bool visible;
                 bool interactive;
                 float flex;
 
                 UI::Base *head;
                 std::vector<std::shared_ptr<UI::Base>> children;
 
-
+                Base();
                 virtual void create(){};
                 virtual void draw(){};
                 virtual void step(){};
                 virtual void destroy(){};
                 virtual void rerender(){};
+                virtual void recalculate(){}
                 virtual void render(CR::Gfx::RenderLayer *layer){};
 
                 // accommodate resizes the object to fit the provided width and height
@@ -133,7 +141,13 @@
             };
 
             struct Panel : Base {
-                  
+                bool toReRender;
+                std::shared_ptr<CR::Gfx::RenderLayer> layer;
+                void setSize(const CR::Vec2<unsigned> &nSize);
+                void recalculate();
+                Panel();
+                void create();
+                void rerender();
             };
 
             struct Window : Panel {
@@ -142,7 +156,6 @@
                 void move(const CR::Vec2<unsigned> &nPos);
                 void close();
                 void step();
-                void setSize(const CR::Vec2<unsigned> &nSize);
                 void setTitle(const std::string &title);
                 void render(CR::Gfx::RenderLayer *layer);
             };
