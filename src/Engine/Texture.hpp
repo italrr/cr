@@ -3,6 +3,7 @@
 
     #include "Types.hpp"
     #include "Resource.hpp"
+    #include "Bitmap.hpp"
     
     namespace CR {
 
@@ -22,7 +23,8 @@
 
             struct Texture : CR::Rsc::Proxy {
                 Texture(const std::string &path);
-                Texture();                
+                Texture();    
+                bool load(const CR::Gfx::Bitmap &bm);            
                 bool load(const std::string &path);
                 bool load(const std::string &path, const std::string &mask);
                 void unload();

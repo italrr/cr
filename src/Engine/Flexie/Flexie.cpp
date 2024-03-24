@@ -25,8 +25,9 @@ static std::string parseString(json11::Json &obj, const std::string &name, const
 
 static std::shared_ptr<CR::UI::Layout> parseLayout(json11::Json &obj, const std::string &backup = "inline"){
 
-    auto v = obj["type"];
+    auto v = obj["layout"];
     auto type = v.is_string() ? v.string_value() : backup;
+
 
     auto layout = std::shared_ptr<CR::UI::Layout>(NULL);
 
@@ -80,6 +81,7 @@ std::shared_ptr<CR::UI::Base> CR::UI::build(const std::string &path){
     std::shared_ptr<CR::UI::Base> element;
     std::string type = parseString(obj, "type", "window");
 
+
     if(type == "window"){
         element = std::make_shared<CR::UI::Window>(CR::UI::Window());
         auto window = std::static_pointer_cast<CR::UI::Window>(element);
@@ -90,6 +92,7 @@ std::shared_ptr<CR::UI::Base> CR::UI::build(const std::string &path){
         }
         auto title = parseString(obj, "title", "WINDOW");
         window->setTitle(title);
+        windows.push_back(window);
     }else
     if(type == "PANEL"){
 
@@ -110,16 +113,23 @@ void __CR_init_FLEXIE(){
 }
 
 void __CR_end_FLEXIE(){
-
+    // TODO: Close Windows
 }
 
 void __CR_update_FLEXIE(){
-
+    for(unsigned i = 0; i < windows.size(); ++i){
+        if(windows[i]->type != CR::UI::ElementType::WINDOW){
+            continue;
+        }
+        std::static_pointer_cast<CR::UI::Window>(windows[i])->step();
+    }
 }
 
 void __CR_render_FLEXIE(CR::Gfx::RenderLayer *layer){
     for(unsigned i = 0; i < windows.size(); ++i){
-        if(windows[i]->type != CR::UI::ElementType::WINDOW) continue; // We can't render floating elements on their own
+        if(windows[i]->type != CR::UI::ElementType::WINDOW){
+            continue;
+        }
         std::static_pointer_cast<CR::UI::Window>(windows[i])->render(layer);
     }
 }

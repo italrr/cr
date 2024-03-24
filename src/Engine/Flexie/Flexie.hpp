@@ -141,6 +141,7 @@
                 Window();
                 void move(const CR::Vec2<unsigned> &nPos);
                 void close();
+                void step();
                 void setSize(const CR::Vec2<unsigned> &nSize);
                 void setTitle(const std::string &title);
                 void render(CR::Gfx::RenderLayer *layer);

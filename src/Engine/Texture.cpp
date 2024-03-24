@@ -18,6 +18,44 @@ bool CR::Gfx::Texture::load(const std::string &path, const std::string &mask){
     return false;
 }
 
+bool CR::Gfx::Texture::load(const CR::Gfx::Bitmap &bm){
+    if(bm.pixels.size() == 0){
+        CR::log("[GFX] Failed to load texture from Bitmap: It's empty\n");
+        return false;
+    }
+
+    auto rscTexture = std::make_shared<CR::Gfx::TextureResource>(CR::Gfx::TextureResource());
+    auto rsc = std::static_pointer_cast<CR::Gfx::TextureResource>(rscTexture);
+
+    allocate(rscTexture);
+
+    rscTexture->srcType = CR::Rsc::SourceType::MEMORY;
+
+    auto nrChannels = bm.channels;
+
+    int format;
+    if (nrChannels == 1)
+        format = ImageFormat::RED;
+    else if (nrChannels == 3)
+        format = ImageFormat::RGB;
+    else if (nrChannels == 4){
+        format = ImageFormat::RGBA;
+    }
+
+    rscTexture->size.set(bm.width, bm.height);
+    rscTexture->channels = nrChannels;
+
+    auto pixels = bm.getFlatArray();
+
+    auto r = CR::Gfx::createTexture2D(&pixels[0], bm.width, bm.height, format);
+
+    rscTexture->textureId = r;
+    rscTexture->rscLoaded = true;
+    CR::log("[GFX] Loaded Texture From Memory | Size %ix%i | Channels %i\n", rscTexture->size.x, rscTexture->size.y, nrChannels);
+ 
+    return true;    
+}
+
 bool CR::Gfx::Texture::load(const std::string &path){
     auto result = this->findAllocByPath(path);
     if(result == CR::Rsc::AllocationResult::PROXY){

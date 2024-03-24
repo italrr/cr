@@ -30,32 +30,6 @@
 
             void loadSettings(const std::vector<std::string> &params, const std::string &path);
 
-
-
-
-            struct Bitmap {
-                std::vector<CR::Color> pixels;
-                unsigned width;
-                unsigned height;
-                unsigned format;
-                unsigned channels;
-                
-                Bitmap sub(const CR::Rect<unsigned> &box);
-                Bitmap sub(unsigned x, unsigned y, unsigned width, unsigned height);
-                
-                void paste(const Bitmap &src, const CR::Vec2<unsigned> &vec);
-                void paste(const Bitmap &src, unsigned x, unsigned y);
-                    
-                std::vector<uint8> getFlatArray();
-                Bitmap copy();
-                CR::Rect<unsigned> autocrop();
-                Bitmap &build(const CR::Color &p, unsigned format, unsigned width, unsigned height);
-                std::vector<std::vector<CR::Rect<unsigned>>> findBoxes();        
-                bool load(const std::string &path);
-                bool write(const std::string &path);
-            };
-
-
             struct FramebufferObj {
                 unsigned framebufferId;
                 unsigned textureId;
@@ -80,6 +54,25 @@
                     RGB, // 24 bits
                     RGBA, // 32 bits
                 };
+                static unsigned getChannels(unsigned format){
+                    switch(format){
+                        default:
+                        case ImageFormat::RED:
+                        case ImageFormat::GREEN:
+                        case ImageFormat::BLUE: {
+                            return 1;
+                        }; 
+                        case ImageFormat::RG: {
+                            return 2;
+                        };     
+                        case ImageFormat::RGB: {
+                            return 3;
+                        };
+                        case ImageFormat::RGBA: {
+                            return 4;
+                        };                                                                                 
+                    }                    
+                }
             }        
 
             namespace RenderableType {
@@ -344,6 +337,7 @@
             namespace Draw {
                 CR::Gfx::Renderable *RenderLayer(const std::shared_ptr<CR::Gfx::RenderLayer> &rl, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle);        
                 CR::Gfx::Renderable *Texture(const std::shared_ptr<CR::Gfx::Texture> &tex, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle); 
+                CR::Gfx::Renderable *Texture(CR::Gfx::Texture &tex, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle); 
                 CR::Gfx::Renderable *Texture(unsigned tex, const CR::Vec2<float> &pos, const CR::Vec2<int> &size, const CR::Vec2<float> &origin, float angle); 
                 CR::Gfx::Renderable *Mesh(CR::Gfx::MeshData &md, CR::Gfx::Transform *transform); 
                 CR::Gfx::Renderable *MeshBatch(std::vector<CR::Gfx::MeshData*> *md, std::vector<CR::Gfx::Transform*> *trans, bool shareTexture, bool shareShader, bool shareModel, unsigned modelPos = 0); 

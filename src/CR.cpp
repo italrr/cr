@@ -324,9 +324,6 @@
 
 int main(int argc, char* argv[]){
     
-    CR::Gfx::Bitmap bm;
-    bm.build(CR::Color(255, 0, 0, 255), CR::Gfx::ImageFormat::RGBA, 128, 128);
-    bm.write("kek.png");
 
     CR::Gfx::loadSettings(CR::Core::loadParams(argc, argv), "data/cfg/settings.json");
 

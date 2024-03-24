@@ -8,6 +8,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/builds/cmake)
 
 # src
 set (cr_src
+    src/Engine/Bitmap.cpp
     src/Engine/Graphics.cpp
     src/Engine/Log.cpp
     src/Engine/Job.cpp

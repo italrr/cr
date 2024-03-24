@@ -1,7 +1,7 @@
 {
     "type": "window",
     "title": "Test Window",
-    "layout": "inline",
+    "layout": "vbox",
     "elements": [
         
     ]
